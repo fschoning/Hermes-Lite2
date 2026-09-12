@@ -36,15 +36,19 @@ Updated 2026-09-12 ~13:50. Resume from this file.
   consequence (no forward lock; one fast-serial packet is lost during bootstrap, the check
   now allows <= 2). NOTE: the first rerun after the fix silently used the stale .vvp
   (the run script's -I path was broken; fixed in run_sim.sh), so the fix is still UNVERIFIED.
-  A correctly compiled run then STILL failed forward training with fail=1 (no eye on any
-  tap; taps/eye all 0), so the VALUE-event fix was not sufficient: the forward capture
-  chain (gowinlink_ddr_out model -> tb_cable -> IBUF/IODELAY/IDDR from prim_sim.v ->
-  gl_rx_datapath PRBS checker) sees mismatches at every tap. Everything else in tb_link
-  passes (5 remaining failures are all consequences: no forward lock, live samples, lane-1
-  injected-error count). Next: a forward-only unit test (like tb_rev: tx_lanes(6) + ddr_out
-  + cable + gl_lane_rx x6 + datapath, fixed taps, print hist/PRBS mismatches) to see what
-  arrives — suspects: IODELAY model output timing/X, IDDR model 3-stage pipeline vs. the
-  checker, or the pair order (q1 older) for the forward direction.
+  A correctly compiled run then STILL failed forward training (fail=1, no eye). ROOT CAUSE
+  FOUND with the new forward-only unit test `tb_fwd` (`./run_sim.sh fwd`, seconds): Gowin's
+  IDDR model presents Q1 as the falling-edge sample taken AFTER the rising-edge sample Q0,
+  i.e. Q0 is the OLDER bit — the data plane assumed the opposite. With the pair swapped the
+  forward chain shows 0 PRBS mismatches at every tap and aligns (tb_fwd PASS). Fix: in
+  `gowin/rtl/gl_lane_rx.v` IDDR.Q0 now feeds q1 (older) and IDDR.Q1 feeds q0; the trainer's
+  pair_swap retry remains as the safety net for silicon that behaves differently.
+  Open question for the next session: the trainer's automatic pair_swap retry (gl_train
+  S_PICK, "all lanes zero eye -> swap and re-sweep") did not fire in the failed run
+  (console showed swap=0); check why before relying on it.
+  A full tb_link LANES=6 run with the fix was started at the end of the session:
+  read `gowin/sim/build/tb_link_6.log` (last line PASS/FAIL, one "ok:/FAIL:" line per
+  check), or rerun `cd gowin/sim && ./run_sim.sh link 6` (about 10 minutes).
 - `tb_link` LANES=3 never run: `./run_sim.sh link 3`.
 
 ## Synthesis state

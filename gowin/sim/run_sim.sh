@@ -40,6 +40,12 @@ run_rev() {
   "$VVP" -n "$BUILD/tb_rev.vvp" | tee "$BUILD/tb_rev.log"
 }
 
+run_fwd() {
+  echo "== tb_fwd"
+  "$IVERILOG" -g2012 -DSIM -s tb_fwd -o "$BUILD/tb_fwd.vvp" -I "$GRTL" -I "$SIMLIB_DIR" $SRC       "$HERE/gowin_prim_ts.v" "$HERE/tb_cable.v" "$HERE/tb_fwd.v" 2>&1 | grep -v "prim_sim.v.*warning" || true
+  "$VVP" -n "$BUILD/tb_fwd.vvp" | tee "$BUILD/tb_fwd.log"
+}
+
 run_link() {
   L=$1
   echo "== tb_link LANES=$L"
@@ -51,7 +57,8 @@ run_link() {
 case "${1:-all}" in
   uart) run_uart ;;
   rev)  run_rev ;;
+  fwd)  run_fwd ;;
   link) run_link "${2:-6}" ;;
-  all)  run_uart; run_rev; run_link 6; run_link 3 ;;
-  *) echo "usage: $0 [all|uart|rev|link [6|3]]"; exit 1 ;;
+  all)  run_uart; run_rev; run_fwd; run_link 6; run_link 3 ;;
+  *) echo "usage: $0 [all|uart|rev|fwd|link [6|3]]"; exit 1 ;;
 esac
