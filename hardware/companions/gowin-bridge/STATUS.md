@@ -6,23 +6,20 @@ rev B replaced rev A's two dual-link DVI-D sockets per board with three HDMI
 sockets per board, and made the HL2-side board symmetric so two radios can
 link to each other with the same board. The rev A design is in git history.
 
-> ## rev C is PAUSED. Read this first.
+> ## rev C is APPROVED and PART-BUILT. Read this first.
 >
-> **The boards and `PINMAP.md` in this tree are rev B and are self-consistent.**
-> A rev C re-allocation was specified and analysed but **deliberately not
-> implemented**, because the requirement changed mid-analysis: the auxiliary
-> (third) socket must also work radio-to-radio, which makes it symmetric, and
-> that changes its hardware rather than just its pin map. The "rev C" section
-> below records what was settled and what the open decision is.
+> **`PINMAP.md` is rev C and is committed.** It is the authoritative pin map and
+> the FPGA side can be brought into line with it now.
 >
-> **Nothing from rev C has been applied.** No netlist change, no regeneration,
-> no `PINMAP.md` edit. Resume by reading the rev C section, then the auxiliary
-> direction decision when it arrives.
+> **The two board projects in this tree are still rev B**, and are still
+> self-consistent: ERC 0, schematic/PCB parity 0, and both checkers pass. They
+> have deliberately NOT been half-regenerated, because a board that fails its
+> own checkers is worse than one revision behind.
 >
-> **Separately and more urgently: the BOM has six defective part numbers and
-> one unbuildable part.** See "BOM defects" below. That applies to rev B as it
-> stands today and must be fixed before anything is ordered, independently of
-> rev C.
+> **What remains is listed under "rev C: remaining work" below, with every
+> decision already settled**, so it can be executed without re-deriving
+> anything: the netlist, the panel project, the checker extension, four
+> document updates and the costing.
 
 ---
 
@@ -234,85 +231,142 @@ plus assembly fees from the table above.
 
 ---
 
-## rev C: specified, analysed, NOT implemented
+## rev C: settled design, and the remaining work
 
-The change requested was to make **every lane 307.2 Mbit/s DDR in both
-directions** - the gateware's already-simulated 3-lane geometry - instead of
-rev B's asymmetric six-lanes-out / three-lanes-back, and to spend the freed pins
-on a third socket carrying a **fast bidirectional control channel** in place of
-the 10-25 Mbit/s single-ended wire.
+`PINMAP.md` rev C holds the full pin map. What follows is everything else that
+was decided, so that building it needs no fresh analysis.
 
-**What was settled and is worth keeping:**
+### Settled: the strap circuit
 
-* **The OUT and IN sockets keep the rev B symmetry mechanism unchanged**, so
-  the two-radio case becomes the **full 921.6 Mbit/s raw stream each way**
-  instead of rev B's 460.8. That is the main reason to do rev C at all.
-* **The forward lanes move off PIN_80.** With pins freed, forward data becomes
-  PIN_76, PIN_77 and PIN_83, so the 21 pF VREF pin no longer carries a fast
-  forward lane. That removes the second-tightest path in rev B by itself.
-* **PIN_72 and PIN_80 become inputs**, which is new in every revision.
-  Confirmed permissible: `LINK_WIRING_VERIFICATION.md` 4b quotes the Cyclone IV
-  handbook that a VREF pin may be a regular I/O when its bank carries no
-  VREF-based standard, and HL2 bank 5 carries only `2.5 V`. The handbook adds
-  only a qualitative warning - "reduced performance of toggle rate and tCO
-  because of higher pin capacitance" - with **no numeric toggle-rate limit
-  published anywhere**, so a calculation is the only guide that exists.
-* **Both new inputs need the translator**, for the same reason as PIN_88/89:
-  `LINK_WIRING_VERIFICATION.md` section 5 establishes that the PCI clamp is on
-  by default and clamps toward VCCIO, so a 3.3 V receiver output held high
-  against a 2.5 V bank injects DC into the HL2's 2.5 V rail through the clamp,
-  into an LDO output through a ferrite. With a **mixed-direction** auxiliary
-  socket this was free: PIN_88, PIN_89, PIN_72 and PIN_80 are exactly four
-  channels, and the SN74AVC4T245 already on the board has exactly four.
-* **Tang J14 allocation worked out with one pin spare** (pin 36, U17), against
-  rev B's exact fit with none. The forward clock stays on pin 20 (U20,
-  `SGCLKT_5` and `BPLL2/3 CLKIN0`, the PLL reference) and the auxiliary clock
-  lands on pin 32 (Y18, `MGCLKT_4`), also clock-capable. **All six received
-  pairs keep the A/T leg of a true differential pair**, so the future
-  no-receiver-chip variant works for every one of them; rev B could not manage
-  that for one lane.
-* **Chip count for a mixed-direction auxiliary socket:** board A goes to two
-  quad drivers plus two quad receivers (rev B had two plus one) and board B the
-  same, so one extra package per board and no change to the translators.
+**One 1x3 header (`ROLE`) with a single shunt, plus one single-gate inverter**
+(74LVC1G04 class, SOT-23-5) producing `ROLE_N`, plus a **10 k pull-up on
+`ROLE_N`**. On both boards.
 
-**Margin at 307.2 Mbit/s** (unit interval 3.255 ns), which is the rate every
-lane would run at:
+The brief's two-link / double-pole proposal was rejected and why is recorded in
+`PINMAP.md` 2.4: any independently-settable pair allows "both levels low",
+which enables the G2 translator port while the gateware believes it is ROLE B
+and is driving those pins as outputs - CMOS against CMOS on PIN_72 and PIN_80.
+One shunt plus one inverter makes the complement a property of the circuit. The
+pull-up direction is chosen so a missing or dead inverter **disables** the
+auxiliary link rather than enabling contention.
 
-| Path | rev B | rev C | Note |
-|---|---|---|---|
-| LVDS driver / receiver, 400 Mbit/s rating | 38 % forward, 77 % reverse | **77 % everywhere** | fine, and it is the rate the reverse lanes already needed |
-| Forward lanes through the SN74AVC8T245, 380 Mbit/s rating | 40 % | **81 %** | **the one thing rev C makes worse.** Six channels instead of none at that utilisation. The eight bypass links remain the escape, at the price of the guaranteed voltage margin they were added to buy - the two escapes are mutually exclusive. |
-| Reverse / auxiliary inputs through the SN74AVC4T245, 380 Mbit/s | 81 % on two channels | **81 % on three** | unchanged in kind |
-| Receiver output into the HL2 LED pins | 51 % of UI in rise time | **51 %**, unchanged | still the tightest single-ended path |
-| Forward lane on PIN_80 (21 pF) | 46 % of UI | **gone** - PIN_80 becomes a slow auxiliary input instead | a real improvement |
-| PIN_80 as a 307.2 Mbit/s input, 27 pF total | - | **46 % of UI** (rise 1.49 ns), comfortable to about 135 Mbit/s | the new worst pin, deliberately on the least critical signal |
-| PIN_72 as a 307.2 Mbit/s input, ~16 pF plus the uFL stub | - | **27 % of UI** (rise 0.88 ns) | fine; the CL8 stub is now driven by our receiver rather than the FPGA |
-| Gowin per-lane delay adjustment | 3.2 ns over a 6.51 ns UI = **0.49 UI** | 3.2 ns over a 3.255 ns UI = **0.98 UI** | **better.** A sweep that spans a whole unit interval is guaranteed to contain an eye edge; at half a UI it was not. |
+**The inverter is the one part still needing an LCSC number.** A single-gate
+inverter in SOT-23-5 is a commodity; it was not price-checked with the rest.
 
-**Why it is blocked.** Making the auxiliary socket work radio-to-radio means it
-must be symmetric, and a symmetric socket needs a driver **and** a receiver on
-all four pairs, with the driver tri-stated while receiving, plus a
-switchable-direction translation path and a direction signal. Consequences
-already worked out:
+What `ROLE` / `ROLE_N` drive:
 
-* **No extra LVDS packages.** Four auxiliary driver channels plus four for the
-  OUT socket is exactly two quad drivers; the same for receivers. The
-  DS90LV047A's `EN`/`EN` pins tri-state its outputs, so a driver and a receiver
-  can share connector pins, and the receiver's 100 ohm termination is what the
-  driver wants to see anyway.
-* **One extra translator package.** The 2.5 V-to-3.3 V direction fits exactly:
-  four OUT channels plus four auxiliary channels is the eight the
-  SN74AVC8T245 has. The 3.3 V-to-2.5 V direction does not: PIN_88, PIN_89 and
-  four auxiliary pairs is six channels against the SN74AVC4T245's four, and its
-  output must now tri-state when the HL2 drives the shared pin.
-* **The direction signal is the real problem, and it is the decision to make.**
-  The HL2 has no spare pin - all 14 are allocated. So the direction has to come
-  from the auxiliary socket's unused SCL wire (which still needs an HL2 pin to
-  drive it, and there is none), or be implicit in a half-duplex protocol with no
-  wire at all, or the auxiliary socket drops from four symmetric pairs to fewer.
-* **PIN_72 and PIN_80 get worse as bidirectional pins than as inputs**: PIN_80's
-  21 pF now loads an HL2 output as well as a receiver output, and PIN_72's uFL
-  stub is driven from both ends at different times.
+| | ROLE A | ROLE B |
+|---|---|---|
+| G1 driver pair `EN` = `ROLE` | enabled | tri-stated |
+| G2 driver pair `EN` = `ROLE_N` | tri-stated | enabled |
+| Translator port carrying G1 toward the HL2, `OE` = `ROLE` | disabled | enabled |
+| Translator port carrying G2 toward the HL2, `OE` = `ROLE_N` | enabled | disabled |
+| 100 R termination, **fitted or not, not switched** | fit on G2 | fit on G1 |
+
+### Settled: the chip complement
+
+Board A needs **three enable domains on the driver side** (always-on for `OUT`,
+`ROLE` for AUX G1, `ROLE_N` for AUX G2) and the DS90LV047A has one enable per
+package, so:
+
+| | Board A | Board B |
+|---|---|---|
+| Quad LVDS drivers | **3** (`OUT` 4 ch; AUX G1 2 ch; AUX G2 2 ch) | **3** (same split) |
+| Quad LVDS receivers | **2** (`IN` 4 ch, gated by cable detect; AUX 4 ch, always on) | **2** |
+| SN74AVC8T245, 2.5 V -> 3.3 V | **1**, all 8 channels used: `OUT` clock and 3 lanes, plus all 4 AUX pins | - |
+| SN74AVC4T245, 3.3 V -> 2.5 V | **2**: U7 port 1 = `IN` clock + strap read (always on), port 2 = AUX G2 (`OE` = `ROLE_N`); U8 port 1 = AUX G1 (`OE` = `ROLE`), port 2 unused | - |
+| Single-gate inverter | **1** | **1** |
+| LDOs | 2 (one DNP) | 1 |
+
+The **receivers never need disabling for direction** - a receiver is
+high-impedance on the line, and it is the *translator output* that must
+tri-state. That is what keeps the receiver count at two.
+
+### Settled: the panel, 94 x 100 mm
+
+Only one arrangement fits the bracket: **board B rotated 90 degrees**, side by
+side with board A. Every other combination exceeds 100 mm (board B unrotated is
+138 mm wide side by side, 112 mm tall stacked; board A rotated gives 156 mm).
+
+```
+  y 100  +-------------------------+--------+   <- top rail, V-score at y = 95
+   95    |  board A  48 x 66       | board  |
+         |  socket edge at y = 95  |   B    |
+         |  (V-scored: clean edge, |        |
+         |   no nubs)              | 46 x 90|
+   29    +-------------------------+ rotated|
+         |  coupon 48 x 24         | socket |
+         |  fiducials + label      | edge at|
+    5    +-------------------------+ x = 94 |   <- bottom rail, V-score at y = 5
+    0    +-------------------------+--------+
+         x 0                     48       94
+                                  ^
+                       V-score at x = 48, full height
+```
+
+* **Three V-scores** - y = 5, y = 95, x = 48 - each straight, edge to edge, with
+  material on both sides for its whole length.
+* **One routed separation with mouse bites**, between board A and the coupon at
+  y = 29. That is board A's **back** edge, not a socket edge. The ~0.3 mm nubs
+  reduce its clearance to the HL2 magjack from 1.0 mm to 0.7 mm; file them flat
+  after snapping.
+* Both socket edges land on outer panel edges or on a V-score, so **no nubs
+  anywhere a plug goes**.
+* Rails are on the **y axis**, where 10 mm was spare; the x axis had only 6 mm.
+* **If the fab queries the panel, the fallback is two separate orders** at
+  roughly $40 more, which goes in `README.md`.
+
+### Settled: AUX runs at a divided rate
+
+**38.4 MHz DDR = 76.8 Mbit/s per lane**, not 153.6 MHz DDR. The G2 return clock
+is on an ordinary I/O that cannot feed a PLL, so the sampling phase cannot be
+adjusted; at a 13.02 ns unit interval it does not need to be. The hardware stays
+capable of 307.2 Mbit/s. A control channel needs kilobits, so this costs
+nothing real. **Do not** try to reclaim the two clock lanes by timing AUX data
+off cable 1's or cable 2's clock: the inter-cable phase is unknown, and it would
+add risk for bandwidth that is not needed. Recorded as a possible future
+gateware-only optimisation.
+
+### The two hand-soldered sockets, sourced
+
+Neither exists at LCSC, confirmed by search, so both are **do-not-place with
+their footprints kept**:
+
+| Part | Where to buy |
+|---|---|
+| **Vertical 2x3 2.54 mm female socket** (HL2 DB12) | LCSC has **none** - their vertical female headers start at 2x4. Buy a 2x4 and cut it down, or source a 2x3 elsewhere. |
+| **2x10 2.54 mm female socket, long tails** (HL2 DB1 stack-through) | **Samtec SSQ-120-01-G-D** (Mouser 612-SSQ-120-01-G-D) or **SSQ-120-01-T-D** (Digi-Key SAM1183-20-ND), ~10 mm tails; or **Phoenix Enterprises HWS16492**, $0.99, 10.5 mm tails. Also Harwin M20 series. |
+
+Also needed and in stock if the strap is built as a header rather than links:
+2x3 male vertical header `C5116479` (in JLCPCB's library) and jumper shunts
+`C5305`.
+
+### rev C: remaining work, in order
+
+1. **Regenerate both boards** from the settled netlist above. Board A now
+   carries 10 ICs on 48 x 66 mm, so expect the autoplacer regions to need
+   widening and two or three DRC iterations, as rev B did.
+2. **Add the panel project**, a third KiCad project from the same generator:
+   both boards' parts transformed into panel coordinates, merged netlist with
+   prefixed reference designators, the three V-score lines on a fabrication
+   layer, the routed coupon separation, three fiducials and the panel label.
+3. **Extend `tools/check_netlist.py`**: re-point the socket tables at the rev C
+   roles, and add a strap check that asserts `ROLE` and `ROLE_N` are driven
+   only by the header and the inverter, that no translator `OE` is tied to a
+   constant, and that **no combination of the single shunt can enable a
+   translator port toward a pin the gateware drives** - the contention case.
+4. **Extend `tools/check_geometry.py`** for the panel: every part inside its own
+   board's outline, nothing crossing a V-score line, and the panel bounding box
+   within 100 x 100 mm.
+5. **Update `README.md`** (three cables, the strap and how to set it, the panel
+   and that the order form's "different designs in this file" field must be
+   **2**, the two hand-soldered sockets with the parts above, the two-order
+   fallback), **`DESIGN_NOTES.md`** (why every lane is 307.2 Mbit/s, the margin
+   table at that rate, the AUX divided-rate reasoning, the strap analysis, the
+   panel arithmetic), **`ROUTING.md`** (307.2 Mbit/s everywhere, the AUX
+   fan-out, panel routing and the V-score keep-outs) and this file.
+6. **Price the assembled panel for 2 and 3 panels.**
+
 
 ---
 

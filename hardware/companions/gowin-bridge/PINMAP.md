@@ -136,6 +136,22 @@ A-board's driven clock lands on the B-board's received clock and vice versa. **`
 self-complementary: any two boards work, provided one is strapped A and the other B.** That is what
 makes the auxiliary cable usable radio-to-radio, which a fixed mixed-direction socket could never be.
 
+#### Run `AUX` at a divided rate
+
+**The gateware should clock the auxiliary lanes at a divided rate - 38.4 MHz DDR, giving
+76.8 Mbit/s per lane, is the suggested starting point - not at 153.6 MHz DDR.**
+
+The reason is PIN_72. The G2 return clock arrives on an ordinary I/O, not a dedicated clock input
+(section 4.2), so it can drive a global clock network but **cannot feed a PLL**, and without a PLL
+there is no way to shift the sampling phase. At 76.8 Mbit/s the unit interval is 13.02 ns, so even
+PIN_80's 1.49 ns edge and whatever static phase error the cable and the clock network contribute are
+a small fraction of it and no phase adjustment is needed. At 307.2 Mbit/s the unit interval is
+3.255 ns and the sampling phase would have to be right by luck.
+
+**The hardware is capable of 307.2 Mbit/s each way** and nothing in the board limits it to less; this
+is a gateware choice that can be revisited once the real phase is measured. A control channel needs
+kilobits, so 76.8 Mbit/s is already four orders of magnitude more than the job requires.
+
 | Role in the socket | Wiring |
 |---|---|
 | **SCL, HPD, +5 V, CEC, Reserved, SDA** | **not connected, test pad only.** The auxiliary cable is detected by clock activity in the gateware, not by HPD: an HPD scheme would itself have to be role-dependent and neither board has a spare pin to read it |
@@ -290,9 +306,15 @@ published anywhere** - so the figure above is a calculation, not a datasheet gua
 **The G2 auxiliary clock arrives on PIN_72, an ordinary I/O, not a dedicated clock input.** Both of
 the HL2's dedicated clock inputs are spent - PIN_88 on the reverse link and PIN_89 on the strap. A
 regular I/O can drive the Cyclone IV global clock network but **cannot feed a PLL input**, so the
-gateware must capture the G2 auxiliary lane directly with that clock. For a source-synchronous DDR
-lane that is the right architecture anyway; it costs a PLL's jitter filtering, which a 1-lane
-control channel does not need.
+sampling phase cannot be adjusted. **That is why the auxiliary lanes should run divided** (section
+2.3): at 76.8 Mbit/s the phase does not need adjusting.
+
+**PIN_72 also carries the uFL stub, so G2 is the weaker of the two auxiliary directions.** Its net
+reaches the FPGA only through the HL2's jumper J25 and also lands on uFL pad CL8, an unterminated
+stub on the HL2 that no bridge board can remove (section 6.2). In ROLE B the HL2 drives a clock out
+through that stub, which is the worst case of the four auxiliary pins. The cuttable link `SL_D0`
+stays on board A so the board can be isolated from the net, and if only the G2 direction misbehaves
+at speed, the stub is the first suspect.
 
 ### 4.3 `IN` socket (J5, right) - all received
 
