@@ -1192,7 +1192,7 @@
 	(footprint "gowin-bridge:PinHeader_1x03_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "b01ae991-4ea3-3e76-3e30-5a82c4aaceff")
-		(at 110 42)
+		(at 110 44)
 		(descr "Through hole straight pin header, 1x03, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.54mm single row")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/07227714-f4ac-c75b-35d6-ecaf909e2096")
@@ -1289,7 +1289,7 @@
 	(footprint "gowin-bridge:SOT-23-5"
 		(layer "F.Cu")
 		(uuid "7423ecd3-4c4f-f4d9-6af9-926bb6aba93a")
-		(at 118 44)
+		(at 118 45)
 		(descr "SOT, 5 Pin (JEDEC MO-178 Var AA https://www.jedec.org/document_search?search_api_views_fulltext=MO-178)")
 		(tags "SOT TO_SOT_SMD")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/d7761e0a-5883-5f90-2f11-443e7e088ec5")
@@ -2849,7 +2849,7 @@
 	(footprint "gowin-bridge:PinHeader_1x03_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "583dfbd5-117a-475c-6c3b-a2d29533c119")
-		(at 102 42)
+		(at 102 44)
 		(descr "Through hole straight pin header, 1x03, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.54mm single row")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/131d5776-7c0c-e9c3-b9c0-e317e48c9dc1")
@@ -3037,7 +3037,7 @@
 	(footprint "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
 		(layer "F.Cu")
 		(uuid "33b26d0e-7929-a182-f246-3f93ee6d385f")
-		(at 42.61 54.7)
+		(at 42.61 55.2)
 		(descr "USON-10 2.5x1.0mm_ Pitch 0.5mm http://www.ti.com/lit/ds/symlink/tpd4e02b04.pdf")
 		(tags "USON-10 2.5x1.0mm Pitch 0.5mm")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/297ef92b-2a3e-05ab-c9b2-29ece5525cb5")
@@ -3175,7 +3175,7 @@
 	(footprint "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
 		(layer "F.Cu")
 		(uuid "edb62b1b-235c-cca4-5fb6-13dbe3484b8c")
-		(at 45.33 54.7)
+		(at 45.33 55.2)
 		(descr "USON-10 2.5x1.0mm_ Pitch 0.5mm http://www.ti.com/lit/ds/symlink/tpd4e02b04.pdf")
 		(tags "USON-10 2.5x1.0mm Pitch 0.5mm")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/531cf526-975f-fdd8-232c-b2cf24b50324")
@@ -3313,7 +3313,7 @@
 	(footprint "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
 		(layer "F.Cu")
 		(uuid "0ba7172b-aaeb-8683-8fa2-f9ee0cd2f4ff")
-		(at 47.55 54.7)
+		(at 47.55 55.2)
 		(descr "USON-10 2.5x1.0mm_ Pitch 0.5mm http://www.ti.com/lit/ds/symlink/tpd4e02b04.pdf")
 		(tags "USON-10 2.5x1.0mm Pitch 0.5mm")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/6788a345-96d0-ef84-01cc-c65056baf8df")
@@ -3451,7 +3451,7 @@
 	(footprint "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
 		(layer "F.Cu")
 		(uuid "3aeac754-03e0-8165-8dc4-6bc09903ceef")
-		(at 49.77 54.7)
+		(at 49.77 55.2)
 		(descr "USON-10 2.5x1.0mm_ Pitch 0.5mm http://www.ti.com/lit/ds/symlink/tpd4e02b04.pdf")
 		(tags "USON-10 2.5x1.0mm Pitch 0.5mm")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/f94cd41e-722a-a683-214f-f3df2a83e598")
@@ -3589,7 +3589,7 @@
 	(footprint "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
 		(layer "F.Cu")
 		(uuid "5f74c920-35c9-4fdf-d461-a301aeae1246")
-		(at 51.99 54.7)
+		(at 51.99 55.2)
 		(descr "USON-10 2.5x1.0mm_ Pitch 0.5mm http://www.ti.com/lit/ds/symlink/tpd4e02b04.pdf")
 		(tags "USON-10 2.5x1.0mm Pitch 0.5mm")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/d7b97e28-c081-6c68-8528-00a89622dd93")
@@ -3727,7 +3727,7 @@
 	(footprint "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
 		(layer "F.Cu")
 		(uuid "5bc3c8df-5400-6f11-4f82-73bd284577e5")
-		(at 54.21 54.7)
+		(at 54.21 55.2)
 		(descr "USON-10 2.5x1.0mm_ Pitch 0.5mm http://www.ti.com/lit/ds/symlink/tpd4e02b04.pdf")
 		(tags "USON-10 2.5x1.0mm Pitch 0.5mm")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/4a2ff634-2247-5a8f-e172-3d3348310ddb")
@@ -3865,7 +3865,7 @@
 	(footprint "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
 		(layer "F.Cu")
 		(uuid "c89dbbf2-8397-946c-e994-5f6340467421")
-		(at 56.43 54.7)
+		(at 56.43 55.2)
 		(descr "USON-10 2.5x1.0mm_ Pitch 0.5mm http://www.ti.com/lit/ds/symlink/tpd4e02b04.pdf")
 		(tags "USON-10 2.5x1.0mm Pitch 0.5mm")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/b81051bd-8181-e68d-fdeb-c1aa64927e11")
@@ -4003,7 +4003,7 @@
 	(footprint "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
 		(layer "F.Cu")
 		(uuid "4dde9534-97bf-1554-acc4-cd8bdb91b50d")
-		(at 58.65 54.7)
+		(at 58.65 55.2)
 		(descr "USON-10 2.5x1.0mm_ Pitch 0.5mm http://www.ti.com/lit/ds/symlink/tpd4e02b04.pdf")
 		(tags "USON-10 2.5x1.0mm Pitch 0.5mm")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/31490d6b-ba23-deff-dbdf-7f332b96bfd6")
@@ -4141,7 +4141,7 @@
 	(footprint "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
 		(layer "F.Cu")
 		(uuid "77398738-a59d-555f-8b51-52baf2cc19d8")
-		(at 60.87 54.7)
+		(at 60.87 55.2)
 		(descr "USON-10 2.5x1.0mm_ Pitch 0.5mm http://www.ti.com/lit/ds/symlink/tpd4e02b04.pdf")
 		(tags "USON-10 2.5x1.0mm Pitch 0.5mm")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/0b88b41d-cf5d-c7ff-e4f9-02134df77e66")
@@ -4276,7 +4276,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "e1448a98-75d9-8c96-48e6-03a275d4e7ae")
-		(at 46.39 60.45)
+		(at 46.39 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/f78abaa0-882e-5995-e08d-635218d0a4b1")
@@ -4328,7 +4328,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "60a9b133-abb5-5d3b-bec4-c8e7c818cb73")
-		(at 48.65 60.45)
+		(at 48.65 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/8701b93f-74bb-a496-dfbc-0d2a67325536")
@@ -4380,7 +4380,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "1dc072a6-3baf-95d8-f65c-f10138c1d46a")
-		(at 50.91 60.45)
+		(at 50.91 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/9b86c87c-b149-6b1c-ac06-2985d32c9346")
@@ -4432,7 +4432,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "c4f162c9-714c-16ac-67d4-b88d24a416ca")
-		(at 53.17 60.45)
+		(at 53.17 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/bcb680b2-70a6-fb67-ab74-718aede010df")
@@ -4484,7 +4484,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "61e5b842-0402-fe2d-9bf7-967fdf79fc18")
-		(at 55.43 60.45)
+		(at 55.43 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/0ae142d5-57e7-7fba-8aab-3a0ee04d6e35")
@@ -4537,7 +4537,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "8a78cdde-b874-ecf6-4e77-3bce710781c0")
-		(at 57.69 60.45)
+		(at 57.69 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/78748f7c-e9b2-14b8-ee29-7873dda46632")
@@ -4590,7 +4590,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "885c3111-873f-026c-9d56-5e16784d769d")
-		(at 59.95 60.45)
+		(at 59.95 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/18fbdfee-6128-179d-5f3d-b85a50fe31ba")
@@ -4643,7 +4643,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "d364f83e-decd-8dc8-d064-55710045b3ce")
-		(at 62.21 60.45)
+		(at 62.21 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/a36966db-694f-f918-2654-afcdfd2b4bc3")
@@ -4696,7 +4696,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "44cbc3df-f1f6-92db-9e85-fff26b079b24")
-		(at 64.47 60.45)
+		(at 64.47 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/33c36aa1-92e2-4db6-1f96-37c2bbfb48ce")
@@ -4749,7 +4749,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "a2c8efff-997c-550a-c877-25e22d91a6b6")
-		(at 66.73 60.45)
+		(at 66.73 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/9cc7c5b5-a0cc-d0c5-63de-18cee76fb409")
@@ -4802,7 +4802,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "1342fb13-9abb-149a-e9ed-26c033732f9a")
-		(at 68.99 60.45)
+		(at 68.99 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/b5cd97fc-2131-fab9-925f-a652847b37c5")
@@ -4855,7 +4855,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "8b2b53c8-42b6-8def-07c8-baa7a22314a4")
-		(at 71.25 60.45)
+		(at 71.25 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/853a2be2-b0f3-57a7-1447-684a0e0c971b")
@@ -4908,7 +4908,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "5c06fb1d-3af4-767f-0688-1d8e5186837d")
-		(at 73.51 60.45)
+		(at 73.51 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/60e343c7-cce8-ffd4-6441-00d31dbe96f4")
@@ -4961,7 +4961,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "abe858d6-cba0-4351-327b-49b72b031510")
-		(at 75.77 60.45)
+		(at 75.77 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/4e89b547-6972-b31e-9319-f4163f4fb653")
@@ -5014,7 +5014,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "e2502ffd-e118-c610-d6c7-8b0d65bddd30")
-		(at 78.03 60.45)
+		(at 78.03 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/5b9e9454-0aa2-6f3b-e1f3-9b33dba3ff99")
@@ -5067,7 +5067,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "f41de611-1b82-0206-132e-406ca3efd082")
-		(at 80.29 60.45)
+		(at 80.29 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/41ca0602-ddc8-26e4-6bbb-72cfff154b78")
@@ -5120,7 +5120,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "34468f0b-4bb3-be47-04e0-e57f4b07f73f")
-		(at 82.55 60.45)
+		(at 82.55 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/f88e6ff7-96d0-40c2-0068-dbaf2f9b6b5b")
@@ -5172,7 +5172,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "b815624f-312d-9ad9-7d2a-7970e79ac7e0")
-		(at 84.81 60.45)
+		(at 84.81 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/91c99553-a831-1b7d-d2f1-c4b6976c03ef")
@@ -5224,7 +5224,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "43b58ee4-04a5-1561-ed70-c6f76df5ba42")
-		(at 87.07 60.45)
+		(at 87.07 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/9766418e-b3d2-73dd-c383-00bc3a0a3a88")
@@ -5276,7 +5276,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "e01d0bad-1548-8481-9d4e-7b7506423d45")
-		(at 89.33 60.45)
+		(at 89.33 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/ec3f7b54-230b-835a-270c-7eeba66d39f4")
@@ -5328,7 +5328,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "376045f8-157a-c750-cb64-c2e25ac3d8f1")
-		(at 91.59 60.45)
+		(at 91.59 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/c9e35bcd-4bc4-7488-17d4-dbf6a8739540")
@@ -5380,7 +5380,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "f17f164f-0795-af35-d3b1-569048be25a2")
-		(at 93.85 60.45)
+		(at 93.85 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/bb5aa756-b41e-4fa4-9213-7e841768aee5")
@@ -5432,7 +5432,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "b17452a7-7067-bcf7-e36b-2b84c05c586e")
-		(at 96.11 60.45)
+		(at 96.11 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/efe049b2-5cb7-b8a8-7cd2-309bcb666739")
@@ -5484,7 +5484,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "0c2d19a7-5d57-b679-a12d-68028ff2f895")
-		(at 98.37 60.45)
+		(at 98.37 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/b80faaa6-f73f-50c9-2436-51537e73c750")
@@ -5536,7 +5536,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "459bfa27-dd90-d4d3-c93b-c19d89f3f774")
-		(at 100.63 60.45)
+		(at 100.63 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/97675ec8-ea5f-1b42-3a42-6cfc20ff3f9a")
@@ -5588,7 +5588,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "3354e948-49be-4da6-81dd-55b8a686f9b1")
-		(at 102.89 60.45)
+		(at 102.89 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/7cafa5cc-4802-2854-01a1-307f9e2386e3")
@@ -5640,7 +5640,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "17e877c4-8458-9ea7-e9fa-4f04a6939008")
-		(at 105.65 60.45)
+		(at 105.65 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/049b525e-94b3-6fe6-0eee-ce7a5d23f536")
@@ -5692,7 +5692,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "786bf8b2-567a-6f01-fc12-34fbad48dc85")
-		(at 108.41 60.45)
+		(at 108.41 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/5cfadc73-5257-5136-ceaf-99a2dedc6b85")
@@ -5744,7 +5744,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "30a216a1-b063-5c9d-656e-d4bb9ad10fe2")
-		(at 111.17 60.45)
+		(at 111.17 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/30d54b62-da22-8d79-34fc-7335f2d08307")
@@ -5796,7 +5796,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "c02ea961-8374-bb6d-3d59-792244b3b1d8")
-		(at 113.93 60.45)
+		(at 113.93 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/60e526f7-d751-a049-77dd-750dbe7e0f4e")
@@ -5848,7 +5848,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "0d047ac5-8515-7a94-93b7-225692983553")
-		(at 116.69 60.45)
+		(at 116.69 60.95)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/0cd67464-46c1-0162-1529-76d471ce9e10")
@@ -5900,7 +5900,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "ce212c9f-abc8-6fce-1233-ba49a3e79031")
-		(at 42.63 62.27)
+		(at 42.63 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/3a2320ff-7860-de91-4108-5a2be97634c5")
@@ -5952,7 +5952,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "280d70b2-0fd5-4093-ace1-0d786a641be5")
-		(at 44.89 62.27)
+		(at 44.89 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/462fcb9e-9599-622f-8dbd-4ad37d50626a")
@@ -6004,7 +6004,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "d91573e6-5a8c-0d28-ae33-83e360362680")
-		(at 47.15 62.27)
+		(at 47.15 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/9db6f915-26a4-9c22-04d4-6a0edaa854c6")
@@ -6056,7 +6056,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "cba2b936-91e1-af98-9cad-c55ba7d0f419")
-		(at 85.01 63.61)
+		(at 85.01 64.11)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/4c934a8d-58bc-462d-326a-47faa24d329f")
@@ -6109,7 +6109,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "c845a792-1ed5-0520-6010-249b6a918f24")
-		(at 49.41 62.27)
+		(at 49.41 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/a9aa1e75-26e2-2150-a24f-0e707021e0e6")
@@ -6161,7 +6161,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "ede5ace5-c9a3-18a5-87ad-f7532b1a1961")
-		(at 51.67 62.27)
+		(at 51.67 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/a8095f46-b3c5-9264-5d68-dafdf1ece3e0")
@@ -6213,7 +6213,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "ec7a3ea6-1735-81ed-9f5b-bd699922fe73")
-		(at 53.93 62.27)
+		(at 53.93 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/74bf1850-0275-1a89-19c3-f3567e3b3b1c")
@@ -6265,7 +6265,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "174a8a21-3c8c-b504-ac98-4f6ca0e14921")
-		(at 56.19 62.27)
+		(at 56.19 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/4f1f5402-a0a3-6cbb-d7f1-26ac9d8fa5d0")
@@ -6317,7 +6317,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "e564e5d1-105c-140f-771a-2e9754301e8c")
-		(at 58.45 62.27)
+		(at 58.45 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/5e0540a2-cb4a-a96e-1903-d6d40692b29d")
@@ -6369,7 +6369,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "01f44619-1ea0-3f43-0a92-7c8cf9178c93")
-		(at 60.71 62.27)
+		(at 60.71 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/813e72d1-0cef-82ec-de8b-b1fe893d109e")
@@ -6421,7 +6421,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "b1be5df0-ef11-fcef-4291-7e288c51a5e6")
-		(at 62.97 62.27)
+		(at 62.97 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/4201b0e3-5dc6-a8ea-ea1d-b6aadbef6220")
@@ -6473,7 +6473,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "ae5a690e-0af3-d180-017a-6042c9b0b563")
-		(at 65.23 62.27)
+		(at 65.23 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/61d2a07f-0fba-c27f-7a82-27a74f800659")
@@ -6526,7 +6526,7 @@
 	(footprint "gowin-bridge:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "beb4a5e2-0055-0a9b-b2ea-6edcf7243c48")
-		(at 109.78 57.85)
+		(at 109.78 58.35)
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/2cb81729-ad2f-68a6-5517-f25e515a8428")
@@ -6578,7 +6578,7 @@
 	(footprint "gowin-bridge:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "c4dd0c3e-bb80-c6f2-b464-1556cb21c1cf")
-		(at 114.04 57.85)
+		(at 114.04 58.35)
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/8c98d597-123f-7d6e-6d08-cbfa183e67a4")
@@ -6630,7 +6630,7 @@
 	(footprint "gowin-bridge:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "a00c4429-fe69-786d-a891-01106d66454d")
-		(at 43.38 60.45)
+		(at 43.38 60.95)
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/33ec7c96-2015-5c5e-3493-2a542bb6564e")
@@ -6682,7 +6682,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "4f9fc565-ca29-37ef-3869-d8b44bb01beb")
-		(at 87.23 63.61)
+		(at 87.23 64.11)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/ce2a8987-7c1e-b81b-0148-5c50d1f244df")
@@ -6735,7 +6735,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "b808ad30-b8c5-1006-ddca-15071e11bbb0")
-		(at 67.49 62.27)
+		(at 67.49 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/8664d738-b603-1f13-ba26-caef38d9f6ef")
@@ -6787,7 +6787,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "91511320-e436-6745-a4eb-0eb715532502")
-		(at 89.45 63.61)
+		(at 89.45 64.11)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/7610e57e-d3d3-b999-ce60-3944bafc00b1")
@@ -6840,7 +6840,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "1912bf18-00d9-5b8a-c047-56e3a9f68e11")
-		(at 78.25 62.27)
+		(at 78.25 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/c31ee360-ddff-2403-3323-f5205c6b810b")
@@ -6892,7 +6892,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "8514cd79-39a4-60cf-f64f-fd8cf78ed429")
-		(at 80.51 62.27)
+		(at 80.51 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/27eb88de-21e1-8c0f-fde6-8b6b3bc4aa84")
@@ -6944,7 +6944,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "8ac93e4c-3f29-76ff-2f96-24f5683e33be")
-		(at 82.77 62.27)
+		(at 82.77 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/2e3ca702-f4d7-cfeb-ffcc-8aefdbf09465")
@@ -6997,7 +6997,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "7309626d-431d-0dd1-8c28-b0b3ca99b9b1")
-		(at 85.03 62.27)
+		(at 85.03 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/1fb1e94d-ffaa-f428-3f09-3e776fb67321")
@@ -7050,7 +7050,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "78776d1b-20bc-0403-4196-e72a9a8901f3")
-		(at 91.67 63.61)
+		(at 91.67 64.11)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/1efe758a-c142-84ed-0195-5425a3b99a5c")
@@ -7103,7 +7103,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "a5715342-d73d-b2b5-b7b1-48b8a952f118")
-		(at 87.29 62.27)
+		(at 87.29 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/0534c90e-c25a-8065-4988-15e5c11d4edb")
@@ -7155,7 +7155,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "09caca45-3111-f82e-77e3-e97ddaac10ce")
-		(at 102.39 63.61)
+		(at 102.39 64.11)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/77861336-293f-3361-9d0e-584732f0070e")
@@ -7208,7 +7208,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "51b2a556-b5c3-29f9-36bd-b37d0d012eee")
-		(at 89.55 62.27)
+		(at 89.55 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/55b93607-0502-fff0-c538-00228c4572a6")
@@ -7260,7 +7260,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "a00eb327-a9ef-0f7b-6531-802166ad986f")
-		(at 91.81 62.27)
+		(at 91.81 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/1e5a5d45-2808-909f-ce72-d79beca3f121")
@@ -7312,7 +7312,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "7f532acd-ce9b-8d44-1c0f-8ea84813bf20")
-		(at 102.07 62.27)
+		(at 102.07 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/3ec9403c-bf89-698d-5b93-d766686bc611")
@@ -7365,7 +7365,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "4622e288-c77a-5ed2-5628-bd09f7498af5")
-		(at 114.33 62.27)
+		(at 114.33 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/5e1f0019-e6d6-3167-866b-c2b2a22e4658")
@@ -7418,7 +7418,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "8be695aa-ad33-860a-9f8f-b244c213f032")
-		(at 114.11 63.61)
+		(at 114.11 64.11)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/1bf568b0-50a2-2291-3b52-62f210251029")
@@ -7471,7 +7471,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "bfdf8874-efc8-2e92-0532-e77f5d4d507e")
-		(at 117.09 62.27)
+		(at 117.09 62.77)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/801fc4e5-3109-d7b6-7956-ef789fd02d45")
@@ -7523,7 +7523,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "fb9584ab-e2bd-a967-bcb3-482c2c502ba2")
-		(at 116.33 63.61)
+		(at 116.33 64.11)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/29ba73f7-0fd8-f1ab-e792-153d21a96c1a")
@@ -7576,7 +7576,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "05b78b3b-5bcf-cfc5-36c6-d3cd115b3437")
-		(at 42.63 63.61)
+		(at 42.63 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/167b44f2-81de-a89f-29af-4b91e459a18b")
@@ -7628,7 +7628,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "5034f9fb-a450-3810-b547-2dcc37764f3d")
-		(at 44.89 63.61)
+		(at 44.89 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/f4ac7c90-eba4-096e-5062-e0535d68e562")
@@ -7680,7 +7680,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "39775a04-1ed9-bfb5-f822-4f1b808d7fc3")
-		(at 47.15 63.61)
+		(at 47.15 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/408b4307-278e-525a-f886-46131d482914")
@@ -7733,7 +7733,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "15fa3942-1ce4-7a05-0b42-0bef7d6527d8")
-		(at 49.41 63.61)
+		(at 49.41 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/eeee9d25-14f5-ce13-0d38-85c9e7180692")
@@ -7786,7 +7786,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "6c567fd6-bfea-4d63-5ac0-87553b43172d")
-		(at 42.61 64.94)
+		(at 42.61 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/e5112bc0-a2f8-418f-ae86-d459efd2c5f2")
@@ -7839,7 +7839,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "531016d5-a021-922c-e462-3fddd8b746ad")
-		(at 51.67 63.61)
+		(at 51.67 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/0884398b-270d-9d5f-e556-2843fcc20024")
@@ -7891,7 +7891,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "5cd89752-d47f-c940-a743-eb5f5a2ae48f")
-		(at 45.33 64.94)
+		(at 45.33 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/890956e2-41c5-ef38-4d02-744fd239ad06")
@@ -7944,7 +7944,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "9a1e3af1-e856-a2ea-3394-aa99385bb79e")
-		(at 53.93 63.61)
+		(at 53.93 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/b1b0d04f-35f4-52ec-20d6-cd828692795f")
@@ -7996,7 +7996,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "76366f05-0d1a-61c9-cd36-a84aaee86660")
-		(at 56.19 63.61)
+		(at 56.19 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/b409a547-435e-cef1-5342-1f87dabb678a")
@@ -8048,7 +8048,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "04b4b7ac-112a-73b3-fc78-464648494343")
-		(at 58.45 63.61)
+		(at 58.45 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/f8322ae3-ad28-6697-62b8-e8d4158d2f0c")
@@ -8101,7 +8101,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "cabac1ed-9c22-d0f6-3290-0f9f106feebe")
-		(at 60.71 63.61)
+		(at 60.71 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/3fa894cc-7316-dca6-ab81-d6b982b5bd5a")
@@ -8154,7 +8154,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "8c9960f6-a5ff-b9b5-7589-d9be19b21920")
-		(at 62.97 63.61)
+		(at 62.97 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/597b84cf-280e-595b-bdfa-cca094e30662")
@@ -8207,7 +8207,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "beefee5f-66ac-f8ad-b2a3-605a66f6a46f")
-		(at 65.23 63.61)
+		(at 65.23 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/829ebe81-b10b-2733-a632-174f500baca1")
@@ -8260,7 +8260,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "bca1956d-afe9-cd6f-0776-761430824401")
-		(at 47.55 64.94)
+		(at 47.55 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/79d20eed-6110-b057-bc88-272360342edb")
@@ -8313,7 +8313,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "e589d742-9caf-6798-6636-3951b9657b09")
-		(at 67.49 63.61)
+		(at 67.49 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/db2fee9c-57a6-211e-e4c2-6ffb01a3d18a")
@@ -8365,7 +8365,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "a1edcf6b-afec-12be-87dc-618487cf03d4")
-		(at 78.25 63.61)
+		(at 78.25 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/c72798b9-3ec0-b0c4-7c2c-70f3b3015a95")
@@ -8417,7 +8417,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "38910c32-031c-d4af-b038-7431106310ae")
-		(at 80.51 63.61)
+		(at 80.51 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/941f9e1f-4407-9d58-0358-04b20ff2c706")
@@ -8470,7 +8470,7 @@
 	(footprint "gowin-bridge:R_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "607f0976-0b77-e924-0720-9310e02bba19")
-		(at 82.77 63.61)
+		(at 82.77 64.11)
 		(descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/8fa0a242-5d1a-7a1c-f360-d7c5d2ab12ac")
@@ -8523,7 +8523,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "ab480a55-5d39-54e3-ca8b-1b8b4a6a3ac7")
-		(at 49.77 64.94)
+		(at 49.77 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/d5a40ea3-b247-914c-5007-4029062e09b5")
@@ -8575,7 +8575,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "8bca501c-cfe6-3724-75de-b5b755426060")
-		(at 51.99 64.94)
+		(at 51.99 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/23709fb0-4685-fefa-ed50-53ebfac1ba6e")
@@ -8627,7 +8627,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "0324a3fb-a1c2-97c7-9f6e-71a9e931e4e0")
-		(at 54.21 64.94)
+		(at 54.21 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/d7ac6956-080f-2c13-7b7a-d4568d8bcb86")
@@ -8679,7 +8679,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "76976427-a59d-39ac-c016-732cd64b8431")
-		(at 66.43 64.94)
+		(at 66.43 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/92ef8ee6-01a0-2bd0-580b-6f23d6bf2578")
@@ -8731,7 +8731,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "de64113b-2a8d-e1b0-de94-1f9f51e5d62f")
-		(at 78.15 64.94)
+		(at 78.15 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/439a283f-1cb2-f0c5-d99b-73e6628dedee")
@@ -8783,7 +8783,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "b5a0f8df-62a7-4170-a5f8-99f4e217a290")
-		(at 90.37 64.94)
+		(at 90.37 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/7d64f0fd-415c-2160-f13a-e34e4c509622")
@@ -8835,7 +8835,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "ff136aea-636d-ea27-1698-4993ad164638")
-		(at 102.09 64.94)
+		(at 102.09 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/40446ee3-7e17-70a1-6390-d1d09bc7456f")
@@ -8887,7 +8887,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "5bca6ec2-e916-8ef4-b0e8-ad4f1e667ce2")
-		(at 114.31 64.94)
+		(at 114.31 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/6b1bac98-ccc6-028a-854e-a3b61a840c2c")
@@ -8939,7 +8939,7 @@
 	(footprint "gowin-bridge:C_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "a6088ace-2aeb-55d7-a01b-f8e9e004107b")
-		(at 97.4 57.85)
+		(at 97.4 58.35)
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/59ab239a-321a-374a-103c-88c931edc905")
@@ -8991,7 +8991,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "98f47537-794b-aa68-629f-12b034e6f673")
-		(at 116.53 64.94)
+		(at 116.53 65.44)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/a61db6ec-e280-790d-ad52-1d2275837e74")
@@ -9043,7 +9043,7 @@
 	(footprint "gowin-bridge:C_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "baaeaa22-1df6-4376-9ec4-672ac265bf7b")
-		(at 101.7 57.85)
+		(at 101.7 58.35)
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/c24d6279-86c2-5002-6cf0-d38035faace6")
@@ -9095,7 +9095,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "c8187130-fee7-8a24-93c9-60661de7e1a3")
-		(at 42.61 66.26)
+		(at 42.61 66.76)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/ab147b39-2bab-8b46-5c6e-4b3bcf99c8ad")
@@ -9147,7 +9147,7 @@
 	(footprint "gowin-bridge:C_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "ea0665d3-4922-4d83-c8ba-3266118160b1")
-		(at 105.5 57.85)
+		(at 105.5 58.35)
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/436a808f-a37e-cc45-c4db-52eaa830b744")
@@ -9199,7 +9199,7 @@
 	(footprint "gowin-bridge:C_0402_1005Metric"
 		(layer "F.Cu")
 		(uuid "0d7c9319-cf85-83fc-d369-6a1c67a17468")
-		(at 45.33 66.26)
+		(at 45.33 66.76)
 		(descr "Capacitor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/9915d893-24ce-c2d5-d1e9-d25f7c9e1ecd")
@@ -9251,7 +9251,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "33992961-8efc-a307-2dbc-cafd1aa10f0e")
-		(at 63.43 54.7)
+		(at 63.43 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/9b8eb230-8df0-45af-0d5b-803baa30ffea")
@@ -9286,7 +9286,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "45ea747c-00ef-c281-8cb5-f05b0770f1f5")
-		(at 66.33 54.7)
+		(at 66.33 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/c0ba468d-8707-eb13-2d84-5edc4d3526be")
@@ -9321,7 +9321,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "dcc61689-98ea-d7b5-1a3b-b898e6e03501")
-		(at 69.23 54.7)
+		(at 69.23 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/7bd842e7-3b1d-434d-667f-e8b1c4572527")
@@ -9356,7 +9356,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "147840f8-36e5-6804-75fb-067ba17b07d0")
-		(at 72.13 54.7)
+		(at 72.13 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/80781381-02ff-5bc6-1561-cde781c80043")
@@ -9391,7 +9391,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "03f17e42-c3c0-0b58-f8f1-1d8783dd8e83")
-		(at 75.03 54.7)
+		(at 75.03 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/ed1c766c-d4ae-4409-725f-773b8202d433")
@@ -9426,7 +9426,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "6f862133-d89b-3037-57b8-0f0a3900b58c")
-		(at 77.93 54.7)
+		(at 77.93 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/dbbeaa82-cffd-d6f3-cd7b-a5e26bb9db1a")
@@ -9461,7 +9461,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "149999b7-bf2f-7d74-abd3-4299c156d22f")
-		(at 90.83 54.7)
+		(at 90.83 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/e7d045fb-6b7b-9791-df3b-64d1d676abad")
@@ -9496,7 +9496,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "fc79683c-e9d0-a2b3-26c9-2a021a817465")
-		(at 93.73 54.7)
+		(at 93.73 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/f87af3d0-f704-e261-a0a0-066707f2dca9")
@@ -9531,7 +9531,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "a084239d-9bb8-7a10-56bb-41f5a4a2ad0c")
-		(at 96.63 54.7)
+		(at 96.63 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/7515bab4-914e-e5c3-9acd-8d85dbc1ea60")
@@ -9566,7 +9566,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "6ab6cd45-05e1-1257-199e-2b25a34e776f")
-		(at 99.53 54.7)
+		(at 99.53 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/20744e0f-a741-091e-dea6-b09d813f1a79")
@@ -9601,7 +9601,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "c00eb427-966f-61c1-76c1-3815ef999069")
-		(at 102.43 54.7)
+		(at 102.43 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/416eb3e4-d115-ee45-641f-1366e15286fa")
@@ -9636,7 +9636,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "41776bec-15c3-5af5-f91e-058260ed2d87")
-		(at 105.83 54.7)
+		(at 105.83 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/566a2a03-251d-0dee-1b26-80a2869b5796")
@@ -9671,7 +9671,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "ecfc267a-9adb-fb4e-00cd-e29f704e500f")
-		(at 108.73 54.7)
+		(at 108.73 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/ab26a467-43b8-dcdb-858b-d9999abf9bba")
@@ -9706,7 +9706,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "04c4f5a0-da5a-cb72-38e5-0bbe0fc35074")
-		(at 111.63 54.7)
+		(at 111.63 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/11f19741-a940-bc90-efd5-fca18012321e")
@@ -9741,7 +9741,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "a97be969-5c90-9d37-fa1c-becb9fdf5761")
-		(at 114.53 54.7)
+		(at 114.53 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/15b89ef2-69c1-389f-b07f-08062c818d2e")
@@ -9776,7 +9776,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "ed8a95b3-61fb-fc26-29ac-f7e204a55094")
-		(at 117.43 54.7)
+		(at 117.43 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/37bc1341-f28b-52a7-9b76-481a2b8f2fe7")
@@ -9811,7 +9811,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "f3e8eaad-cb4c-e874-0559-ecc2f2e9ad96")
-		(at 120.33 54.7)
+		(at 120.33 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/6820fb7c-bc44-717d-3284-6e976847001e")
@@ -9846,7 +9846,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "39360a35-4873-96cf-969d-49f90b9cf2db")
-		(at 123.23 54.7)
+		(at 123.23 55.2)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/f14bebd0-1218-e9c5-9fbc-b41f6c41e427")
@@ -9881,7 +9881,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "2bc32af4-bf21-f32f-a2e4-e091055cde74")
-		(at 42.95 57.85)
+		(at 42.95 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/8ed21355-9e02-3563-ee7b-6d1a1282dd45")
@@ -9916,7 +9916,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "55e750a8-7233-8290-27b4-a9ae9fda66f3")
-		(at 45.85 57.85)
+		(at 45.85 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/ce70001b-6bf6-b929-cf85-42cfd78cfff3")
@@ -9951,7 +9951,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "27332caf-0587-7949-4394-6ab33cd0897a")
-		(at 49.25 57.85)
+		(at 49.25 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/4732c1b3-4968-801c-b5d2-f17918438a9a")
@@ -9986,7 +9986,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "93ce0226-4d29-c9d7-3238-5ea556b95e05")
-		(at 52.15 57.85)
+		(at 52.15 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/7c31bddc-1e22-1aa1-c5bb-fc7a67f57738")
@@ -10021,7 +10021,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "6f738f41-d2b2-e304-35e2-8c5056f532e0")
-		(at 55.05 57.85)
+		(at 55.05 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/b32a0ed9-1950-b18a-cf48-cbb9544a5ae5")
@@ -10056,7 +10056,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "2f59030c-bb54-c4e1-9544-17e3a741d5aa")
-		(at 57.95 57.85)
+		(at 57.95 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/822a4b88-5d6d-f93c-0e66-676dfec2020a")
@@ -10091,7 +10091,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "bdea4f4b-01a1-097e-a8ff-25e8fef74f31")
-		(at 60.85 57.85)
+		(at 60.85 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/156a9dd9-c5b5-b8c7-8acc-d7160612cedc")
@@ -10126,7 +10126,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "ac94a7f0-829f-526b-837d-d2d56761f42a")
-		(at 63.75 57.85)
+		(at 63.75 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/c894f942-9732-1503-4318-73e58bb83c8a")
@@ -10161,7 +10161,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "81691dd7-799f-7f51-a911-51f4c9cfe9ed")
-		(at 66.65 57.85)
+		(at 66.65 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/a536a50b-0eb3-fa66-5697-6bf4457f118d")
@@ -10196,7 +10196,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "0bd49eae-ea21-36df-476a-ddb8bab31e3e")
-		(at 69.55 57.85)
+		(at 69.55 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/63fde116-23c5-214e-6edd-07791c7e9be6")
@@ -10231,7 +10231,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "ffaaa8ac-154f-7583-1f2b-716196f46769")
-		(at 72.45 57.85)
+		(at 72.45 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/a3f40ae1-ed3f-531e-7d8a-2f080e54b7b3")
@@ -10266,7 +10266,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "9e79418d-7d39-c862-ad18-3deb8e4de8be")
-		(at 75.35 57.85)
+		(at 75.35 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/95ce9b7f-a88b-0a8b-5ce3-54d57937c539")
@@ -10301,7 +10301,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "e43bfe34-8334-4e25-59dd-8114a7cc727d")
-		(at 78.25 57.85)
+		(at 78.25 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/b23b9efe-fd8c-d3d3-bb75-99945120e6a3")
@@ -10336,7 +10336,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "9cd591a9-c97a-8560-dbc4-d96a17943081")
-		(at 90.65 57.85)
+		(at 90.65 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/68c248e4-f900-3586-6475-db295a5512cb")
@@ -10371,7 +10371,7 @@
 	(footprint "gowin-bridge:TestPoint_Pad_D1.5mm"
 		(layer "F.Cu")
 		(uuid "cc433e99-8168-0ae8-2e50-eb9e1f8f89c4")
-		(at 93.55 57.85)
+		(at 93.55 58.35)
 		(descr "SMD pad as test Point, diameter 1.5mm")
 		(tags "test point SMD pad")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/a7ca2d69-7c8d-4c57-c310-03de7a667995")
@@ -10478,7 +10478,7 @@
 	(footprint "gowin-bridge:MountingHole_3.2mm_M3_Pad"
 		(layer "F.Cu")
 		(uuid "2b5c497c-e427-e0b5-ec83-2034c2e3d6e7")
-		(at 44 82)
+		(at 46 82)
 		(descr "Mounting Hole 3.2mm, M3, generated by kicad-footprint-generator mountinghole.py")
 		(tags "mountinghole M3")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/c3d5be4d-f8be-a497-9851-49c475c76bdc")
@@ -10514,7 +10514,7 @@
 	(footprint "gowin-bridge:MountingHole_3.2mm_M3_Pad"
 		(layer "F.Cu")
 		(uuid "a84c394b-3eb0-1216-8d65-39394e4d4e74")
-		(at 126 82)
+		(at 124 82)
 		(descr "Mounting Hole 3.2mm, M3, generated by kicad-footprint-generator mountinghole.py")
 		(tags "mountinghole M3")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/eaf1cc59-90ad-5944-d8a9-8d03f48751e6")
@@ -10654,7 +10654,7 @@
 		(uuid "ae4cf068-c732-fbd4-4e70-248db370fa26")
 		(effects (font (size 1.2 1.2) (thickness 0.2))))
 	(gr_text "ROLE 1-2=A 2-3=B (SHIPS B)"
-		(at 110 50.6 0)
+		(at 110 52.4 0)
 		(layer "F.SilkS")
 		(uuid "6d8899d8-e404-8e76-66be-af633dbe1b6e")
 		(effects (font (size 1 1) (thickness 0.166667))))

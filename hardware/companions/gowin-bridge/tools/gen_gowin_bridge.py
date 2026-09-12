@@ -1565,7 +1565,7 @@ def board_b():
         desc='ROLE strap, ONE shunt: 1-2 = ROLE A (drives AUX G1, receives '
              'G2); 2-3 = ROLE B (drives G2, receives G1) which is how board '
              'B ships. The two boards of a link must be strapped differently',
-        at=(70.0, 2.0), rot=0,
+        at=(70.0, 4.0), rot=0,
         note='Fit ONE shunt (LCSC C5305). Board B ships 2-3 = ROLE B, so '
              'the Gowin reads link_role LOW on J14 pin 34.'))
     b.add(Part('U8', 'INV', '74LVC1G04', {
@@ -1574,7 +1574,7 @@ def board_b():
     }, lcsc=LC_INV, mfr='SN74LVC1G04DBVR',
         desc='Single-gate inverter: ROLE_N = NOT ROLE. Makes the complement '
              'a property of the circuit rather than of the user',
-        at=(78.0, 4.0), rot=0,
+        at=(78.0, 5.0), rot=0,
         note='SOT-23-5, TI DBV pinout (1 NC, 2 A, 3 GND, 4 Y, 5 VCC). '
              "Nexperia's 74LVC1G04GW has a DIFFERENT pinout - do not "
              'substitute it.'))
@@ -1714,7 +1714,7 @@ def board_b():
              'in the IN socket (DEFAULT); 1-2 = force disabled, which is '
              'what the direct-LVDS experiment needs; no shunt = always '
              'enabled. Does NOT affect the AUX receiver',
-        at=(62.0, 2.0), rot=0))
+        at=(62.0, 4.0), rot=0))
     b.add(Part('J6', 'HDR1x02', 'GND AUX', {'1': 'GND', '2': 'GND'},
                lcsc=LC_HDR, mfr='2.54mm 1x2P pin header',
                desc='Extra ground wire to a dock PMOD GND pin. J14 has only '
@@ -1872,14 +1872,17 @@ def board_b():
         g.at = at
         b.add(g)
 
-    for i, at in enumerate(((4.0, 42.0), (86.0, 42.0)), start=1):
+    # Local x 6 / 84 rather than 4 / 86: on the panel, board B's local x
+    # becomes the distance from a V-score line, and a 3.2 mm mounting pad
+    # 4 mm in would sit 0.8 mm from the score.
+    for i, at in enumerate(((6.0, 42.0), (84.0, 42.0)), start=1):
         b.add(Part('H%d' % i, 'MH', 'M3', {'1': 'GND'}, at=at,
                    desc='M3 mounting hole, grounded'))
 
     for net in ['GND', 'P5V_J14', 'I_5V_PIN', 'AX_5V_PIN', 'O_5V_PIN']:
         b.add(FLAG(net))
 
-    autoplace(b, [(1.5, 13.0, 88.5, 34.5), (1.5, 0.8, 59.5, 11.5)])
+    autoplace(b, [(1.5, 13.5, 88.5, 34.5), (1.5, 1.2, 59.5, 12.0)])
 
     b.calibration_rule(20.0, 36.5, 50.0)
     b.texts = [
@@ -1898,13 +1901,212 @@ def board_b():
         ('F.SilkS', TYPEA_X[1], 34.8, 0, 2.2, 'AUX'),
         ('F.SilkS', TYPEA_X[2], 34.8, 0, 2.2, 'OUT'),
         ('F.SilkS', 45.0, 36.5, 0, 1.2, 'OUT GOES TO IN.  AUX GOES TO AUX'),
-        ('F.SilkS', 70.0, 10.6, 0, 1.0, 'ROLE 1-2=A 2-3=B (SHIPS B)'),
+        ('F.SilkS', 70.0, 12.4, 0, 1.0, 'ROLE 1-2=A 2-3=B (SHIPS B)'),
         ('F.SilkS', 6.0, 6.0, 0, 1.0, 'J14 p1'),
         ('B.SilkS', 45.0, 9.0, 0, 1.2,
          'SOCKET J1 ON THIS SIDE - MATES DOCK J14'),
         ('B.SilkS', 45.0, 11.5, 0, 1.0, 'VERIFY POSITION BY MEASUREMENT'),
     ]
     return b
+
+
+# ==========================================================================
+#  THE PANEL  -  both boards on one 94 x 100 mm production panel
+# ==========================================================================
+#
+# Board B rotated 90 degrees is the ONLY arrangement that fits inside
+# 100 x 100 mm.  Every other combination overflows: board B unrotated is
+# 138 mm wide side by side and 112 mm tall stacked, and board A rotated gives
+# 156 mm.  DESIGN_NOTES.md 10.
+#
+#   y 100  +-------------------------+--------+   <- top rail, V-score y = 95
+#    95    |  board A  48 x 66       | board  |
+#          |  socket edge at y = 95  |   B    |
+#          |  (V-scored: clean edge, |        |
+#          |   no nubs)              | 46 x 90|
+#    29    +==== mouse bites ========+ rotated|
+#    27    |  coupon 48 x 22         | socket |
+#          |  fiducials + label      | edge at|
+#     5    +-------------------------+ x = 94 |   <- bottom rail, V-score y = 5
+#     0    +-------------------------+--------+
+#          x 0                     48       94
+#                                   ^
+#                        V-score at x = 48, full height
+#
+# THREE V-SCORES - y = 5, y = 95 and x = 48 - each straight, each running
+# edge to edge, each with material on both sides for its whole length.  ONE
+# routed separation with mouse bites, at y = 29, which is board A's BACK edge
+# and not a socket edge.  Both socket edges land on an outer panel edge or on
+# a V-score, so there are no nubs anywhere a plug goes.
+#
+# The rails are on the y axis, where 10 mm was spare; the x axis had only
+# 6 mm.  The coupon is 22 mm tall rather than the 24 mm in the first sketch,
+# because the 2 mm routed channel has to come out of something and board A's
+# 66 mm and the panel's 100 mm are both fixed.
+
+PANEL_W, PANEL_H = 94.0, 100.0
+RAIL = 5.0                          # assembly rail height, top and bottom
+A_AT = (0.0, 29.0)                  # board A origin in panel coordinates
+B_AT = (48.0, 95.0)                 # board B origin, rotated +90
+VSCORE_X = 48.0
+VSCORE_Y = (RAIL, PANEL_H - RAIL)   # 5.0 and 95.0
+MB_Y = 29.0                         # the mouse-bite break line = board A back
+MB_CHANNEL = 2.0                    # routed channel width, taken from the coupon
+MB_DRILL = 0.5
+MB_PITCH = 1.0
+# Tabs, as (x_start, x_end).  The outermost two run right up to x = 0 and
+# x = 48 on purpose: every routed gap is then a CLOSED slot inside the panel
+# (an outline that opens onto a board edge is not a closed shape and KiCad
+# rejects it), and the x = 48 V-score keeps material on its left over the
+# whole 100 mm.
+MB_TABS = ((0.0, 4.0), (12.0, 17.0), (28.0, 33.0), (43.5, 48.0))
+# Fiducials, spread for a long baseline and deliberately not symmetric so the
+# placement machine cannot fit the panel the wrong way round.
+FIDUCIALS = ((6.0, 10.0), (42.0, 10.0), (89.0, 97.5))
+
+
+def panel_xform_a(x, y):
+    return (x + A_AT[0], y + A_AT[1])
+
+
+def panel_xform_b(x, y):
+    """Board B rotated +90 in KiCad's sense, which maps a footprint offset
+    (x, y) to (y, -x).  Local (0,0) lands at (48, 95), so local x runs down
+    the panel and local y runs across it: board B occupies x 48..94, y 5..95
+    and its socket edge (local y = 46) lands on the outer panel edge x = 94."""
+    return (B_AT[0] + y, B_AT[1] - x)
+
+
+def panel():
+    a, bb = board_a(), board_b()
+    out = [(0, 0), (PANEL_W, 0), (PANEL_W, PANEL_H), (0, PANEL_H)]
+    p = Board('panel',
+              'gowin-bridge production panel, 94 x 100 mm, 2 designs, rev %s'
+              % REV,
+              out, (PANEL_W, PANEL_H),
+              origin_note='panel (0,0) = bottom-left corner of the panel; '
+                          'board A origin at (0, 29), board B origin at '
+                          '(48, 95) rotated 90')
+
+    # A_ / B_ net prefixes keep the two boards electrically separate.  Without
+    # them KiCad would treat board A's GND and board B's GND as one net, show
+    # a ratsnest across the V-score and demand it be routed.
+    def xf(board, idx, pfx, xform, extra_rot):
+        rects = []
+        for q_ in board.parts:
+            pins = {k: (pfx + v if v else v) for k, v in q_.pins.items()}
+            ref = q_.ref
+            if ref.startswith('#FLG_'):
+                ref = '#FLG_' + pfx + ref[len('#FLG_'):]
+            else:
+                head = ref.rstrip('0123456789')
+                num = ref[len(head):]
+                ref = '%s%d' % (head, idx * 100 + int(num or 0))
+            at = xform(q_.at[0], q_.at[1]) if q_.at else None
+            p.add(Part(ref, q_.ptype, q_.value, pins, lcsc=q_.lcsc,
+                       mfr=q_.mfr, desc=q_.desc, dnp=q_.dnp, note=q_.note,
+                       at=at, rot=(q_.rot + extra_rot) % 360, layer=q_.layer,
+                       exclude_bom=q_.exclude_bom, mirror=q_.mirror))
+        for (layer, tx, ty, trot, tsize, txt) in board.texts:
+            nx, ny = xform(tx, ty)
+            p.texts.append((layer, nx, ny, (trot + extra_rot) % 360, tsize,
+                            txt))
+        for (layer, x0, y0, x1, y1, lw) in board.lines:
+            ax, ay = xform(x0, y0)
+            cx, cy = xform(x1, y1)
+            p.lines.append((layer, ax, ay, cx, cy, lw))
+        # the board's own outline, as documentation only - it is a V-score or
+        # a panel edge on three sides and mouse bites on the fourth, so none
+        # of it is Edge.Cuts except the mouse-bite channel below
+        opts = [xform(x, y) for (x, y) in board.outline]
+        for i in range(len(opts)):
+            (x0, y0), (x1, y1) = opts[i], opts[(i + 1) % len(opts)]
+            p.lines.append(('Cmts.User', x0, y0, x1, y1, 0.15))
+        for (zlayer, znet, zprio, zpoly, zname) in board.zones_extra:
+            p.zones_extra.append((zlayer, pfx + znet, zprio,
+                                  [xform(x, y) for (x, y) in zpoly],
+                                  '%s %s' % (board.name, zname)))
+        rects.append(opts)
+        return opts
+
+    a_poly = xf(a, 1, 'A_', panel_xform_a, 0)
+    b_poly = xf(bb, 2, 'B_', panel_xform_b, 90)
+
+    # Pour each board's planes over ITS OWN outline only.
+    p.zones_full = []
+    for poly, pfx, nm in ((a_poly, 'A_', 'board A'), (b_poly, 'B_', 'board B')):
+        p.zones_full.append(('In1.Cu', pfx + 'GND', 0, poly,
+                             '%s GND plane (layer 2) - DO NOT CUT' % nm))
+        p.zones_full.append(('F.Cu', pfx + 'GND', 0, poly,
+                             '%s top ground fill' % nm))
+        p.zones_full.append(('B.Cu', pfx + 'GND', 0, poly,
+                             '%s bottom ground fill' % nm))
+        p.zones_full.append(('In2.Cu', pfx + '+3V3', 0, poly,
+                             '%s power plane (layer 3): +3V3' % nm))
+
+    # ------------------------------------------------ fiducials and label
+    for i, (fx, fy) in enumerate(FIDUCIALS, start=1):
+        p.add(Part('FID%d' % i, 'FIDUCIAL', 'Fiducial', {}, at=(fx, fy),
+                   exclude_bom=True,
+                   desc='Panel fiducial for JLCPCB assembly: 1 mm bare '
+                        'copper, 2 mm mask opening. Two on the coupon and '
+                        'one on the top rail, so the baseline is long and '
+                        'the set is not symmetric'))
+
+    # ------------------------------------------- the mouse-bite separation
+    # The only real milling on the panel.  The channel is taken entirely out
+    # of the COUPON side, so board A stays exactly 66.00 mm and the nubs
+    # protrude OUTWARD from its back edge - which is where the 0.3 mm that
+    # eats into the HL2 magjack clearance comes from.
+    gaps = [(MB_TABS[i][1], MB_TABS[i + 1][0])
+            for i in range(len(MB_TABS) - 1)]
+    ch0, ch1 = MB_Y - MB_CHANNEL, MB_Y      # 27.0 .. 29.0
+    for (g0, g1) in gaps:
+        p.edge_extra.append((g0, ch1, g1, ch1))     # board A side
+        p.edge_extra.append((g0, ch0, g1, ch0))     # coupon side
+        p.edge_extra.append((g0, ch0, g0, ch1))
+        p.edge_extra.append((g1, ch0, g1, ch1))
+    for (t0, t1) in MB_TABS:
+        n = int((t1 - t0) / MB_PITCH)
+        first = t0 + (t1 - t0 - (n - 1) * MB_PITCH) / 2.0
+        for k in range(n):
+            hx = first + k * MB_PITCH
+            # keep the perforations 1.5 mm clear of the x = 48 V-score and
+            # 1.0 mm clear of the panel's own left edge
+            if hx > VSCORE_X - 1.5 or hx < 1.0:
+                continue
+            p.npth.append((hx, MB_Y, MB_DRILL))
+
+    # ---------------------------------------------- V-scores and the notes
+    for vy in VSCORE_Y:
+        p.lines.append(('Eco1.User', 0.0, vy, PANEL_W, vy, 0.2))
+        p.texts.append(('Eco1.User', 12.0, vy - 1.4, 0, 1.4,
+                        'V-SCORE  y = %.2f' % vy))
+    p.lines.append(('Eco1.User', VSCORE_X, 0.0, VSCORE_X, PANEL_H, 0.2))
+    p.texts.append(('Eco1.User', VSCORE_X + 1.6, 52.0, 90, 1.4,
+                    'V-SCORE  x = %.2f' % VSCORE_X))
+
+    p.texts += [
+        ('F.SilkS', 24.0, 9.0, 0, 2.2, 'gowin-bridge  rev %s' % REV),
+        ('F.SilkS', 24.0, 12.5, 0, 1.4, 'PANEL 94.00 x 100.00 mm'),
+        ('F.SilkS', 24.0, 15.0, 0, 1.4, '2 DIFFERENT DESIGNS IN THIS FILE'),
+        ('F.SilkS', 24.0, 17.5, 0, 1.2,
+         'A = HL2 SIDE (mini HDMI)   B = TANG DOCK (full-size HDMI)'),
+        ('F.SilkS', 24.0, 20.5, 0, 1.2, 'SNAP THE RAILS OFF FIRST, THEN'),
+        ('F.SilkS', 24.0, 22.5, 0, 1.2, 'x=48, THEN THE MOUSE BITES AT y=29'),
+        ('F.SilkS', 24.0, 24.8, 0, 1.1,
+         'FILE THE NUBS FLAT: THAT EDGE FACES THE HL2 MAGJACK'),
+        ('Eco1.User', 47.0, 96.8, 0, 1.4, 'ASSEMBLY RAIL - SCRAP'),
+        ('Eco1.User', 47.0, 3.6, 0, 1.4, 'ASSEMBLY RAIL - SCRAP'),
+        ('Dwgs.User', 24.0, 27.9, 0, 1.0,
+         'ROUTED 2.00 mm CHANNEL + MOUSE BITES, BREAK LINE y = 29.00'),
+        ('Dwgs.User', 47.0, 99.0, 0, 1.4,
+         'FABRICATION: 4 layer, 1.6 mm, HASL, 2 designs. THREE V-SCORES '
+         '(y=5.00, y=95.00, x=48.00), each edge to edge with material both '
+         'sides. ONE routed separation with mouse bites at y=29.00.'),
+    ]
+    p.calibration_rule(2.0, 6.0, 50.0)
+    return p
 
 
 # ==========================================================================
@@ -2372,6 +2574,13 @@ def write_pcb(outdir, board, fps):
         w.line('descr', q('Mouse-bite perforation, unplated'))
         w.line('attr', 'exclude_from_pos_files', 'exclude_from_bom',
                'allow_missing_courtyard')
+        w.open('fp_text', 'reference', q('MB%d' % (i + 1)))
+        w.line('at', '0', '-1.2', '0')
+        w.line('layer', q('F.Fab'))
+        w.line('hide', 'yes')
+        w.line('uuid', q(uuid_for(board.name, 'mbr', i)))
+        w.raw(effects(0.6))
+        w.close_inline()
         w.open('pad', q(''), 'np_thru_hole', 'circle')
         w.line('at', '0', '0')
         w.line('size', fmt(hd), fmt(hd))
@@ -2553,10 +2762,12 @@ def write_pro(outdir, board):
     for name in sorted(board.nets()):
         if is_pair_net(name):
             pats.append('      { "netclass": "LVDS100", "pattern": "%s" }' % name)
-    for name in ('+3V3', '+2V5', 'P5V_IN', 'P5V_J14', 'DB1_3V3',
-                 'LDO3V3'):
-        if name in board.nets():
-            pats.append('      { "netclass": "Power", "pattern": "%s" }' % name)
+    allnets = board.nets()
+    for name in ('+3V3', '+2V5', 'P5V_IN', 'P5V_J14', 'DB1_3V3', 'LDO3V3'):
+        for nm in (name, 'A_' + name, 'B_' + name):
+            if nm in allnets:
+                pats.append('      { "netclass": "Power", "pattern": "%s" }'
+                            % nm)
     txt = PRO_TEMPLATE % {'name': board.name,
                           'patterns': ',\n'.join(pats),
                           'schuuid': uuid_for(board.name, 'sch')}
@@ -2603,7 +2814,7 @@ def write_bom(outdir, board):
 
 
 def main():
-    for b in (board_a(), board_b()):
+    for b in (board_a(), board_b(), panel()):
         outdir = os.path.join(ROOT, b.name)
         os.makedirs(outdir, exist_ok=True)
         fps = write_libs(outdir, b)
