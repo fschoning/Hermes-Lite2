@@ -107,10 +107,18 @@ HEADERS = {'C52016391', 'C52016390', 'C2337'}
 # Reel-only minimum-order batches, once per LCSC order.  The passive figure
 # is LCSC's own batch prices summed; the others are the batch price at the
 # part's minimum order quantity.
-BATCH_REVC = [('eleven passive values', 6.50), ('0R 0805 C17477, min 100', 0.45),
-              ('1x3 header C52016391, min 20', 0.48),
-              ('1x2 header C52016390, min 50', 0.80),
-              ('jumper shunts C5305, min 50', 0.50)]
+# Reel-only minimums JLCPCB charges as part of the assembly order.  The
+# header minimums are gone: those parts are hand-fitted now, so they are
+# bought retail instead - see RETAIL below.
+BATCH_REVC = [('eleven passive values', 6.50),
+              ('0R 0805 C17477, min 100', 0.45)]
+# Bought outside the JLCPCB assembly order.  Per set unless marked once.
+RETAIL_PER_SET = [('vertical 2x3 socket, HL2 DB12 (Samtec SSQ-103-02-S-D)',
+                   1.73),
+                  ('long-tail 2x10 socket, HL2 DB1 (Phoenix HWS16492)', 0.99),
+                  ('2x20 vertical socket, Tang J14 (C5124634)', 0.3305)]
+RETAIL_ONCE = [('one 1x40 2.54 mm header strip, snapped to length', 0.16),
+               ('jumper shunts, min 50 (C5305)', 0.50)]
 BATCH_REVB = [('fourteen passive values (est.)', 7.40),
               ('pin header strip C2337', 0.16),
               ('jumper shunts C5305, min 50', 0.50)]
@@ -118,6 +126,8 @@ BATCH_REVB = [('fourteen passive values (est.)', 7.40),
 # The two sockets that must be bought outside LCSC, per set.
 SOCKET_2x3 = 1.73       # Samtec SSQ-103-02-S-D, Mouser, EUR 1.49
 SOCKET_2x10 = 0.99      # Phoenix Enterprises HWS16492
+RETAIL_SET = sum(v for _, v in RETAIL_PER_SET)
+RETAIL_FIX = sum(v for _, v in RETAIL_ONCE)
 
 # JLCPCB Basic/Extended classification, read from their parts library.
 EXTENDED = set('''C138714 C194395 C206491 C201946 C2682170 C427307 C465742
@@ -232,8 +242,9 @@ def build(sets):
         ('reel-only minimum batches', 6.50, b_batch, c_batch),
         ('silicon and connectors x %d' % sets,
          sets * b_si, sets * b_si, sets * c_si),
-        ('sockets bought retail x %d' % sets, 0.0, 0.0,
-         sets * (SOCKET_2x3 + SOCKET_2x10)),
+        ('parts bought retail x %d, plus %.2f once'
+         % (sets, RETAIL_FIX), 0.0, 0.0,
+         sets * RETAIL_SET + RETAIL_FIX),
         ('shipping (2 orders vs 1)', 28.00, 2 * SHIP_DHL, SHIP_DHL),
     ]
     tot = [0.0, 0.0, 0.0]
@@ -265,7 +276,7 @@ def panel_vs_two_orders(d, sets):
     si = sets * (A['silicon'] + B['silicon'])
     joints = (sets * (A['smt'] + B['smt']) * F['joint_smt']
               + sets * (A['tht'] + B['tht']) * F['joint_tht'])
-    common = si + joints + d['c_batch'] + sets * (SOCKET_2x3 + SOCKET_2x10)
+    common = (si + joints + d['c_batch'] + sets * RETAIL_SET + RETAIL_FIX)
 
     one = dict(
         bare=PCB_PANEL_5, setup=F['setup_economic'],
@@ -361,6 +372,63 @@ def aux_attribution(d):
     return tot
 
 
+def cheapest(sets, leadfree=True, extra_basic=0):
+    """The configuration the user has confirmed: no impedance control, the
+    slow shipping tier, and the through-hole parts soldered by hand.
+
+    ``extra_basic`` is the number of FURTHER Extended parts that turn out to
+    have Basic substitutes, so the effect can be shown before the answer is
+    in."""
+    A = count_design(os.path.join(ROOT, 'hl2-bridge', 'hl2-bridge-bom.csv'),
+                     os.path.join(ROOT, 'hl2-bridge', 'hl2-bridge.kicad_pcb'))
+    B = count_design(os.path.join(ROOT, 'tang-bridge', 'tang-bridge-bom.csv'),
+                     os.path.join(ROOT, 'tang-bridge', 'tang-bridge.kicad_pcb'))
+    P = count_design(os.path.join(ROOT, 'panel', 'panel-bom.csv'),
+                     os.path.join(ROOT, 'panel', 'panel.kicad_pcb'))
+    F = FEES
+    next_ = max(0, len(P['ext']) - extra_basic)
+    smt, tht = A['smt'] + B['smt'], A['tht'] + B['tht']
+    lines = [
+        ('bare PCB, 5 pcs, 94 x 100, 4 layer, %s'
+         % ('lead-free HASL' if leadfree else 'leaded HASL'),
+         PCB_PANEL_5 if leadfree else PCB_PANEL_5 - 5.20),
+        ('assembly setup', F['setup_economic']),
+        ('assembly panel fee, 2 designs', F['panel_fee']),
+        ('stencil', F['stencil_economic']),
+        ('hand-soldering base fee (the HDMI shell legs)',
+         F['handsolder_base']),
+        ('loading, %d unique Extended parts x $3.07' % next_,
+         next_ * F['load_extended_economic']),
+        ('loading, %d unique Basic parts' % len(P['bas']), 0.0),
+        ('SMT joints, %d per set x %d' % (smt, sets),
+         smt * sets * F['joint_smt']),
+        ('through-hole joints, %d per set x %d (HDMI shell legs only)'
+         % (tht, sets), tht * sets * F['joint_tht']),
+        ('silicon and connectors, %d x $%.2f'
+         % (sets, A['silicon'] + B['silicon']),
+         sets * (A['silicon'] + B['silicon'])),
+        ('reel-only minimum batches', sum(v for _, v in BATCH_REVC)),
+        ('parts bought and soldered by hand', sets * RETAIL_SET + RETAIL_FIX),
+        ('shipping, Global Standard Direct Line (9-13 days)', SHIP_CHEAP),
+    ]
+    w = max(len(a) for a, _ in lines) + 2
+    print()
+    print('=' * (w + 14))
+    print('CHEAPEST CREDIBLE, %d SETS - no impedance control, slow shipping,'
+          % sets)
+    print('through-hole parts soldered by hand%s'
+          % ('' if leadfree else ', leaded finish'))
+    print('=' * (w + 14))
+    tot = 0.0
+    for name, v in lines:
+        print('%-*s %12s' % (w, name, '$%.2f' % v))
+        tot += v
+    print('-' * (w + 14))
+    print('%-*s %12s' % (w, 'TOTAL', '$%.2f' % tot))
+    print('%-*s %12s' % (w, 'per set', '$%.2f' % (tot / sets)))
+    return tot
+
+
 def main():
     if not os.environ.get('REVB_DIR'):
         raise SystemExit(
@@ -374,6 +442,10 @@ def main():
     panel_vs_two_orders(d2, 2)
     panel_vs_two_orders(d5, 5)
     aux_attribution(d2)
+    cheapest(2)
+    cheapest(2, leadfree=False)
+    cheapest(2, extra_basic=2)
+    cheapest(5)
     print()
     print('=' * 88)
     print('AREA')

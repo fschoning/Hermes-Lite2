@@ -10,22 +10,24 @@ C8,100nF,C_0402_1005Metric,C1525,,DNP,"AC-coupling option, I D2 N leg",NOT FITTE
 C9,100nF,C_0402_1005Metric,C1525,,DNP,VBIAS bypass,NOT FITTED. Part of the AC-coupling option.
 C10,100nF,C_0402_1005Metric,C1525,,yes,U1 VCCB,
 C11,100nF,C_0402_1005Metric,C1525,,yes,U1 VCCA,
-C12,100nF,C_0402_1005Metric,C1525,,yes,U2 VCC,
-C13,100nF,C_0402_1005Metric,C1525,,yes,U3 VCC,
-C14,100nF,C_0402_1005Metric,C1525,,yes,U4 VCC,
-C15,100nF,C_0402_1005Metric,C1525,,yes,U5 VCC,
-C16,100nF,C_0402_1005Metric,C1525,,yes,U6 VCC,
-C17,100nF,C_0402_1005Metric,C1525,,yes,U7 VCCA,
-C18,100nF,C_0402_1005Metric,C1525,,yes,U7 VCCB,
-C19,100nF,C_0402_1005Metric,C1525,,yes,U8 VCCA,
-C20,100nF,C_0402_1005Metric,C1525,,yes,U8 VCCB,
-C21,10uF,C_0805_2012Metric,C15850,,yes,+3V3 bulk,
-C22,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
-C23,1uF,C_0402_1005Metric,C52923,,yes,U9 output,
-C24,100nF,C_0402_1005Metric,C1525,,yes,U9 input,
-C25,100nF,C_0402_1005Metric,C1525,,yes,DB1 +3V3 entry,
-C26,10uF,C_0805_2012Metric,C15850,,yes,U10 input bulk (option),
-C27,10uF,C_0805_2012Metric,C15850,,yes,U10 output bulk (option),
+C12,100nF,C_0402_1005Metric,C1525,,yes,U12 VCCB,
+C13,100nF,C_0402_1005Metric,C1525,,yes,U12 VCCA,
+C14,100nF,C_0402_1005Metric,C1525,,yes,U2 VCC,
+C15,100nF,C_0402_1005Metric,C1525,,yes,U3 VCC,
+C16,100nF,C_0402_1005Metric,C1525,,yes,U4 VCC,
+C17,100nF,C_0402_1005Metric,C1525,,yes,U5 VCC,
+C18,100nF,C_0402_1005Metric,C1525,,yes,U6 VCC,
+C19,100nF,C_0402_1005Metric,C1525,,yes,U7 VCCA,
+C20,100nF,C_0402_1005Metric,C1525,,yes,U7 VCCB,
+C21,100nF,C_0402_1005Metric,C1525,,yes,U8 VCCA,
+C22,100nF,C_0402_1005Metric,C1525,,yes,U8 VCCB,
+C23,10uF,C_0805_2012Metric,C15850,,yes,+3V3 bulk,
+C24,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
+C25,1uF,C_0402_1005Metric,C52923,,yes,U9 output,
+C26,100nF,C_0402_1005Metric,C1525,,yes,U9 input,
+C27,100nF,C_0402_1005Metric,C1525,,yes,DB1 +3V3 entry,
+C28,10uF,C_0805_2012Metric,C15850,,yes,U10 input bulk (option),
+C29,10uF,C_0805_2012Metric,C15850,,yes,U10 output bulk (option),
 D1,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D2,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D3,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
@@ -40,10 +42,10 @@ J2,DB12 2x03 socket,PinSocket_2x03_P2.54mm_Vertical,,"2.54mm 2x3P female header,
 J3,OUT (mini HDMI),HDMI_C_Mini_19P_Horizontal_Hybrid,C2682170,XKB Connection A71-05H4-111N1,yes,"OUT, cable 1: board A drives the 153.6 MHz link clock and lanes 0,1,2 at 307.2 Mbit/s, plus the status UART on SCL. All four pairs driven","Hybrid mount: reflow the SMT contacts, then solder the four through-hole shell legs. Mating face is flush with the board edge."
 J4,AUX (mini HDMI),HDMI_C_Mini_19P_Horizontal_Hybrid,C2682170,XKB Connection A71-05H4-111N1,yes,"AUX, cable 3: bidirectional, full duplex. G1 = clock pair + data 0 pair, G2 = data 1 pair + data 2 pair. The ROLE strap decides which group this board drives. SCL, HPD and +5 V are test pads only","Hybrid mount: reflow the SMT contacts, then solder the four through-hole shell legs. Mating face is flush with the board edge."
 J5,IN (mini HDMI),HDMI_C_Mini_19P_Horizontal_Hybrid,C2682170,XKB Connection A71-05H4-111N1,yes,"IN, cable 2: board A receives the reverse clock and reverse lanes 0,1,2 at 307.2 Mbit/s. Its SCL is a test pad only in rev C - PIN_89 reads the ROLE strap now, so there is no destination for a received slow line","Hybrid mount: reflow the SMT contacts, then solder the four through-hole shell legs. Mating face is flush with the board edge."
-J6,3V3 SRC,PinHeader_1x03_P2.54mm_Vertical,C52016391,"hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header",yes,"Board supply select: 1-2 = HL2 DB1 +3V3 (DEFAULT), 2-3 = the on-board LDO fed from the IN socket +5 V pin",
-J7,RX MODE,PinHeader_1x03_P2.54mm_Vertical,C52016391,"hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header",yes,"IN receiver enable: 2-3 = auto, enabled only while a cable is in the IN socket (DEFAULT); 1-2 = force disabled; no shunt = always enabled. Does NOT affect the AUX receiver, which is always on",
-J8,GND CLIP,PinHeader_1x02_P2.54mm_Vertical,C52016390,"hanxia HX PH254-01-02-Z-L11.5, 2.54mm 1x2P vertical pin header",yes,Ground clip / scope reference,
-J9,ROLE,PinHeader_1x03_P2.54mm_Vertical,C52016391,"hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header",yes,"ROLE strap, ONE shunt: 1-2 = ROLE A (this board drives AUX G1, receives G2) which is how board A ships; 2-3 = ROLE B (drives G2, receives G1). The two boards of a link must be strapped differently","Fit ONE shunt (LCSC C5305). Board A ships 1-2 = ROLE A. With no shunt at all the 100k pull-down makes it ROLE B, which is a safe state, not a floating one."
+J6,3V3 SRC,PinHeader_1x03_P2.54mm_Vertical,,2.54mm 1x3P vertical pin header (e.g. LCSC C52016391),DNP,"Board supply select: 1-2 = HL2 DB1 +3V3 (DEFAULT), 2-3 = the on-board LDO fed from the IN socket +5 V pin",
+J7,RX MODE,PinHeader_1x03_P2.54mm_Vertical,,2.54mm 1x3P vertical pin header (e.g. LCSC C52016391),DNP,"IN receiver enable: 2-3 = auto, enabled only while a cable is in the IN socket (DEFAULT); 1-2 = force disabled; no shunt = always enabled. Does NOT affect the AUX receiver, which is always on",
+J8,GND CLIP,PinHeader_1x02_P2.54mm_Vertical,,2.54mm 1x2P vertical pin header (e.g. LCSC C52016390),DNP,Ground clip / scope reference,
+J9,ROLE,PinHeader_1x03_P2.54mm_Vertical,,2.54mm 1x3P vertical pin header (e.g. LCSC C52016391),DNP,"ROLE strap, ONE shunt: 1-2 = ROLE A (this board drives AUX G1, receives G2) which is how board A ships; 2-3 = ROLE B (drives G2, receives G1). The two boards of a link must be strapped differently","Fit ONE shunt (LCSC C5305). Board A ships 1-2 = ROLE A. With no shunt at all the 100k pull-down makes it ROLE B, which is a safe state, not a floating one."
 R1,0R,R_0402_1005Metric,C17168,,yes,"SL_D0: cuttable link on DB1 pin 1. That HL2 net reaches PIN_72 only through the HL2 jumper J25 and also carries uFL pad CL8, an unterminated stub no bridge board can remove",FITTED. Cut to isolate board A from DB1 pin 1. HL2 jumper J25 must be CLOSED or the AUX G2 clock is dead.
 R1,10k,R_0402_1005Metric,C25744,,yes,"Defines HL2_O_D0 (OUT lane 0) while nothing drives it - the HL2 FPGA unconfigured, or the local translator port disabled by the strap",
 R2,100R,R_0402_1005Metric,C25076,,yes,"OUT clock divider, series leg. 3.3 V PIN_98 -> 2.77 V, 1.14 V over the translator threshold and 230 mV under its 3.0 V absolute maximum",
@@ -156,7 +158,7 @@ TP44,TP_+2V5,TestPoint_Pad_D1.5mm,,,yes,,
 TP45,TP_DB1_3V3,TestPoint_Pad_D1.5mm,,,yes,,
 TP46,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
 TP47,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
-U1,SN74AVC8T245PW,TSSOP-24_4.4x7.8mm_P0.65mm,C465742,SN74AVC8T245PWR,yes,"8-bit dual-supply level translator, VCCA 2.5 V / VCCB 3.3 V. Gives the HL2 2.5 V outputs 370 mV of GUARANTEED margin into the LVDS driver inputs, which a direct connection does not have. All 8 channels used: OUT clock + 3 OUT lanes + all 4 AUX pins","DIR tied to VCCA (+2V5) = A->B, OE* tied low - ALWAYS enabled. The four AUX channels sit on nets that this board's own 4-bit translators drive when the HL2 pin is an input; a translator A-side input is a ~5 pF load and never a driver, so that is not contention. What decides whether an AUX signal reaches the cable is the LVDS driver's EN, not this part."
+U1,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply level translator, VCCA 2.5 V / VCCB 3.3 V. The OUT group: the 153.6 MHz link clock and lanes 0, 1 and 2 - exactly four signals in exactly one package, so they share one channel-to-channel skew. Gives the HL2 2.5 V outputs 370 mV of GUARANTEED margin into the LVDS driver inputs, which a direct connection does not have","Both DIR tied to VCCA (+2V5) = A->B, both OE* tied low - ALWAYS enabled. Replaces the single SN74AVC8T245 of the first rev C build: two 4-bit packages cost $0.31 less AND remove a part number that carried its own $3.07 assembly fee. COST.md 5."
 U2,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. OUT: the forward cable. All four channels used, none spare. EN tied high - this socket is always driven",EN tied to +3V3 and EN* to GND: permanently enabled.
 U3,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. AUX group G1 (clock pair + data 0 pair). Two channels used, two spare. EN = ROLE, so this pair is driven only in ROLE A","EN = ROLE. Enabled in ROLE A, tri-stated in ROLE B. Channels 3 and 4 are unused: inputs grounded, outputs left open."
 U4,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. AUX group G2 (data 1 pair + data 2 pair). Two channels used, two spare. EN = ROLE_N, so this pair is driven only in ROLE B","EN = ROLE_N. Enabled in ROLE B, tri-stated in ROLE A. ROLE_N comes from U11 and carries a 10k pull-UP, so a missing or dead inverter leaves this driver enabled but its G2 translator port toward the HL2 DISABLED - the auxiliary link fails to work and nothing is stressed. Channels 3 and 4 unused."
@@ -167,3 +169,4 @@ U8,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dua
 U9,ME6211C25M5G,SOT-23-5,C194395,ME6211C25M5G-N,yes,2.5 V 400 mA LDO. Supplies only the 2.5 V sides of the three translators,
 U10,AMS1117-3.3,SOT-223-3_TabPin2,C6186,AMS1117-3.3,DNP,Optional 3.3 V from the IN socket's +5 V pin. NOT the default supply: see DESIGN_NOTES.md 5,NOT FITTED by default. Board A normally runs from HL2 DB1 pins 19/20. In the two-radio configuration there is no 5 V source at all.
 U11,AO3400A,SOT-23,C20917,AO3400A,yes,"The ROLE_N inverter, built from one N-channel MOSFET: gate on ROLE, source to ground, drain on ROLE_N, loaded by the 10 k pull-up that is already fitted. This one part is what makes the complement a property of the circuit instead of a property of the user remembering to move two shunts the same way","SOT-23, pin 1 gate / 2 source / 3 drain. Vgs(th) 1.45 V MAX, so a 3.3 V strap drives it with 1.85 V of margin. DO NOT substitute the cheaper 2N7002: its threshold is specified up to 2.5 V. A logic inverter was rejected on cost alone - no single-gate logic part of any family is a Basic part in JLCPCB's library. DESIGN_NOTES.md 2.1."
+U12,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply level translator, VCCA 2.5 V / VCCB 3.3 V. The AUX group: all four auxiliary pins on their way to the LVDS driver inputs, with G1 clock and data in port 1 and G2 clock and data in port 2","Both DIR tied to VCCA (+2V5) = A->B, both OE* tied low - ALWAYS enabled. These four channels sit on nets that this board's own 3.3 V -> 2.5 V translators drive when the HL2 pin is an input; a translator A-side input is a ~5 pF load and never a driver, so that is not contention. What decides whether an auxiliary signal reaches the cable is the LVDS driver's EN, not this part."

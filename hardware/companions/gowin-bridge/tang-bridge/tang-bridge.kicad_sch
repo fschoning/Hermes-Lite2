@@ -2128,7 +2128,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "9ed6aca4-e3ad-51fc-7bcb-b5337f9cde19")
 		(property "Reference" "J1"
 			(at 59.69 35.37 0)
@@ -2139,16 +2139,13 @@
 		(property "Footprint" "gowin-bridge:PinSocket_2x20_P2.54mm_Vertical"
 			(at 59.69 62.23 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C5124634"
+		(property "MFR" "2.54mm 2x20P vertical female header (e.g. BOOMELE, LCSC C5124634)"
 			(at 59.69 62.23 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "MFR" "BOOMELE 2.54mm 2x20P female header, vertical"
+		(property "Note" "HAND SOLDERED, not placed by JLCPCB: 40 through-hole pins, and as a distinct part number it would cost a $3.07 per-unique-Extended-part fee plus $1.31 of joint fees. You are already soldering the mating male header into the dock. Bottom side. J14 pin 36 (ball U17) is deliberately open: it is the one spare pin, and the gateware should leave it unconstrained. COST.md 5."
 			(at 59.69 62.23 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Note" "Bottom side. J14 pin 36 (ball U17) is deliberately open: it is the one spare pin, and the gateware should leave it unconstrained."
-			(at 59.69 62.23 0)
-			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Description" "Mates the 2x20 male header the user solders into the Tang dock J14 holes (Bank 4)"
+		(property "Description" "Mates the 2x20 male header the user solders into the Tang dock J14 holes (Bank 4). HAND SOLDERED"
 			(at 59.69 62.23 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
@@ -3436,7 +3433,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "07227714-f4ac-c75b-35d6-ecaf909e2096")
 		(property "Reference" "J7"
 			(at 416.56 35.37 0)
@@ -3447,10 +3444,7 @@
 		(property "Footprint" "gowin-bridge:PinHeader_1x03_P2.54mm_Vertical"
 			(at 416.56 41.91 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C52016391"
-			(at 416.56 41.91 0)
-			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "MFR" "hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header"
+		(property "MFR" "2.54mm 1x3P vertical pin header (e.g. LCSC C52016391)"
 			(at 416.56 41.91 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Note" "Fit ONE shunt (LCSC C5305). Board B ships 2-3 = ROLE B, so the Gowin reads link_role LOW on J14 pin 34."
@@ -5000,7 +4994,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "131d5776-7c0c-e9c3-b9c0-e317e48c9dc1")
 		(property "Reference" "J5"
 			(at 147.32 121.73 0)
@@ -5011,10 +5005,7 @@
 		(property "Footprint" "gowin-bridge:PinHeader_1x03_P2.54mm_Vertical"
 			(at 147.32 128.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C52016391"
-			(at 147.32 128.27 0)
-			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "MFR" "hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header"
+		(property "MFR" "2.54mm 1x3P vertical pin header (e.g. LCSC C52016391)"
 			(at 147.32 128.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "IN receiver enable: 2-3 = auto, enabled only while a cable is in the IN socket (DEFAULT); 1-2 = force disabled, which is what the direct-LVDS experiment needs; no shunt = always enabled. Does NOT affect the AUX receiver"
@@ -5068,7 +5059,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "e994b2bd-1b4e-9624-4186-9f01c0a00322")
 		(property "Reference" "J6"
 			(at 219.71 121.73 0)
@@ -5079,10 +5070,7 @@
 		(property "Footprint" "gowin-bridge:PinHeader_1x02_P2.54mm_Vertical"
 			(at 219.71 125.73 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C52016390"
-			(at 219.71 125.73 0)
-			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "MFR" "hanxia HX PH254-01-02-Z-L11.5, 2.54mm 1x2P vertical pin header"
+		(property "MFR" "2.54mm 1x2P vertical pin header (e.g. LCSC C52016390)"
 			(at 219.71 125.73 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Extra ground wire to a dock PMOD GND pin. J14 has only one ground pin and that is not enough for eight CMOS outputs switching at up to 307 Mbit/s - fit the wire"

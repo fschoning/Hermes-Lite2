@@ -569,7 +569,8 @@ LC = dict(r0='C17168',        # 0R    0402, Basic
 # verified live.  See STATUS.md for what each one replaced.
 LC_DRV = 'C206491'        # DS90LV047ATMX/NOPB, quad LVDS driver, SOIC-16
 LC_RCV = 'C87137'         # DS90LV048ATMTCX/NOPB, quad LVDS receiver, TSSOP-16
-LC_X8 = 'C465742'         # SN74AVC8T245PWR (rev B's C53535 does not exist)
+# SN74AVC8T245PWR was C465742.  No longer used: two SN74AVC4T245
+# do the same job for $0.31 less and one fewer unique part number.
 LC_X4 = 'C81461'          # SN74AVC4T245PWR
 LC_INV = 'C20917'        # AO3400A N-MOSFET, SOT-23, BASIC (replaces
                           # C7827, SN74LVC1G04DBVR, which is Extended)
@@ -580,11 +581,20 @@ LC_LDO33 = 'C6186'         # AMS1117-3.3, Basic
 # 3-pin footprint.  Both of these are hanxia PH254 series, 2.54 mm,
 # through-hole, straight.  Both are Extended - no Basic 2.54 mm through-hole
 # 1x2 or 1x3 vertical header exists in JLCPCB's library at all.
-LC_HDR3 = 'C52016391'     # HX PH254-01-03-Z-L11.5, 1x3P, 46,800 in stock
-LC_HDR2 = 'C52016390'     # HX PH254-01-02-Z-L11.5, 1x2P, 36,200 in stock
-LC_SKT2x20 = 'C5124634'   # BOOMELE 2.54 2x20P vertical female (C50982: no stock)
-LC_SKT2x10 = 'C42431860'  # JXTCONN PM2.54-2X10P-H85 vertical 2x10 female
-LC_SHUNT = 'C5305'        # jumper shunt for the ROLE strap and the option headers
+# THE THROUGH-HOLE PARTS ARE NOT ON THE ASSEMBLY BOM.  Every one of them is
+# a distinct part number to JLCPCB and every distinct part costs a $3.07
+# per-unique-Extended-part fee on the Economic tier - no Basic 2.54 mm
+# through-hole header or socket exists in their library at all.  Three fees
+# plus their joint fees came to $11.61 for nineteen header pins and one
+# forty-pin socket, so the user solders them.  These numbers are recorded so
+# the parts can be bought; they appear in the BOM as MFR text with no LCSC
+# field, which is how a do-not-place line is flagged.  COST.md section 5.
+#   1x3 vertical pin header       C52016391  (hanxia HX PH254-01-03-Z-L11.5)
+#   1x2 vertical pin header       C52016390  (hanxia HX PH254-01-02-Z-L11.5)
+#   2x20 vertical female, Tang    C5124634   (BOOMELE)
+#   2x10 vertical female, DB1     C42431860  (JXTCONN PM2.54-2X10P-H85) -
+#                                            the fallback if you never stack
+#   jumper shunts                 C5305
 
 
 # ==========================================================================
@@ -1054,8 +1064,8 @@ def board_a():
     # driving as an output - CMOS against CMOS on PIN_72 and PIN_80.
     b.add(Part('J9', 'HDR1x03', 'ROLE', {
         '1': '+3V3', '2': 'ROLE', '3': 'GND',
-    }, lcsc=LC_HDR3, mfr='hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P '
-                          'vertical pin header',
+    }, lcsc='', dnp=True,
+        mfr='2.54mm 1x3P vertical pin header (e.g. LCSC C52016391)',
         desc='ROLE strap, ONE shunt: 1-2 = ROLE A (this board drives AUX G1, '
              'receives G2) which is how board A ships; 2-3 = ROLE B (drives '
              'G2, receives G1). The two boards of a link must be strapped '
@@ -1081,39 +1091,80 @@ def board_a():
              "JLCPCB's library. DESIGN_NOTES.md 2.1."))
 
     # ------------------------------------------------- 2.5 V -> 3.3 V shift
-    # Every HL2 output that feeds an LVDS driver input goes through ONE
-    # package, so the link clock, the three OUT lanes and all four AUX pins
-    # pick up the same propagation delay.  The OUT clock (PIN_98) is a 3.3 V
-    # pin, above the A-side absolute maximum of VCCA + 0.5 V, so it arrives
-    # through a 100 R / 660 R divider first.  DESIGN_NOTES.md 3.2.
-    x8 = {'1': '+2V5', '23': '+3V3', '24': '+3V3',
-          '11': 'GND', '12': 'GND', '13': 'GND',
-          '2': '+2V5',          # DIR high (VCCA referenced) = A -> B
-          '22': 'GND'}          # OE* low = enabled
-    x8_map = [
-        ('HL2_CLK', 'DRVI_O_CLK'), ('HL2_O_D0', 'DRVI_O_D0'),
-        ('HL2_O_D1', 'DRVI_O_D1'), ('HL2_O_D2', 'DRVI_O_D2'),
-        ('HL2_AX_G1CLK', 'DRVI_AX_CLK'), ('HL2_AX_G1DAT', 'DRVI_AX_D0'),
-        ('HL2_AX_G2CLK', 'DRVI_AX_D1'), ('HL2_AX_G2DAT', 'DRVI_AX_D2'),
-    ]
-    for i, (a, bn) in enumerate(x8_map, start=1):
-        x8[X8_A[i]] = a
-        x8[X8_B[i]] = bn
-    b.add(Part('U1', 'XLAT8', 'SN74AVC8T245PW', x8, lcsc=LC_X8,
-               mfr='SN74AVC8T245PWR',
-               desc='8-bit dual-supply level translator, VCCA 2.5 V / '
-                    'VCCB 3.3 V. Gives the HL2 2.5 V outputs 370 mV of '
-                    'GUARANTEED margin into the LVDS driver inputs, which a '
-                    'direct connection does not have. All 8 channels used: '
-                    'OUT clock + 3 OUT lanes + all 4 AUX pins',
-               at=(22.0, 6.0), rot=90,
-               note='DIR tied to VCCA (+2V5) = A->B, OE* tied low - ALWAYS '
-                    'enabled. The four AUX channels sit on nets that this '
-                    "board's own 4-bit translators drive when the HL2 pin is "
-                    'an input; a translator A-side input is a ~5 pF load and '
-                    'never a driver, so that is not contention. What decides '
-                    'whether an AUX signal reaches the cable is the LVDS '
-                    "driver's EN, not this part."))
+    # TWO SN74AVC4T245, not one SN74AVC8T245.
+    #
+    # Same function, same silicon family, and it removes a whole part number
+    # from the assembly BOM: the 8-bit part was the only SN74AVC8T245 on
+    # either board, so it cost a $3.07 per-unique-Extended-part fee all by
+    # itself, while the 4-bit part is already fitted three times over.  Two
+    # 4-bit packages are also CHEAPER than one 8-bit: 2 x $0.3096 = $0.62
+    # against $0.9296.  COST.md section 5.
+    #
+    # The delay-matching property that made one package attractive is KEPT,
+    # because it only ever had to hold WITHIN a cable:
+    #
+    #   U1  the OUT group - link clock + lanes 0,1,2.  Exactly four signals,
+    #       exactly one package, so all four still share one part's
+    #       channel-to-channel skew.  This is the group that matters: they
+    #       travel down one cable against one forwarded clock.
+    #   U12 the AUX group - all four auxiliary pins.  G1's clock and data in
+    #       port 1, G2's clock and data in port 2, all four in one package.
+    #
+    # OUT and AUX never had to match EACH OTHER: they are different cables
+    # with different clocks.  So splitting on that boundary costs nothing.
+    #
+    # The OUT clock (PIN_98) is a 3.3 V pin, above the A-side absolute
+    # maximum of VCCA + 0.5 V, so it arrives through a 100 R / 660 R divider
+    # first.  DESIGN_NOTES.md 4.2.
+    def x4_up(a_nets, b_nets):
+        """A 4-bit translator wired 2.5 V (A) -> 3.3 V (B), both ports on."""
+        d = {'1': '+2V5', '16': '+3V3', '8': 'GND', '9': 'GND',
+             '2': '+2V5', '3': '+2V5',      # 1DIR, 2DIR high = A -> B
+             '14': 'GND', '15': 'GND'}      # both OE* low = always enabled
+        for k in range(4):
+            d[X4_A[k + 1]] = a_nets[k]
+            d[X4_B[k + 1]] = b_nets[k]
+        return d
+
+    out_map = [('HL2_CLK', 'DRVI_O_CLK'), ('HL2_O_D0', 'DRVI_O_D0'),
+               ('HL2_O_D1', 'DRVI_O_D1'), ('HL2_O_D2', 'DRVI_O_D2')]
+    aux_map = [('HL2_AX_G1CLK', 'DRVI_AX_CLK'), ('HL2_AX_G1DAT', 'DRVI_AX_D0'),
+               ('HL2_AX_G2CLK', 'DRVI_AX_D1'), ('HL2_AX_G2DAT', 'DRVI_AX_D2')]
+    x8_map = out_map + aux_map          # the eight bypass links below
+
+    b.add(Part('U1', 'XLAT4', 'SN74AVC4T245PW',
+               x4_up([a for a, _ in out_map], [c for _, c in out_map]),
+               lcsc=LC_X4, mfr='SN74AVC4T245PWR',
+               desc='4-bit dual-supply level translator, VCCA 2.5 V / '
+                    'VCCB 3.3 V. The OUT group: the 153.6 MHz link clock and '
+                    'lanes 0, 1 and 2 - exactly four signals in exactly one '
+                    'package, so they share one channel-to-channel skew. '
+                    'Gives the HL2 2.5 V outputs 370 mV of GUARANTEED margin '
+                    'into the LVDS driver inputs, which a direct connection '
+                    'does not have',
+               at=(20.0, 6.0), rot=90,
+               note='Both DIR tied to VCCA (+2V5) = A->B, both OE* tied low - '
+                    'ALWAYS enabled. Replaces the single SN74AVC8T245 of the '
+                    'first rev C build: two 4-bit packages cost $0.31 less '
+                    'AND remove a part number that carried its own $3.07 '
+                    'assembly fee. COST.md 5.'))
+
+    b.add(Part('U12', 'XLAT4', 'SN74AVC4T245PW',
+               x4_up([a for a, _ in aux_map], [c for _, c in aux_map]),
+               lcsc=LC_X4, mfr='SN74AVC4T245PWR',
+               desc='4-bit dual-supply level translator, VCCA 2.5 V / '
+                    'VCCB 3.3 V. The AUX group: all four auxiliary pins on '
+                    'their way to the LVDS driver inputs, with G1 clock and '
+                    'data in port 1 and G2 clock and data in port 2',
+               at=(26.5, 6.0), rot=90,
+               note='Both DIR tied to VCCA (+2V5) = A->B, both OE* tied low - '
+                    'ALWAYS enabled. These four channels sit on nets that '
+                    "this board's own 3.3 V -> 2.5 V translators drive when "
+                    'the HL2 pin is an input; a translator A-side input is a '
+                    '~5 pF load and never a driver, so that is not '
+                    'contention. What decides whether an auxiliary signal '
+                    "reaches the cable is the LVDS driver's EN, not this "
+                    'part.'))
 
     # ------------------------------------------------------- LVDS drivers
     # THREE drivers, because board A needs three independent enable domains
@@ -1235,7 +1286,7 @@ def board_a():
                     'VCCB 2.5 V. Port 1 (always on) = the IN clock into '
                     'PIN_88 and the ROLE level into PIN_89. Port 2 = AUX '
                     'group G2 toward the HL2, enabled only in ROLE A',
-               at=(31.0, 6.0), rot=90,
+               at=(33.0, 6.0), rot=90,
                note='HL2 PIN_88 and PIN_89 are input-only pins in a 2.5 V '
                     'bank whose PCI clamp would inject DC into the HL2 2.5 V '
                     'rail if driven at 3.3 V. 1OE* = GND (always enabled), '
@@ -1259,7 +1310,7 @@ def board_a():
                desc='4-bit dual-supply level translator, VCCA 3.3 V / '
                     'VCCB 2.5 V. Port 1 = AUX group G1 toward the HL2, '
                     'enabled only in ROLE B. Port 2 is unused',
-               at=(38.0, 6.0), rot=90,
+               at=(39.5, 6.0), rot=90,
                note='1OE* = ROLE: the G1 port drives PIN_85 and PIN_87 only '
                     'in ROLE B, which is exactly when the gateware has those '
                     'two pins as inputs. Port 2 is disabled (2OE* to +3V3) '
@@ -1282,23 +1333,23 @@ def board_a():
 
     b.add(Part('J6', 'HDR1x03', '3V3 SRC', {
         '1': 'DB1_3V3', '2': '+3V3', '3': 'LDO3V3',
-    }, lcsc=LC_HDR3, mfr='hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P '
-                          'vertical pin header',
+    }, lcsc='', dnp=True,
+        mfr='2.54mm 1x3P vertical pin header (e.g. LCSC C52016391)',
         desc='Board supply select: 1-2 = HL2 DB1 +3V3 (DEFAULT), 2-3 = the '
              'on-board LDO fed from the IN socket +5 V pin',
         at=(45.0, 6.0), rot=0))
     b.add(Part('J7', 'HDR1x03', 'RX MODE', {
         '1': '+3V3', '2': 'RXEN_N', '3': 'I_HPD',
-    }, lcsc=LC_HDR3, mfr='hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P '
-                          'vertical pin header',
+    }, lcsc='', dnp=True,
+        mfr='2.54mm 1x3P vertical pin header (e.g. LCSC C52016391)',
         desc='IN receiver enable: 2-3 = auto, enabled only while a cable is '
              'in the IN socket (DEFAULT); 1-2 = force disabled; no shunt = '
              'always enabled. Does NOT affect the AUX receiver, which is '
              'always on',
         at=(45.0, 15.0), rot=0))
     b.add(Part('J8', 'HDR1x02', 'GND CLIP', {'1': 'GND', '2': 'GND'},
-               lcsc=LC_HDR2, mfr='hanxia HX PH254-01-02-Z-L11.5, 2.54mm 1x2P '
-                              'vertical pin header',
+               lcsc='', dnp=True,
+               mfr='2.54mm 1x2P vertical pin header (e.g. LCSC C52016390)',
                desc='Ground clip / scope reference', at=(45.0, 33.0),
                rot=0))
 
@@ -1443,6 +1494,8 @@ def board_a():
     cs = [
         ('100nF', '+3V3', 'U1 VCCB', LC['c100n'], False),
         ('100nF', '+2V5', 'U1 VCCA', LC['c100n'], False),
+        ('100nF', '+3V3', 'U12 VCCB', LC['c100n'], False),
+        ('100nF', '+2V5', 'U12 VCCA', LC['c100n'], False),
         ('100nF', '+3V3', 'U2 VCC', LC['c100n'], False),
         ('100nF', '+3V3', 'U3 VCC', LC['c100n'], False),
         ('100nF', '+3V3', 'U4 VCC', LC['c100n'], False),
@@ -1567,14 +1620,19 @@ def board_b():
         '35': 'LINK_REVCLK', '36': None,
     })
     b.add(Part('J1', 'SKT2x20', 'J14 2x20 socket', j14,
-               lcsc=LC_SKT2x20, mfr='BOOMELE 2.54mm 2x20P female header, '
-                                    'vertical',
+               lcsc='', dnp=True,
+               mfr='2.54mm 2x20P vertical female header '
+                   '(e.g. BOOMELE, LCSC C5124634)',
                desc='Mates the 2x20 male header the user solders into the '
-                    'Tang dock J14 holes (Bank 4)',
+                    'Tang dock J14 holes (Bank 4). HAND SOLDERED',
                at=(6.0, 8.0), rot=90, layer='B.Cu',
-               note='Bottom side. J14 pin 36 (ball U17) is deliberately '
-                    'open: it is the one spare pin, and the gateware should '
-                    'leave it unconstrained.'))
+               note='HAND SOLDERED, not placed by JLCPCB: 40 through-hole '
+                    'pins, and as a distinct part number it would cost a '
+                    '$3.07 per-unique-Extended-part fee plus $1.31 of joint '
+                    'fees. You are already soldering the mating male header '
+                    'into the dock. Bottom side. J14 pin 36 (ball U17) is '
+                    'deliberately open: it is the one spare pin, and the '
+                    'gateware should leave it unconstrained. COST.md 5.'))
 
     socket_note = ('Hybrid mount: reflow the 19 SMT contacts, then solder the '
                    'four through-hole shell legs. Mating face flush with the '
@@ -1606,8 +1664,8 @@ def board_b():
     # ================================================== the ROLE strap
     b.add(Part('J7', 'HDR1x03', 'ROLE', {
         '1': '+3V3', '2': 'ROLE', '3': 'GND',
-    }, lcsc=LC_HDR3, mfr='hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P '
-                          'vertical pin header',
+    }, lcsc='', dnp=True,
+        mfr='2.54mm 1x3P vertical pin header (e.g. LCSC C52016391)',
         desc='ROLE strap, ONE shunt: 1-2 = ROLE A (drives AUX G1, receives '
              'G2); 2-3 = ROLE B (drives G2, receives G1) which is how board '
              'B ships. The two boards of a link must be strapped differently',
@@ -1755,16 +1813,16 @@ def board_b():
 
     b.add(Part('J5', 'HDR1x03', 'RX MODE', {
         '1': '+3V3', '2': 'RXEN_N', '3': 'I_HPD',
-    }, lcsc=LC_HDR3, mfr='hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P '
-                          'vertical pin header',
+    }, lcsc='', dnp=True,
+        mfr='2.54mm 1x3P vertical pin header (e.g. LCSC C52016391)',
         desc='IN receiver enable: 2-3 = auto, enabled only while a cable is '
              'in the IN socket (DEFAULT); 1-2 = force disabled, which is '
              'what the direct-LVDS experiment needs; no shunt = always '
              'enabled. Does NOT affect the AUX receiver',
         at=(62.0, 4.0), rot=0))
     b.add(Part('J6', 'HDR1x02', 'GND AUX', {'1': 'GND', '2': 'GND'},
-               lcsc=LC_HDR2, mfr='hanxia HX PH254-01-02-Z-L11.5, 2.54mm 1x2P '
-                              'vertical pin header',
+               lcsc='', dnp=True,
+               mfr='2.54mm 1x2P vertical pin header (e.g. LCSC C52016390)',
                desc='Extra ground wire to a dock PMOD GND pin. J14 has only '
                     'one ground pin and that is not enough for eight CMOS '
                     'outputs switching at up to 307 Mbit/s - fit the wire',

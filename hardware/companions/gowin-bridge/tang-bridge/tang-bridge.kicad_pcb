@@ -205,6 +205,7 @@
 		(tags "Through hole socket strip THT 2x20 2.54mm double row")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/9ed6aca4-e3ad-51fc-7bcb-b5337f9cde19")
 		(attr through_hole)
+		(attr dnp)
 		(fp_text reference "J1"
 			(at 0 -3.2 0)
 			(layer "B.SilkS")
@@ -1197,6 +1198,7 @@
 		(tags "Through hole pin header THT 1x03 2.54mm single row")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/07227714-f4ac-c75b-35d6-ecaf909e2096")
 		(attr through_hole)
+		(attr dnp)
 		(fp_text reference "J7"
 			(at 0 -3.2 0)
 			(layer "F.SilkS")
@@ -2843,6 +2845,7 @@
 		(tags "Through hole pin header THT 1x03 2.54mm single row")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/131d5776-7c0c-e9c3-b9c0-e317e48c9dc1")
 		(attr through_hole)
+		(attr dnp)
 		(fp_text reference "J5"
 			(at 0 -3.2 0)
 			(layer "F.SilkS")
@@ -2940,6 +2943,7 @@
 		(tags "Through hole pin header THT 1x02 2.54mm single row")
 		(path "/04462c68-03e6-f5bb-669c-b1436fea5278/e994b2bd-1b4e-9624-4186-9f01c0a00322")
 		(attr through_hole)
+		(attr dnp)
 		(fp_text reference "J6"
 			(at 0 -3.2 0)
 			(layer "F.SilkS")
