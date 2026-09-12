@@ -34,9 +34,8 @@ Updated 2026-09-12 ~13:50. Resume from this file.
   7 ms run (>= 2 now). Rerun with the fixed live check: LIVE SINE + SCRAMBLER ALSO
   BIT-EXACT (latency 12 samples, 4608 samples, 0 mismatches); only the two end-of-run
   thresholds (status frames "> 5" with exactly 5 received, console lines) still tripped in
-  the short run — thresholds relaxed (>= 5, and 4 ms of extra run time). Final confirming
-  runs of both geometries were started at the end of the session: `gowin/sim/build/
-  tb_link_6.log` and `tb_link_3.log` (last line PASS/FAIL).
+  the short run — thresholds relaxed (>= 5, and 4 ms of extra run time).
+  FINAL RESULT: `tb_link` LANES=6 **PASS** (25 checks, 10.8 ms simulated, ~10 min wall).
 - `tb_link` LANES=3 (fallback, 3 forward lanes at 153.6 MHz DDR): same result as LANES=6 —
   forward link locks at 1.7 ms (taps 0x80, eye 255), reverse locks, PRBS/injection/reset/
   command/live-ramp/counter/fast-serial/arbiter checks all pass; the same three testbench
