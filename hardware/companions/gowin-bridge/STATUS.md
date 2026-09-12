@@ -112,10 +112,94 @@ After that rework the entire passive set is **0R, 22R, 100R, one value in the
 300-680 ohm range, 4k7, 10k, 100k, 22pF, 100nF, 1uF and 10uF 0805** - eleven
 values, ten of them with price-checked numbers.
 
-**A follow-up lookup is running** for the blocking items: an in-stock quad LVDS
-driver (ideally pin-compatible with the DS90LV047A's SOIC-16 pinout, otherwise
-its pinout so the symbol and footprint can be redrawn), the three header parts,
-and a 470 R that JLCPCB stocks as a Basic part.
+### Every defect now has a resolution (looked up 12 Sep 2026)
+
+**No redesign is needed. One footprint question remains open.** Apply these
+when regeneration is unblocked:
+
+| Line | Change to | Stock | Price at 10 | JLCPCB library |
+|---|---|---|---|---|
+| **Quad LVDS driver** | `C201946` -> **`C206491`**, DS90LV047A**TMX**/NOPB | 1,312 | $1.8396 | **yes**, Extended |
+| SN74AVC8T245PWR | `C53535` -> **`C465742`** | 16,677 | $0.9296 | yes |
+| 2x20 female (Tang J14) | `C50982` -> **`C5124634`**, BOOMELE 2.54-2*20P, vertical | 11,945 | $0.3305 | **yes**, Extended |
+| 2x10 female (HL2 DB1) | `C5361769` -> **`C42431860`**, JXTCONN PM2.54-2X10P-H85, vertical | 3,405 | $0.1921 | yes, Extended |
+| 300-680 R 0402 | `C25117` -> **`C25104`**, 330 R | 742,400 | $0.44 / 100 | **yes, Basic** |
+| 2x3 female (HL2 DB12) | `C124413` -> `C99515` **is the wrong variant, see below** | 375 | $0.1417 | no (through hole) |
+
+**The blocking item turned out to be trivial.** The quad LVDS driver is the
+*same TI silicon and the same pinout* under a different LCSC catalogue number -
+`C206491` is the TMX (tape-and-reel) suffix of the identical DS90LV047A in
+SOIC-16. Nothing to redraw: the symbol, the footprint and every pin assignment
+stay exactly as they are, and it is in JLCPCB's library. Only the BOM line
+number changes.
+
+**Still open: the 2x3 female header must be VERTICAL, and the part found is
+not.** `C99515`'s "Holes Direction" field reads **Side**, i.e. right-angle
+entry. Board A's DB12 socket sits on the underside and plugs straight down onto
+a male header on the radio, so it has to be **top entry**. A vertical 2x3
+2.54 mm female socket still needs finding. It is a hand-soldered through-hole
+part either way, so this blocks ordering but not layout - the footprint
+(`PinSocket_2x03_P2.54mm_Vertical`) is already the right one.
+
+**Confirmed: LCSC stocks no long-tail 2x10 socket at all** - all seven 2x10
+female listings are ordinary ~3.2 mm pin length. So the **stack-through feature
+has to be sourced outside LCSC**, and `C42431860` is the fallback ordinary
+socket for anyone who does not want to stack a companion board. This is a
+documentation change to `README.md` section 4 when rev C lands: the stack-through
+header is no longer a JLCPCB line item.
+
+**Clock-A divider, final values.** With 330 R being the Basic part in that
+range, the divider becomes **100 R series plus 660 R shunt (two 330 R in
+series)** rather than 100 R / 470 R - every part then a JLCPCB Basic part:
+
+| | |
+|---|---|
+| High level at the translator A input | 3.3 x 660 / (660 + 100 + 25) = **2.77 V** |
+| Margin over the 1.63 V threshold | **1.14 V** |
+| Headroom under the 3.0 V absolute maximum | **230 mV** |
+| Current from PIN_98 | **4.2 mA**, comfortably inside its 8 mA drive setting (100 R / 330 R would have drawn 7.25 mA and forced the pin to 16 mA) |
+| Thevenin impedance | 87 ohm |
+| Edge contribution into the translator's ~4 pF | **0.77 ns** |
+| Low level with the HL2 FPGA unconfigured | (3.3 - 1.7) x 660 / (1000 + 100 + 660) = **0.60 V**, under the 0.875 V limit |
+
+**All ten kept passives are confirmed Basic parts in JLCPCB's library**:
+`C17168` 0R, `C1525` 100nF, `C25744` 10k, `C25076` 100R, `C25092` 22R,
+`C25741` 100k, `C25900` 4k7, `C52923` 1uF, `C15525` 10uF 0805, `C1555` 22pF.
+
+**Cost, now that the driver has a price.** Per board at qty 10, silicon and
+connectors only:
+
+| | Board A | Board B |
+|---|---|---|
+| Quad LVDS drivers | 2 x $1.8396 = $3.68 | 1 x $1.8396 = $1.84 |
+| Quad LVDS receivers | 1 x $1.4348 = $1.43 | 2 x $1.4348 = $2.87 |
+| Translators | $0.93 + $0.31 = $1.24 | - |
+| ESD arrays | 8 x $0.0874 = $0.70 | 9 x $0.0874 = $0.79 |
+| LDOs | $0.056 + $0.22 = $0.28 | $0.22 |
+| HDMI sockets | 3 x $0.4593 = $1.38 | 3 x $0.5081 = $1.52 |
+| Headers and sockets | ~$0.65 | ~$0.65 |
+| **Subtotal per board** | **~$9.36** | **~$7.89** |
+
+Plus, per order and not per board: **bare boards $7.00 for five of either size**
+($13.00 for ten), **passives about $6.50** in reel minimums however few are
+used, and assembly from $8.18 setup + $1.53 stencil + $3.07 per unique Extended
+part (Economic) upward.
+
+**So for 2 sets:** boards $14.00 (two lots of five, the minimum) + passives
+$6.50 + silicon 2 x ($9.36 + $7.89) = $34.50, giving **about $55 in parts and
+bare boards**, before assembly and shipping. Assembly roughly doubles it:
+Economic PCBA on both boards is 2 x ($8.18 + $1.53) plus about 8 unique
+Extended parts x $3.07 x 2 boards, i.e. **$68 or so**, and shipping about $28
+(unconfirmed for Germany).
+
+**For 5 sets:** boards $14.00 (five of each is still one lot each) + passives
+$6.50 + silicon 5 x $17.25 = $86.25, giving **about $107 in parts and bare
+boards**. Assembly setup does not scale with quantity, so the same ~$68 covers
+it. **Roughly $200 all-in for five sets against roughly $150 for two** - the
+marginal set costs about $17, and almost all of the money is setup.
+
+These totals exclude the vertical 2x3 header (not yet sourced) and the
+stack-through socket (not available at LCSC at all).
 
 ### What the price check did confirm
 
