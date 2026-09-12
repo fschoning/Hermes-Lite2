@@ -9,9 +9,11 @@ channel** on the third cable.
   Three **mini HDMI (Type C)** sockets, left to right: **`OUT`, `AUX`, `IN`**.
 * **Board B = `tang-bridge`** plugs onto the Tang dock header **J14** (2x40, Bank 4).
   Three **full-size HDMI (Type A)** sockets, left to right: **`IN`, `AUX`, `OUT`**.
-* The two boards are delivered as **one 94 x 90 mm V-scored panel** (`README.md`).
+* The two boards are delivered as **one 94 x 100 mm V-scored panel** with 5 mm assembly
+  rails and a fiducial coupon (`README.md`, `DESIGN_NOTES.md` 10).
 
-Revision: **rev C**, 2026-09-12. Supersedes rev B (asymmetric 6-lanes-out / 3-lanes-back with a
+Revision: **rev C**, 2026-09-12, corrected 2026-09-12 (panel size, the `IN` socket SCL on
+board B, and board B's strap-gated buffer). Supersedes rev B (asymmetric 6-lanes-out / 3-lanes-back with a
 single-ended slow control wire) and rev A (two dual-link DVI-D sockets).
 
 This file is the single source of truth. The gateware constraints
@@ -95,7 +97,7 @@ cable boots side by side (`DESIGN_NOTES.md` 6.3).
 | TMDS **data 0 / 1 / 2** pairs | driven: lanes 0, 1, 2 |
 | **SCL** | slow status UART out, single-ended |
 | **HPD** | **100 R to GND**, so the far end detects the cable |
-| **+5 V** | not connected on board A; DNP link to the 5 V rail on board B |
+| **+5 V** | not connected to any supply on board A; DNP link to the 5 V rail on board B. On **all six** sockets the pin is on a named net with a test pad and an ESD clamp, because it is cable-exposed |
 | CEC, Reserved/Utility, SDA | not connected |
 | 4 pair shields, DDC/CEC ground, shell | GND |
 
@@ -109,7 +111,7 @@ counterpart.
 |---|---|
 | TMDS **clock** pair | received through an LVDS receiver |
 | TMDS **data 0 / 1 / 2** pairs | received |
-| **SCL** | **test pad only in rev C.** rev B's command wire lived here; PIN_89 now reads the strap instead, so there is no destination for it at the HL2 end |
+| **SCL** | **On board A, a test pad only in rev C**: rev B's command wire lived here, and PIN_89 now reads the strap instead, so there is no destination for it at the HL2 end. **On board B it carries the HL2 status UART to J14 pin 19** - that UART travels on cable 1, whose SCL lands on board B's `IN` socket (section 5, pin 19) |
 | **HPD** | **10 k pull-up to +3V3 and read**; low = cable plugged in; gates the receiver enable |
 | **+5 V** | DNP link to an on-board LDO on board A; not connected on board B |
 
@@ -196,6 +198,13 @@ stressed. A pull-down would have done the opposite.
 | Translator port carrying G1 toward the HL2 (`OE` = `ROLE`) | disabled | enabled |
 | Translator port carrying G2 toward the HL2 (`OE` = `ROLE_N`) | enabled | disabled |
 | **100 R termination on each `AUX` pair** | fit on G2 (the pairs it receives) | fit on G1 |
+
+**The invariant that makes contention impossible, stated so it can be checked:** for each group,
+the LVDS driver's active-HIGH `EN` and the host-facing buffer port's active-LOW `OE` are **the
+same net**. So a group is either driven onto the cable (`EN` high, therefore `OE` high, therefore
+the host-facing port off) or driven toward the host (`EN` low, therefore `OE` low, therefore the
+driver tri-stated) - never both, for *any* level on that net, including a stuck or floating one.
+`tools/check_netlist.py` asserts exactly this on both boards and enumerates both states.
 
 The **termination is four solder links, not electrical**, because a switched 100 R would need an
 analogue switch. Fit the two links for the pairs this board *receives*. If both ends terminate a
@@ -431,6 +440,16 @@ are a true pair **except pins 33 and 34**. Every pin used is in **Bank 4** (a bo
 
 Board B ships strapped **ROLE B**: it receives `AUX` G1 and drives G2.
 
+**Board B needs a strap-gated buffer between its auxiliary receiver and J14, and this was missed
+in the first write-up of rev C.** Board A tri-states its auxiliary receive path in the level
+translator it needs anyway for the 2.5 V bank pins. Board B has no level shifting to do, so it has
+nothing to tri-state in - and its always-on auxiliary receiver would then drive the two J14 pins
+the gateware drives as outputs in that role, CMOS against CMOS, which is precisely the failure
+section 2.4 exists to prevent. Board B therefore carries **one SN74AVC4T245 with both rails tied
+to 3.3 V**, used purely as two independently gated 2-channel buffers: port 1 = G1 toward the Gowin
+(`OE` = `ROLE`), port 2 = G2 toward the Gowin (`OE` = `ROLE_N`). It costs $0.31 and adds no new
+unique part, because board A already carries two of them.
+
 | J14 | Ball | Gowin IO | Dedicated clock function | Net | Socket / role | Dir | IO type | Rate |
 |---|---|---|---|---|---|---|---|---|
 | **9** | W17 | IOB106B | - | `LINK_R0` | `OUT` lane 0 | **out** | LVCMOS33 | 307.2 Mbit/s |
@@ -452,11 +471,13 @@ Board B ships strapped **ROLE B**: it receives `AUX` G1 and drives G2.
 | **35** | U18 | IOB112B | - | `LINK_REVCLK` | `OUT` clock, PLL-derived | **out** | LVCMOS33 | 153.6 MHz |
 | **36** | U17 | IOB112A | - | - | **SPARE** | - | - | - |
 
-**Note on pin 19.** The `IN` socket's SCL carries nothing in rev C (section 2.2), so pin 19 is fed
-by the **`OUT` socket's SCL** instead - the status UART still travels from the HL2 on cable 1, whose
-SCL lands on board B's `IN` socket. Keep the net name `LINK_SLOW_IN` and `IO_TYPE=LVTTL33`: it is
-driven by an HL2 2.5 V output down an unshielded wire, so `LVCMOS33`'s 2.0 V threshold would leave
-zero guaranteed margin where `LVTTL33`'s 1.7 V leaves 300 mV.
+**Note on pin 19.** It is fed by **board B's `IN` socket SCL**. The HL2 status UART leaves the
+radio on DB12 pin 1, goes out on board A's `OUT` socket SCL, travels down cable 1 and arrives on
+board B's `IN` socket SCL - so the `IN` socket's SCL is a test pad only on board A (section 2.2)
+but a real signal on board B. Keep the net name `LINK_SLOW_IN` and `IO_TYPE=LVTTL33`: it is driven
+by an HL2 2.5 V output down an unshielded wire, so `LVCMOS33`'s 2.0 V threshold would leave zero
+guaranteed margin where `LVTTL33`'s 1.7 V leaves 300 mV. Board B's **`OUT` socket SCL has no
+source** in rev C - J14 pin 36 is left spare - so that one is a test pad too.
 
 **Every other J14 pin is electrically open on board B**, so PMOD0 (1-8), PMOD1 (21-28), the
 option-resistor pins (29/30) and the remaining DVP camera pins (37-40) stay usable.

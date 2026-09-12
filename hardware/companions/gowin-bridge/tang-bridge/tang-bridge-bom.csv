@@ -38,9 +38,9 @@ J1,J14 2x20 socket,PinSocket_2x20_P2.54mm_Vertical,C5124634,"BOOMELE 2.54mm 2x20
 J2,IN (HDMI),HDMI_A_Amphenol_10029449-x01xLF_Horizontal,C427307,Amphenol ICC 10029449-111RLF,yes,"IN, cable 1: receives the 153.6 MHz link clock and lanes 0,1,2 at 307.2 Mbit/s, plus the HL2 status UART on SCL, which is the ONLY slow line with a destination in rev C","Hybrid mount: reflow the 19 SMT contacts, then solder the four through-hole shell legs. Mating face flush with the board edge."
 J3,AUX (HDMI),HDMI_A_Amphenol_10029449-x01xLF_Horizontal,C427307,Amphenol ICC 10029449-111RLF,yes,"AUX, cable 3: bidirectional, full duplex. G1 = clock pair + data 0 pair, G2 = data 1 pair + data 2 pair. Board B ships strapped ROLE B, so it receives G1 and drives G2. SCL, HPD and +5 V are test pads only","Hybrid mount: reflow the 19 SMT contacts, then solder the four through-hole shell legs. Mating face flush with the board edge."
 J4,OUT (HDMI),HDMI_A_Amphenol_10029449-x01xLF_Horizontal,C427307,Amphenol ICC 10029449-111RLF,yes,"OUT, cable 2: drives the reverse clock and reverse lanes 0,1,2 at 307.2 Mbit/s. Its SCL has no source in rev C (J14 pin 36 is left spare) and is a test pad only","Hybrid mount: reflow the 19 SMT contacts, then solder the four through-hole shell legs. Mating face flush with the board edge."
-J5,RX MODE,PinHeader_1x03_P2.54mm_Vertical,C2337,2.54mm 1x3P pin header,yes,"IN receiver enable: 2-3 = auto, enabled only while a cable is in the IN socket (DEFAULT); 1-2 = force disabled, which is what the direct-LVDS experiment needs; no shunt = always enabled. Does NOT affect the AUX receiver",
-J6,GND AUX,PinHeader_1x02_P2.54mm_Vertical,C2337,2.54mm 1x2P pin header,yes,Extra ground wire to a dock PMOD GND pin. J14 has only one ground pin and that is not enough for eight CMOS outputs switching at up to 307 Mbit/s - fit the wire,
-J7,ROLE,PinHeader_1x03_P2.54mm_Vertical,C2337,2.54mm 1x3P pin header,yes,"ROLE strap, ONE shunt: 1-2 = ROLE A (drives AUX G1, receives G2); 2-3 = ROLE B (drives G2, receives G1) which is how board B ships. The two boards of a link must be strapped differently","Fit ONE shunt (LCSC C5305). Board B ships 2-3 = ROLE B, so the Gowin reads link_role LOW on J14 pin 34."
+J5,RX MODE,PinHeader_1x03_P2.54mm_Vertical,C52016391,"hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header",yes,"IN receiver enable: 2-3 = auto, enabled only while a cable is in the IN socket (DEFAULT); 1-2 = force disabled, which is what the direct-LVDS experiment needs; no shunt = always enabled. Does NOT affect the AUX receiver",
+J6,GND AUX,PinHeader_1x02_P2.54mm_Vertical,C52016390,"hanxia HX PH254-01-02-Z-L11.5, 2.54mm 1x2P vertical pin header",yes,Extra ground wire to a dock PMOD GND pin. J14 has only one ground pin and that is not enough for eight CMOS outputs switching at up to 307 Mbit/s - fit the wire,
+J7,ROLE,PinHeader_1x03_P2.54mm_Vertical,C52016391,"hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header",yes,"ROLE strap, ONE shunt: 1-2 = ROLE A (drives AUX G1, receives G2); 2-3 = ROLE B (drives G2, receives G1) which is how board B ships. The two boards of a link must be strapped differently","Fit ONE shunt (LCSC C5305). Board B ships 2-3 = ROLE B, so the Gowin reads link_role LOW on J14 pin 34."
 R1,22R,R_0402_1005Metric,C25092,,yes,"Receiver output damping into J14, LINK_CLK",
 R2,22R,R_0402_1005Metric,C25092,,yes,"Receiver output damping into J14, LINK_D0",
 R3,22R,R_0402_1005Metric,C25092,,yes,"Receiver output damping into J14, LINK_D1",
@@ -83,9 +83,9 @@ R39,100k,R_0402_1005Metric,C25741,,yes,Holds the IN receiver enabled when J5 has
 R40,100k,R_0402_1005Metric,C25741,,yes,"Makes ""no shunt on J7"" mean ROLE B rather than a floating inverter input - and ROLE B is how board B ships, so a lost shunt is not even a change",
 R41,10k,R_0402_1005Metric,C25744,,yes,"ROLE_N pull-UP. THE DIRECTION MATTERS: if U8 is missing, unpowered or dead, ROLE_N reads HIGH, which DISABLES the G2 buffer port toward the Gowin. The auxiliary link then does not work and nothing is stressed",
 R42,0R,R_0402_1005Metric,C17168,,DNP,SL_5V_OUT: put the dock's 5 V on the OUT socket so board A could run from it,"NOT FITTED. See DESIGN_NOTES.md 5: board A must be able to run from the HL2 anyway, and a 5 V path that only exists in one of the two configurations is a trap."
-R43,0R,R_0805_2012Metric,C17168,,yes,Socket 1 shell to board ground,
-R44,0R,R_0805_2012Metric,C17168,,yes,Socket 2 shell to board ground,
-R45,0R,R_0805_2012Metric,C17168,,yes,Socket 3 shell to board ground,
+R43,0R,R_0805_2012Metric,C17477,,yes,Socket 1 shell to board ground,
+R44,0R,R_0805_2012Metric,C17477,,yes,Socket 2 shell to board ground,
+R45,0R,R_0805_2012Metric,C17477,,yes,Socket 3 shell to board ground,
 R46,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I CLK P leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
 R47,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I CLK N leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
 R48,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, I CLK. Place within 5 mm of the receiver pins.",

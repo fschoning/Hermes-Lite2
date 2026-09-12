@@ -500,6 +500,13 @@ def R(ref, val, a, b, **kw):
     return Part(ref, t, val, {'1': a, '2': b}, **kw)
 
 
+def R0805(ref, val, a, b, **kw):
+    """An 0805 resistor.  Separate from R() only so the 0805 0 ohm jumper
+    cannot accidentally be given the 0402 part number, which is what rev B
+    did."""
+    return Part(ref, 'R0805', val, {'1': a, '2': b}, **kw)
+
+
 def C(ref, val, a, b, **kw):
     t = 'C0805' if kw.pop('big', False) else 'C'
     return Part(ref, t, val, {'1': a, '2': b}, **kw)
@@ -538,6 +545,11 @@ LC = dict(r0='C17168',        # 0R    0402, Basic
           # 0805, JLCPCB Basic, 2,760,420 in stock, $0.085 at the MOQ of 20.
           c10u='C15850',      # 10uF 25V 0805, Basic
           c22p='C1555',       # 22pF  0402, Basic
+          # 0R in 0805 needs its OWN number: C17168 is an 0402 and on 0805
+          # pads it is the wrong part. C17477 is UNI-ROYAL 0805W8F0000T5E,
+          # 2 A rated, 6,045,800 in stock, and the only Basic 0805 zero-ohm
+          # jumper in JLCPCB's library.
+          r0_0805='C17477',   # 0R 0805, Basic, MOQ 100
           esd='C138714')      # TPD4E05U06DQAR, USON-10
 
 # Silicon, connectors and the hand-fitted sockets.  Same rule: every number
@@ -549,7 +561,13 @@ LC_X4 = 'C81461'          # SN74AVC4T245PWR
 LC_INV = 'C7827'          # SN74LVC1G04DBVR, SOT-23-5, Extended
 LC_LDO25 = 'C194395'      # ME6211C25M5G-N
 LC_LDO33 = 'C6186'         # AMS1117-3.3, Basic
-LC_HDR = 'C2337'          # 2.54 mm pin header strip
+# Pin headers need DISCRETE part numbers, not a strip: C2337 is a 1x40
+# strip and JLCPCB's BOM matcher will not accept a 40-pin part against a
+# 3-pin footprint.  Both of these are hanxia PH254 series, 2.54 mm,
+# through-hole, straight.  Both are Extended - no Basic 2.54 mm through-hole
+# 1x2 or 1x3 vertical header exists in JLCPCB's library at all.
+LC_HDR3 = 'C52016391'     # HX PH254-01-03-Z-L11.5, 1x3P, 46,800 in stock
+LC_HDR2 = 'C52016390'     # HX PH254-01-02-Z-L11.5, 1x2P, 36,200 in stock
 LC_SKT2x20 = 'C5124634'   # BOOMELE 2.54 2x20P vertical female (C50982: no stock)
 LC_SKT2x10 = 'C42431860'  # JXTCONN PM2.54-2X10P-H85 vertical 2x10 female
 LC_SHUNT = 'C5305'        # jumper shunt for the ROLE strap and the option headers
@@ -1022,7 +1040,8 @@ def board_a():
     # driving as an output - CMOS against CMOS on PIN_72 and PIN_80.
     b.add(Part('J9', 'HDR1x03', 'ROLE', {
         '1': '+3V3', '2': 'ROLE', '3': 'GND',
-    }, lcsc=LC_HDR, mfr='2.54mm 1x3P pin header',
+    }, lcsc=LC_HDR3, mfr='hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P '
+                          'vertical pin header',
         desc='ROLE strap, ONE shunt: 1-2 = ROLE A (this board drives AUX G1, '
              'receives G2) which is how board A ships; 2-3 = ROLE B (drives '
              'G2, receives G1). The two boards of a link must be strapped '
@@ -1246,20 +1265,23 @@ def board_a():
 
     b.add(Part('J6', 'HDR1x03', '3V3 SRC', {
         '1': 'DB1_3V3', '2': '+3V3', '3': 'LDO3V3',
-    }, lcsc=LC_HDR, mfr='2.54mm 1x3P pin header',
+    }, lcsc=LC_HDR3, mfr='hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P '
+                          'vertical pin header',
         desc='Board supply select: 1-2 = HL2 DB1 +3V3 (DEFAULT), 2-3 = the '
              'on-board LDO fed from the IN socket +5 V pin',
         at=(45.0, 6.0), rot=0))
     b.add(Part('J7', 'HDR1x03', 'RX MODE', {
         '1': '+3V3', '2': 'RXEN_N', '3': 'I_HPD',
-    }, lcsc=LC_HDR, mfr='2.54mm 1x3P pin header',
+    }, lcsc=LC_HDR3, mfr='hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P '
+                          'vertical pin header',
         desc='IN receiver enable: 2-3 = auto, enabled only while a cable is '
              'in the IN socket (DEFAULT); 1-2 = force disabled; no shunt = '
              'always enabled. Does NOT affect the AUX receiver, which is '
              'always on',
         at=(45.0, 15.0), rot=0))
     b.add(Part('J8', 'HDR1x02', 'GND CLIP', {'1': 'GND', '2': 'GND'},
-               lcsc=LC_HDR, mfr='2.54mm 1x2P pin header',
+               lcsc=LC_HDR2, mfr='hanxia HX PH254-01-02-Z-L11.5, 2.54mm 1x2P '
+                              'vertical pin header',
                desc='Ground clip / scope reference', at=(45.0, 33.0),
                rot=0))
 
@@ -1387,9 +1409,10 @@ def board_a():
                      'exactly - but it draws ~10 mA from the HL2 TPS730 whose '
                      'headroom is unverified.'))
     for i, sh in enumerate(('SHLD1', 'SHLD2', 'SHLD3'), start=1):
-        rs.append(R(ref('R'), '0R', sh, 'GND', lcsc=LC['r0'], big=True,
-                    desc='Socket %d shell to board ground. 0805 so the shield '
-                         'can be lifted if a ground loop appears' % i))
+        rs.append(R0805(ref('R'), '0R', sh, 'GND', lcsc=LC['r0_0805'],
+                        desc='Socket %d shell to board ground. 0805 so the '
+                             'shield can be lifted if a ground loop appears'
+                             % i))
     b.add(*rs)
 
     # DC/AC coupling option and terminations on the four RECEIVED IN pairs
@@ -1567,7 +1590,8 @@ def board_b():
     # ================================================== the ROLE strap
     b.add(Part('J7', 'HDR1x03', 'ROLE', {
         '1': '+3V3', '2': 'ROLE', '3': 'GND',
-    }, lcsc=LC_HDR, mfr='2.54mm 1x3P pin header',
+    }, lcsc=LC_HDR3, mfr='hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P '
+                          'vertical pin header',
         desc='ROLE strap, ONE shunt: 1-2 = ROLE A (drives AUX G1, receives '
              'G2); 2-3 = ROLE B (drives G2, receives G1) which is how board '
              'B ships. The two boards of a link must be strapped differently',
@@ -1715,14 +1739,16 @@ def board_b():
 
     b.add(Part('J5', 'HDR1x03', 'RX MODE', {
         '1': '+3V3', '2': 'RXEN_N', '3': 'I_HPD',
-    }, lcsc=LC_HDR, mfr='2.54mm 1x3P pin header',
+    }, lcsc=LC_HDR3, mfr='hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P '
+                          'vertical pin header',
         desc='IN receiver enable: 2-3 = auto, enabled only while a cable is '
              'in the IN socket (DEFAULT); 1-2 = force disabled, which is '
              'what the direct-LVDS experiment needs; no shunt = always '
              'enabled. Does NOT affect the AUX receiver',
         at=(62.0, 4.0), rot=0))
     b.add(Part('J6', 'HDR1x02', 'GND AUX', {'1': 'GND', '2': 'GND'},
-               lcsc=LC_HDR, mfr='2.54mm 1x2P pin header',
+               lcsc=LC_HDR2, mfr='hanxia HX PH254-01-02-Z-L11.5, 2.54mm 1x2P '
+                              'vertical pin header',
                desc='Extra ground wire to a dock PMOD GND pin. J14 has only '
                     'one ground pin and that is not enough for eight CMOS '
                     'outputs switching at up to 307 Mbit/s - fit the wire',
@@ -1833,8 +1859,8 @@ def board_b():
                      'to run from the HL2 anyway, and a 5 V path that only '
                      'exists in one of the two configurations is a trap.'))
     for i, sh in enumerate(('SHLD1', 'SHLD2', 'SHLD3'), start=1):
-        rs.append(R(ref('R'), '0R', sh, 'GND', lcsc=LC['r0'], big=True,
-                    desc='Socket %d shell to board ground' % i))
+        rs.append(R0805(ref('R'), '0R', sh, 'GND', lcsc=LC['r0_0805'],
+                        desc='Socket %d shell to board ground' % i))
     b.add(*rs)
 
     # DC/AC coupling and terminations on the four RECEIVED IN pairs

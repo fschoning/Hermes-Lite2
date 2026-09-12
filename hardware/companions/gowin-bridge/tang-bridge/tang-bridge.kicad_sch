@@ -3380,10 +3380,10 @@
 		(property "Footprint" "gowin-bridge:PinHeader_1x03_P2.54mm_Vertical"
 			(at 416.56 41.91 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C2337"
+		(property "LCSC" "C52016391"
 			(at 416.56 41.91 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "MFR" "2.54mm 1x3P pin header"
+		(property "MFR" "hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header"
 			(at 416.56 41.91 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Note" "Fit ONE shunt (LCSC C5305). Board B ships 2-3 = ROLE B, so the Gowin reads link_role LOW on J14 pin 34."
@@ -4961,10 +4961,10 @@
 		(property "Footprint" "gowin-bridge:PinHeader_1x03_P2.54mm_Vertical"
 			(at 147.32 128.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C2337"
+		(property "LCSC" "C52016391"
 			(at 147.32 128.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "MFR" "2.54mm 1x3P pin header"
+		(property "MFR" "hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header"
 			(at 147.32 128.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "IN receiver enable: 2-3 = auto, enabled only while a cable is in the IN socket (DEFAULT); 1-2 = force disabled, which is what the direct-LVDS experiment needs; no shunt = always enabled. Does NOT affect the AUX receiver"
@@ -5029,10 +5029,10 @@
 		(property "Footprint" "gowin-bridge:PinHeader_1x02_P2.54mm_Vertical"
 			(at 219.71 125.73 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C2337"
+		(property "LCSC" "C52016390"
 			(at 219.71 125.73 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "MFR" "2.54mm 1x2P pin header"
+		(property "MFR" "hanxia HX PH254-01-02-Z-L11.5, 2.54mm 1x2P vertical pin header"
 			(at 219.71 125.73 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Extra ground wire to a dock PMOD GND pin. J14 has only one ground pin and that is not enough for eight CMOS outputs switching at up to 307 Mbit/s - fit the wire"
@@ -8765,7 +8765,7 @@
 		(property "Footprint" "gowin-bridge:R_0805_2012Metric"
 			(at 1003.3 255.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C17168"
+		(property "LCSC" "C17477"
 			(at 1003.3 255.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Socket 1 shell to board ground"
@@ -8818,7 +8818,7 @@
 		(property "Footprint" "gowin-bridge:R_0805_2012Metric"
 			(at 1075.69 255.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C17168"
+		(property "LCSC" "C17477"
 			(at 1075.69 255.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Socket 2 shell to board ground"
@@ -8871,7 +8871,7 @@
 		(property "Footprint" "gowin-bridge:R_0805_2012Metric"
 			(at 54.61 293.37 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C17168"
+		(property "LCSC" "C17477"
 			(at 54.61 293.37 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Socket 3 shell to board ground"

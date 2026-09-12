@@ -3331,10 +3331,10 @@
 		(property "Footprint" "gowin-bridge:PinHeader_1x03_P2.54mm_Vertical"
 			(at 502.92 41.91 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C2337"
+		(property "LCSC" "C52016391"
 			(at 502.92 41.91 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "MFR" "2.54mm 1x3P pin header"
+		(property "MFR" "hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header"
 			(at 502.92 41.91 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Note" "Fit ONE shunt (LCSC C5305). Board A ships 1-2 = ROLE A. With no shunt at all the 100k pull-down makes it ROLE B, which is a safe state, not a floating one."
@@ -5550,10 +5550,10 @@
 		(property "Footprint" "gowin-bridge:PinHeader_1x03_P2.54mm_Vertical"
 			(at 535.94 128.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C2337"
+		(property "LCSC" "C52016391"
 			(at 535.94 128.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "MFR" "2.54mm 1x3P pin header"
+		(property "MFR" "hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header"
 			(at 535.94 128.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Board supply select: 1-2 = HL2 DB1 +3V3 (DEFAULT), 2-3 = the on-board LDO fed from the IN socket +5 V pin"
@@ -5618,10 +5618,10 @@
 		(property "Footprint" "gowin-bridge:PinHeader_1x03_P2.54mm_Vertical"
 			(at 608.33 128.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C2337"
+		(property "LCSC" "C52016391"
 			(at 608.33 128.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "MFR" "2.54mm 1x3P pin header"
+		(property "MFR" "hanxia HX PH254-01-03-Z-L11.5, 2.54mm 1x3P vertical pin header"
 			(at 608.33 128.27 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "IN receiver enable: 2-3 = auto, enabled only while a cable is in the IN socket (DEFAULT); 1-2 = force disabled; no shunt = always enabled. Does NOT affect the AUX receiver, which is always on"
@@ -5686,10 +5686,10 @@
 		(property "Footprint" "gowin-bridge:PinHeader_1x02_P2.54mm_Vertical"
 			(at 681.99 125.73 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C2337"
+		(property "LCSC" "C52016390"
 			(at 681.99 125.73 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "MFR" "2.54mm 1x2P pin header"
+		(property "MFR" "hanxia HX PH254-01-02-Z-L11.5, 2.54mm 1x2P vertical pin header"
 			(at 681.99 125.73 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Ground clip / scope reference"
@@ -9039,7 +9039,7 @@
 		(property "Footprint" "gowin-bridge:R_0805_2012Metric"
 			(at 929.64 278.13 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C17168"
+		(property "LCSC" "C17477"
 			(at 929.64 278.13 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Socket 1 shell to board ground. 0805 so the shield can be lifted if a ground loop appears"
@@ -9092,7 +9092,7 @@
 		(property "Footprint" "gowin-bridge:R_0805_2012Metric"
 			(at 1003.3 278.13 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C17168"
+		(property "LCSC" "C17477"
 			(at 1003.3 278.13 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Socket 2 shell to board ground. 0805 so the shield can be lifted if a ground loop appears"
@@ -9145,7 +9145,7 @@
 		(property "Footprint" "gowin-bridge:R_0805_2012Metric"
 			(at 1075.69 278.13 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C17168"
+		(property "LCSC" "C17477"
 			(at 1075.69 278.13 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Socket 3 shell to board ground. 0805 so the shield can be lifted if a ground loop appears"
