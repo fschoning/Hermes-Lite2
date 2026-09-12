@@ -112,6 +112,13 @@ reasons stated plainly:
 The deltas sum to $20.39, which is the headline difference. They are computed,
 not reconciled by hand.
 
+**A confidence check on the reconstruction.** The "rev B as published" column
+is re-derived from rev B's own itemisation, not copied from its headline. It
+comes to **$149.82** against the "about $150" rev B claimed, and at five sets
+to **$198.99** against its "roughly $200". Both land within a dollar, so the
+reconstruction of rev B's arithmetic is sound and the differences that follow
+are real differences rather than bookkeeping.
+
 ### 1b. Five assembled sets
 
 | charge category | rev B as published | rev B restated | rev C | delta |
