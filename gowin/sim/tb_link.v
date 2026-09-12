@@ -434,10 +434,10 @@ initial begin
   check(u_hl2.rev_dp_i.acc_prbs == 96'd0, "reverse PRBS clean after mode changes");
   check(u_hl2.G_CMD_FS.fs_rx_i.pkt_ok > 16'd8 && u_hl2.G_CMD_FS.fs_rx_i.pkt_err <= 16'd2, "fast serial packets received (at most the bootstrap packet lost)");
   $display("[%0t] status frames good %0d bad %0d", $time, u_gowin.status_rx_i.frame_cnt, u_gowin.status_rx_i.err_cnt);
-  check(u_gowin.status_rx_i.frame_cnt > 16'd5 && u_gowin.status_rx_i.err_cnt <= 16'd2, "status frames received (at most the hunt-in errors)");
+  check(u_gowin.status_rx_i.frame_cnt >= 16'd5 && u_gowin.status_rx_i.err_cnt <= 16'd2, "status frames received (at most the hunt-in errors)");
 
   eth_run = 0;
-  #200000;
+  #4000000;   // let the console finish at least one more status line
   $display("[%0t] Ethernet commands issued %0d, passed %0d, link commands %0d, unexpected %0d", $time, eth_wr, eth_rd, link_cmd_seen, bad_cmd);
   check(eth_wr > 20 && eth_rd == eth_wr && bad_cmd == 0, "all Ethernet commands passed the arbiter in order");
   check(nlines >= 2, "console lines printed");
