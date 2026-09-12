@@ -8,21 +8,25 @@ C6,100nF,C_0402_1005Metric,C1525,,DNP,"AC-coupling option, I D1 N leg",NOT FITTE
 C7,100nF,C_0402_1005Metric,C1525,,DNP,"AC-coupling option, I D2 P leg",NOT FITTED. Fit only together with the VBIAS network and remove the parallel 0 R link. Needs DC-balanced data; the gateware does not guarantee that.
 C8,100nF,C_0402_1005Metric,C1525,,DNP,"AC-coupling option, I D2 N leg",NOT FITTED. Fit only together with the VBIAS network and remove the parallel 0 R link. Needs DC-balanced data; the gateware does not guarantee that.
 C9,100nF,C_0402_1005Metric,C1525,,DNP,VBIAS bypass,NOT FITTED. Part of the AC-coupling option.
-C10,33pF,C_0402_1005Metric,C1555,,DNP,Optional ringing damper on X_SLOWIN_A,NOT FITTED. Fit if the unterminated cable wire rings enough to double-clock the receiver.
-C11,100nF,C_0402_1005Metric,C1525,,yes,U1 VCCB,
-C12,100nF,C_0402_1005Metric,C1525,,yes,U1 VCCA,
-C13,100nF,C_0402_1005Metric,C1525,,yes,U2 VCC,
-C14,100nF,C_0402_1005Metric,C1525,,yes,U3 VCC,
-C15,100nF,C_0402_1005Metric,C1525,,yes,U4 VCC,
-C16,100nF,C_0402_1005Metric,C1525,,yes,U5 VCCA,
-C17,100nF,C_0402_1005Metric,C1525,,yes,U5 VCCB,
-C18,10uF,C_0805_2012Metric,C15525,,yes,+3V3 bulk,
-C19,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
-C20,1uF,C_0402_1005Metric,C52923,,yes,U6 output,
-C21,100nF,C_0402_1005Metric,C1525,,yes,U6 input,
-C22,100nF,C_0402_1005Metric,C1525,,yes,DB1 +3V3 entry,
-C23,10uF,C_0805_2012Metric,C15525,,yes,U7 input bulk (option),
-C24,10uF,C_0805_2012Metric,C15525,,yes,U7 output bulk (option),
+C10,100nF,C_0402_1005Metric,C1525,,yes,U1 VCCB,
+C11,100nF,C_0402_1005Metric,C1525,,yes,U1 VCCA,
+C12,100nF,C_0402_1005Metric,C1525,,yes,U2 VCC,
+C13,100nF,C_0402_1005Metric,C1525,,yes,U3 VCC,
+C14,100nF,C_0402_1005Metric,C1525,,yes,U4 VCC,
+C15,100nF,C_0402_1005Metric,C1525,,yes,U5 VCC,
+C16,100nF,C_0402_1005Metric,C1525,,yes,U6 VCC,
+C17,100nF,C_0402_1005Metric,C1525,,yes,U7 VCCA,
+C18,100nF,C_0402_1005Metric,C1525,,yes,U7 VCCB,
+C19,100nF,C_0402_1005Metric,C1525,,yes,U8 VCCA,
+C20,100nF,C_0402_1005Metric,C1525,,yes,U8 VCCB,
+C21,100nF,C_0402_1005Metric,C1525,,yes,U11 VCC (the inverter),
+C22,10uF,C_0805_2012Metric,C15525,,yes,+3V3 bulk,
+C23,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
+C24,1uF,C_0402_1005Metric,C52923,,yes,U9 output,
+C25,100nF,C_0402_1005Metric,C1525,,yes,U9 input,
+C26,100nF,C_0402_1005Metric,C1525,,yes,DB1 +3V3 entry,
+C27,10uF,C_0805_2012Metric,C15525,,yes,U10 input bulk (option),
+C28,10uF,C_0805_2012Metric,C15525,,yes,U10 output bulk (option),
 D1,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D2,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D3,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
@@ -31,113 +35,136 @@ D5,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF E
 D6,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D7,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D8,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
-J1,DB1 2x10 stack-through,PinSocket_2x10_P2.54mm_Vertical,C5361769,"2.54mm 2x10P stack-through (long-tail) female header, H>=8.5mm",yes,"Mates HL2 DB1. Long tails pass DB1 pins 7,8,10,12,13,14,16,18,19,20 up to a stacked companion board","Bottom side. CLIP the tails of positions 1-6, 9, 11, 15, 17 (used by the link) before stacking anything above."
-J2,DB12 2x03 socket,PinSocket_2x03_P2.54mm_Vertical,C124413,2.54mm 2x3P female header,yes,Mates HL2 DB12. NOTE pin 5 = FPGA PIN_89 (slow in) and pin 6 = FPGA PIN_88 (reverse clock); rev A had these two swapped,"Bottom side. DB12 is marked ""do not install"" in the HL2 BOM, so the user almost certainly has to solder the male header."
-J3,OUT 1 (mini HDMI),HDMI_C_Mini_19P_Horizontal_Hybrid,C2682170,XKB Connection A71-05H4-111N1,yes,"OUT 1: board A drives clock A and forward lanes 0,1,2 plus the status UART on SCL","Hybrid mount: reflow the SMT contacts, then solder the four through-hole shell legs. Mating face is flush with the board edge."
-J4,OUT 2 (mini HDMI),HDMI_C_Mini_19P_Horizontal_Hybrid,C2682170,XKB Connection A71-05H4-111N1,yes,"OUT 2: board A drives clock B and forward lanes 3,4,5. Slow out is not connected - the HL2 has no pin left","Hybrid mount: reflow the SMT contacts, then solder the four through-hole shell legs. Mating face is flush with the board edge."
-J5,IN (mini HDMI),HDMI_C_Mini_19P_Horizontal_Hybrid,C2682170,XKB Connection A71-05H4-111N1,yes,"IN: board A receives the reverse clock and reverse lanes 0,1,2 plus the command channel on SCL","Hybrid mount: reflow the SMT contacts, then solder the four through-hole shell legs. Mating face is flush with the board edge."
+D9,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
+J1,DB1 2x10 stack-through,PinSocket_2x10_P2.54mm_Vertical,,"Samtec SSQ-120-01-G-D (or SSQ-120-01-T-D / Harwin M20), 2.54mm 2x10 female, ~10mm tails",DNP,"Mates HL2 DB1. HAND SOLDERED - LCSC stocks no long-tail 2x10 socket at all (all seven of their 2x10 female listings are ordinary ~3.2 mm pins), so this is not a JLCPCB assembly line item. The ordinary vertical socket LCSC C42431860 fits the same holes if you do not want to stack anything","NOT PLACED BY JLCPCB - hand soldered, bottom side. Clip the tails of positions 1,2,3,4,5,6,9,11,15,17 FLUSH before fitting: those ten carry the link and must not be passed up to a stacked board. The ten that remain are 7,8 (Vlvds), 10,12 (CW/PTT), 13,14 (GND), 16,18 (SCL1/SDA1) and 19,20 (+3V3)."
+J2,DB12 2x03 socket,PinSocket_2x03_P2.54mm_Vertical,,"2.54mm 2x3P female header, VERTICAL (top entry)",DNP,"Mates HL2 DB12. HAND SOLDERED - LCSC has no vertical 2x3 female socket (their vertical female headers start at 2x4, and the 2x3 they do list, C99515, is side entry). Buy a 2x4 and cut it down, or source a 2x3 outside LCSC. NOTE pin 5 = FPGA PIN_89 (the ROLE strap read) and pin 6 = FPGA PIN_88 (the IN clock); rev A had these two swapped","NOT PLACED BY JLCPCB - hand soldered, bottom side. DB12 is marked ""do not install"" in the HL2 BOM, so the male header on the radio almost certainly has to be soldered too."
+J3,OUT (mini HDMI),HDMI_C_Mini_19P_Horizontal_Hybrid,C2682170,XKB Connection A71-05H4-111N1,yes,"OUT, cable 1: board A drives the 153.6 MHz link clock and lanes 0,1,2 at 307.2 Mbit/s, plus the status UART on SCL. All four pairs driven","Hybrid mount: reflow the SMT contacts, then solder the four through-hole shell legs. Mating face is flush with the board edge."
+J4,AUX (mini HDMI),HDMI_C_Mini_19P_Horizontal_Hybrid,C2682170,XKB Connection A71-05H4-111N1,yes,"AUX, cable 3: bidirectional, full duplex. G1 = clock pair + data 0 pair, G2 = data 1 pair + data 2 pair. The ROLE strap decides which group this board drives. SCL, HPD and +5 V are test pads only","Hybrid mount: reflow the SMT contacts, then solder the four through-hole shell legs. Mating face is flush with the board edge."
+J5,IN (mini HDMI),HDMI_C_Mini_19P_Horizontal_Hybrid,C2682170,XKB Connection A71-05H4-111N1,yes,"IN, cable 2: board A receives the reverse clock and reverse lanes 0,1,2 at 307.2 Mbit/s. Its SCL is a test pad only in rev C - PIN_89 reads the ROLE strap now, so there is no destination for a received slow line","Hybrid mount: reflow the SMT contacts, then solder the four through-hole shell legs. Mating face is flush with the board edge."
 J6,3V3 SRC,PinHeader_1x03_P2.54mm_Vertical,C2337,2.54mm 1x3P pin header,yes,"Board supply select: 1-2 = HL2 DB1 +3V3 (DEFAULT), 2-3 = the on-board LDO fed from the IN socket +5 V pin",
-J7,RX MODE,PinHeader_1x03_P2.54mm_Vertical,C2337,2.54mm 1x3P pin header,yes,"IN receiver enable: 2-3 = auto, enabled only while a cable is in the IN socket (DEFAULT); 1-2 = force disabled; no shunt = always enabled",
+J7,RX MODE,PinHeader_1x03_P2.54mm_Vertical,C2337,2.54mm 1x3P pin header,yes,"IN receiver enable: 2-3 = auto, enabled only while a cable is in the IN socket (DEFAULT); 1-2 = force disabled; no shunt = always enabled. Does NOT affect the AUX receiver, which is always on",
 J8,GND CLIP,PinHeader_1x02_P2.54mm_Vertical,C2337,2.54mm 1x2P pin header,yes,Ground clip / scope reference,
-R1,0R,R_0402_1005Metric,C17168,,yes,SL_D0: cuttable link on DB1 pin 1. That HL2 net reaches PIN_72 only through the HL2 jumper J25 and also carries uFL pad CL8,FITTED. Cut to isolate board A from DB1 pin 1.
-R1,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_D0 while the HL2 FPGA is unconfigured,
-R2,150R,R_0402_1005Metric,C25746,,yes,"Clock A divider, top. 3.3 V PIN_98 -> 2.40 V, which is inside the translator A-side maximum of VCCA + 0.5 V",
-R2,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_D1 while the HL2 FPGA is unconfigured,
-R3,470R,R_0402_1005Metric,C25117,,yes,"Clock A divider, bottom. Thevenin 113 R, 5.1 mA from PIN_98 - inside its 8 mA drive setting",
-R3,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_D2 while the HL2 FPGA is unconfigured,
-R4,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_D3 while the HL2 FPGA is unconfigured,
-R5,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_D4 while the HL2 FPGA is unconfigured,
-R6,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_D5 while the HL2 FPGA is unconfigured,
-R7,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_CLKB while the HL2 FPGA is unconfigured,
-R8,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_CLKA straight to DRVI_O1_CLK","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3 if you bypass clock A."
-R9,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_D0 straight to DRVI_O1_D0","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3 if you bypass clock A."
-R10,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_D1 straight to DRVI_O1_D1","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3 if you bypass clock A."
-R11,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_D2 straight to DRVI_O1_D2","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3 if you bypass clock A."
-R12,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_CLKB straight to DRVI_O2_CLK","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3 if you bypass clock A."
-R13,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_D3 straight to DRVI_O2_D0","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3 if you bypass clock A."
-R14,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_D4 straight to DRVI_O2_D1","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3 if you bypass clock A."
-R15,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_D5 straight to DRVI_O2_D2","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3 if you bypass clock A."
-R16,0R,R_0402_1005Metric,C17168,,yes,Reverse lane 0 into DB1 (3.3 V bank). 0402 pads take 22 R instead if damping is wanted,
-R17,0R,R_0402_1005Metric,C17168,,yes,Reverse lane 1 into DB1 (3.3 V bank). 0402 pads take 22 R instead if damping is wanted,
-R18,0R,R_0402_1005Metric,C17168,,yes,Reverse lane 2 into DB1 (3.3 V bank). 0402 pads take 22 R instead if damping is wanted,
-R19,0R,R_0402_1005Metric,C17168,,yes,Reverse clock (2.5 V) into HL2 PIN_88 = DB12 pin 6,
-R20,0R,R_0402_1005Metric,C17168,,yes,Slow in (2.5 V) into HL2 PIN_89 = DB12 pin 5,
-R21,100R,R_0402_1005Metric,C25076,,yes,Status UART out of DB12-1 (2.5 V) onto OUT 1 SCL. Source damping for an unterminated cable wire,
-R22,1k,R_0402_1005Metric,C21190,,yes,OUT 1 HPD to ground so the far end detects the cable,
-R23,1k,R_0402_1005Metric,C21190,,yes,OUT 2 HPD to ground so the far end detects the cable,
-R24,10k,R_0402_1005Metric,C25744,,yes,IN cable detect pull-up; LOW = cable plugged in,
-R25,100k,R_0402_1005Metric,C25741,,yes,"Holds the receiver enabled when J7 has no shunt, so ""no shunt"" is a defined state rather than a floating enable pin",
-R26,0R,R_0402_1005Metric,C17168,,DNP,SL_5V: lets the IN socket's +5 V pin feed U7,NOT FITTED. See DESIGN_NOTES.md 5 for why this is not the default.
-R27,0R,R_0402_1005Metric,C17168,,DNP,SL_VLVDS: reference the translators' 2.5 V side to the HL2's own Vlvds rail (DB1 pins 7/8) instead of U6,NOT FITTED. Do not fit together with U6. Electrically ideal - the thresholds then track the FPGA bank supply exactly - but it draws ~10 mA from the HL2 TPS730 whose headroom is unverified.
-R28,0R,R_0805_2012Metric,C17168,,yes,Socket 1 shell to board ground. 0805 so the shield can be lifted if a ground loop appears,
-R29,0R,R_0805_2012Metric,C17168,,yes,Socket 2 shell to board ground. 0805 so the shield can be lifted if a ground loop appears,
-R30,0R,R_0805_2012Metric,C17168,,yes,Socket 3 shell to board ground. 0805 so the shield can be lifted if a ground loop appears,
-R31,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I CLK P leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
-R32,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I CLK N leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
-R33,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, I CLK. Place within 5 mm of the receiver pins.",
-R34,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I CLK P leg",NOT FITTED. Part of the AC-coupling option.
-R35,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I CLK N leg",NOT FITTED. Part of the AC-coupling option.
-R36,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D0 P leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
-R37,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D0 N leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
-R38,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, I D0. Place within 5 mm of the receiver pins.",
-R39,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D0 P leg",NOT FITTED. Part of the AC-coupling option.
-R40,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D0 N leg",NOT FITTED. Part of the AC-coupling option.
-R41,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D1 P leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
-R42,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D1 N leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
-R43,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, I D1. Place within 5 mm of the receiver pins.",
-R44,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D1 P leg",NOT FITTED. Part of the AC-coupling option.
-R45,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D1 N leg",NOT FITTED. Part of the AC-coupling option.
-R46,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D2 P leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
-R47,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D2 N leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
-R48,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, I D2. Place within 5 mm of the receiver pins.",
-R49,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D2 P leg",NOT FITTED. Part of the AC-coupling option.
-R50,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D2 N leg",NOT FITTED. Part of the AC-coupling option.
-R51,1k8,R_0402_1005Metric,C25867,,DNP,VBIAS divider top: 1k8 / 1k0 from +3V3 gives 1.18 V,NOT FITTED. Part of the AC-coupling option.
-R52,1k0,R_0402_1005Metric,C21190,,DNP,VBIAS divider bottom,NOT FITTED. Part of the AC-coupling option.
-R53,0R,R_0402_1005Metric,C17168,,yes,"Slow-line series link, I_SLOW",FITTED. Cut to isolate the slow line.
-R54,10k,R_0402_1005Metric,C25744,,yes,Idles X_SLOWIN_A in the UART mark state with no cable,
-TP1,TP_HL2_CLKA_RAW,TestPoint_Pad_D1.5mm,,,yes,,
-TP2,TP_HL2_CLKA,TestPoint_Pad_D1.5mm,,,yes,,
-TP3,TP_HL2_D0,TestPoint_Pad_D1.5mm,,,yes,,
-TP4,TP_HL2_D1,TestPoint_Pad_D1.5mm,,,yes,,
-TP5,TP_HL2_D2,TestPoint_Pad_D1.5mm,,,yes,,
-TP6,TP_HL2_D3,TestPoint_Pad_D1.5mm,,,yes,,
-TP7,TP_HL2_D4,TestPoint_Pad_D1.5mm,,,yes,,
-TP8,TP_HL2_D5,TestPoint_Pad_D1.5mm,,,yes,,
-TP9,TP_HL2_CLKB,TestPoint_Pad_D1.5mm,,,yes,,
+J9,ROLE,PinHeader_1x03_P2.54mm_Vertical,C2337,2.54mm 1x3P pin header,yes,"ROLE strap, ONE shunt: 1-2 = ROLE A (this board drives AUX G1, receives G2) which is how board A ships; 2-3 = ROLE B (drives G2, receives G1). The two boards of a link must be strapped differently","Fit ONE shunt (LCSC C5305). Board A ships 1-2 = ROLE A. With no shunt at all the 100k pull-down makes it ROLE B, which is a safe state, not a floating one."
+R1,0R,R_0402_1005Metric,C17168,,yes,"SL_D0: cuttable link on DB1 pin 1. That HL2 net reaches PIN_72 only through the HL2 jumper J25 and also carries uFL pad CL8, an unterminated stub no bridge board can remove",FITTED. Cut to isolate board A from DB1 pin 1. HL2 jumper J25 must be CLOSED or the AUX G2 clock is dead.
+R1,10k,R_0402_1005Metric,C25744,,yes,"Defines HL2_O_D0 (OUT lane 0) while nothing drives it - the HL2 FPGA unconfigured, or the local translator port disabled by the strap",
+R2,100R,R_0402_1005Metric,C25076,,yes,"OUT clock divider, series leg. 3.3 V PIN_98 -> 2.77 V, 1.14 V over the translator threshold and 230 mV under its 3.0 V absolute maximum",
+R2,10k,R_0402_1005Metric,C25744,,yes,"Defines HL2_O_D1 (OUT lane 1) while nothing drives it - the HL2 FPGA unconfigured, or the local translator port disabled by the strap",
+R3,330R,R_0402_1005Metric,C25104,,yes,"OUT clock divider, shunt leg 1 of 2. 660 R total: 4.2 mA from PIN_98, inside its 8 mA drive setting; Thevenin 87 ohm; 0.77 ns into the translator input",
+R3,10k,R_0402_1005Metric,C25744,,yes,"Defines HL2_O_D2 (OUT lane 2) while nothing drives it - the HL2 FPGA unconfigured, or the local translator port disabled by the strap",
+R4,330R,R_0402_1005Metric,C25104,,yes,"OUT clock divider, shunt leg 2 of 2",
+R4,10k,R_0402_1005Metric,C25744,,yes,"Defines HL2_AX_G1CLK (AUX G1 clock, bidirectional) while nothing drives it - the HL2 FPGA unconfigured, or the local translator port disabled by the strap",
+R5,10k,R_0402_1005Metric,C25744,,yes,"Defines HL2_AX_G1DAT (AUX G1 data, bidirectional) while nothing drives it - the HL2 FPGA unconfigured, or the local translator port disabled by the strap",
+R6,10k,R_0402_1005Metric,C25744,,yes,"Defines HL2_AX_G2CLK (AUX G2 clock, bidirectional) while nothing drives it - the HL2 FPGA unconfigured, or the local translator port disabled by the strap",
+R7,10k,R_0402_1005Metric,C25744,,yes,"Defines HL2_AX_G2DAT (AUX G2 data, bidirectional) while nothing drives it - the HL2 FPGA unconfigured, or the local translator port disabled by the strap",
+R8,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_CLK straight to DRVI_O_CLK","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3/R4 if you bypass the clock."
+R9,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_O_D0 straight to DRVI_O_D0","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3/R4 if you bypass the clock."
+R10,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_O_D1 straight to DRVI_O_D1","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3/R4 if you bypass the clock."
+R11,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_O_D2 straight to DRVI_O_D2","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3/R4 if you bypass the clock."
+R12,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_AX_G1CLK straight to DRVI_AX_CLK","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3/R4 if you bypass the clock."
+R13,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_AX_G1DAT straight to DRVI_AX_D0","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3/R4 if you bypass the clock."
+R14,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_AX_G2CLK straight to DRVI_AX_D1","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3/R4 if you bypass the clock."
+R15,0R,R_0402_1005Metric,C17168,,DNP,"Translator bypass, HL2_AX_G2DAT straight to DRVI_AX_D2","NOT FITTED. Fitting all eight and removing U1 falls back to connecting the HL2 2.5 V outputs directly to the LVDS drivers, which works in practice but has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). Also remove R3/R4 if you bypass the clock."
+R16,0R,R_0402_1005Metric,C17168,,yes,IN lane 0 into DB1 (3.3 V bank). 0402 pads take 22 R instead if damping is wanted,
+R17,0R,R_0402_1005Metric,C17168,,yes,IN lane 1 into DB1 (3.3 V bank). 0402 pads take 22 R instead if damping is wanted,
+R18,0R,R_0402_1005Metric,C17168,,yes,IN lane 2 into DB1 (3.3 V bank). 0402 pads take 22 R instead if damping is wanted,
+R19,0R,R_0402_1005Metric,C17168,,yes,IN clock (2.5 V) into HL2 PIN_88 = DB12 pin 6,
+R20,0R,R_0402_1005Metric,C17168,,yes,"the ROLE level (2.5 V) into HL2 PIN_89 = DB12 pin 5, so the gateware knows its own role and sets its four AUX pin directions to match",
+R21,0R,R_0402_1005Metric,C17168,,yes,"AUX G1 clock (2.5 V) into HL2 PIN_85 = DB1 pin 6, in ROLE B only",
+R22,0R,R_0402_1005Metric,C17168,,yes,"AUX G1 data (2.5 V) into HL2 PIN_87 = DB12 pin 2, in ROLE B only",
+R23,0R,R_0402_1005Metric,C17168,,yes,"AUX G2 clock (2.5 V) into HL2 PIN_72 = DB1 pin 1, in ROLE A only",
+R24,0R,R_0402_1005Metric,C17168,,yes,"AUX G2 data (2.5 V) into HL2 PIN_80 = DB1 pin 4, in ROLE A only. PIN_80 is VREFB5N0 with ~21 pF of pin capacitance and is the slowest lane in the design",
+R25,100R,R_0402_1005Metric,C25076,,yes,Status UART out of DB12-1 (2.5 V) onto the OUT socket SCL. Source damping for an unterminated cable wire,
+R26,100R,R_0402_1005Metric,C25076,,yes,"OUT HPD to ground so the far end detects the cable. 100 R against the far 10 k gives 0.033 V, at 0.33 mA of idle current",
+R27,10k,R_0402_1005Metric,C25744,,yes,IN cable detect pull-up; LOW = cable plugged in,
+R28,100k,R_0402_1005Metric,C25741,,yes,"Holds the IN receiver enabled when J7 has no shunt, so ""no shunt"" is a defined state rather than a floating enable pin",
+R29,100k,R_0402_1005Metric,C25741,,yes,"Makes ""no shunt on J9"" mean ROLE B rather than a floating inverter input. 33 uA through the shunt in the ROLE A position",
+R30,10k,R_0402_1005Metric,C25744,,yes,"ROLE_N pull-UP. THE DIRECTION MATTERS: if U11 is missing, unpowered or dead, ROLE_N reads HIGH, which DISABLES the G2 translator port toward the HL2. The auxiliary link then does not work and nothing is stressed. A pull-down would have enabled it instead",
+R31,0R,R_0402_1005Metric,C17168,,DNP,SL_5V: lets the IN socket's +5 V pin feed U10,NOT FITTED. See DESIGN_NOTES.md 5 for why this is not the default.
+R32,0R,R_0402_1005Metric,C17168,,DNP,SL_VLVDS: reference the translators' 2.5 V side to the HL2's own Vlvds rail (DB1 pins 7/8) instead of U9,NOT FITTED. Do not fit together with U9. Electrically ideal - the thresholds then track the FPGA bank supply exactly - but it draws ~10 mA from the HL2 TPS730 whose headroom is unverified.
+R33,0R,R_0805_2012Metric,C17168,,yes,Socket 1 shell to board ground. 0805 so the shield can be lifted if a ground loop appears,
+R34,0R,R_0805_2012Metric,C17168,,yes,Socket 2 shell to board ground. 0805 so the shield can be lifted if a ground loop appears,
+R35,0R,R_0805_2012Metric,C17168,,yes,Socket 3 shell to board ground. 0805 so the shield can be lifted if a ground loop appears,
+R36,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I CLK P leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
+R37,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I CLK N leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
+R38,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, I CLK. Place within 5 mm of the receiver pins.",
+R39,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I CLK P leg",NOT FITTED. Part of the AC-coupling option.
+R40,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I CLK N leg",NOT FITTED. Part of the AC-coupling option.
+R41,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D0 P leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
+R42,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D0 N leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
+R43,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, I D0. Place within 5 mm of the receiver pins.",
+R44,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D0 P leg",NOT FITTED. Part of the AC-coupling option.
+R45,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D0 N leg",NOT FITTED. Part of the AC-coupling option.
+R46,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D1 P leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
+R47,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D1 N leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
+R48,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, I D1. Place within 5 mm of the receiver pins.",
+R49,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D1 P leg",NOT FITTED. Part of the AC-coupling option.
+R50,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D1 N leg",NOT FITTED. Part of the AC-coupling option.
+R51,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D2 P leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
+R52,0R,R_0402_1005Metric,C17168,,yes,"DC-coupled link (default), I D2 N leg",FITTED. Remove to use the AC-coupling capacitor in parallel with it.
+R53,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, I D2. Place within 5 mm of the receiver pins.",
+R54,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D2 P leg",NOT FITTED. Part of the AC-coupling option.
+R55,4k7,R_0402_1005Metric,C25900,,DNP,"AC-coupling common-mode bias, I D2 N leg",NOT FITTED. Part of the AC-coupling option.
+R56,10k,R_0402_1005Metric,C25744,,DNP,VBIAS divider top: 10k / 4k7 from +3V3 gives 1.055 V,NOT FITTED. Part of the AC-coupling option.
+R57,4k7,R_0402_1005Metric,C25900,,DNP,VBIAS divider bottom,NOT FITTED. Part of the AC-coupling option.
+R58,100R,R_0402_1005Metric,C25076,,DNP,AUX CLK differential termination. NOT FITTED in ROLE A (how board A ships).,"NOT FITTED. This board DRIVES this pair in its shipped role, and the far end terminates it. Fit this one and remove the other two if you move the ROLE shunt."
+R59,100R,R_0402_1005Metric,C25076,,DNP,AUX D0 differential termination. NOT FITTED in ROLE A (how board A ships).,"NOT FITTED. This board DRIVES this pair in its shipped role, and the far end terminates it. Fit this one and remove the other two if you move the ROLE shunt."
+R60,100R,R_0402_1005Metric,C25076,,yes,AUX D1 differential termination. FITTED in ROLE A (how board A ships).,FITTED. This board RECEIVES this pair in its shipped role. Place within 5 mm of the receiver pins.
+R61,100R,R_0402_1005Metric,C25076,,yes,AUX D2 differential termination. FITTED in ROLE A (how board A ships).,FITTED. This board RECEIVES this pair in its shipped role. Place within 5 mm of the receiver pins.
+TP1,TP_HL2_CLK_RAW,TestPoint_Pad_D1.5mm,,,yes,,
+TP2,TP_HL2_CLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP3,TP_HL2_O_D0,TestPoint_Pad_D1.5mm,,,yes,,
+TP4,TP_HL2_O_D1,TestPoint_Pad_D1.5mm,,,yes,,
+TP5,TP_HL2_O_D2,TestPoint_Pad_D1.5mm,,,yes,,
+TP6,TP_HL2_AX_G1CLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP7,TP_HL2_AX_G1DAT,TestPoint_Pad_D1.5mm,,,yes,,
+TP8,TP_HL2_AX_G2CLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP9,TP_HL2_AX_G2DAT,TestPoint_Pad_D1.5mm,,,yes,,
 TP10,TP_HL2_SLOW_OUT,TestPoint_Pad_D1.5mm,,,yes,,
-TP11,TP_HL2_REV0,TestPoint_Pad_D1.5mm,,,yes,,
-TP12,TP_HL2_REV1,TestPoint_Pad_D1.5mm,,,yes,,
-TP13,TP_HL2_REV2,TestPoint_Pad_D1.5mm,,,yes,,
-TP14,TP_HL2_REVCLK,TestPoint_Pad_D1.5mm,,,yes,,
-TP15,TP_HL2_SLOW_IN,TestPoint_Pad_D1.5mm,,,yes,,
-TP16,TP_DRVI_O1_CLK,TestPoint_Pad_D1.5mm,,,yes,,
-TP17,TP_DRVI_O2_CLK,TestPoint_Pad_D1.5mm,,,yes,,
-TP18,TP_RXO_ICLK,TestPoint_Pad_D1.5mm,,,yes,,
-TP19,TP_RXO_ID0,TestPoint_Pad_D1.5mm,,,yes,,
-TP20,TP_RXO_ID1,TestPoint_Pad_D1.5mm,,,yes,,
-TP21,TP_RXO_ID2,TestPoint_Pad_D1.5mm,,,yes,,
-TP22,TP_X_SLOWIN_A,TestPoint_Pad_D1.5mm,,,yes,,
-TP23,TP_X_SP1,TestPoint_Pad_D1.5mm,,,yes,,
-TP24,TP_X_SP2,TestPoint_Pad_D1.5mm,,,yes,,
-TP25,TP_O1_HPD,TestPoint_Pad_D1.5mm,,,yes,,
-TP26,TP_O2_HPD,TestPoint_Pad_D1.5mm,,,yes,,
-TP27,TP_I_HPD,TestPoint_Pad_D1.5mm,,,yes,,
-TP28,TP_O2_SLOW,TestPoint_Pad_D1.5mm,,,yes,,
-TP29,TP_I_5V_PIN,TestPoint_Pad_D1.5mm,,,yes,,
-TP30,TP_VBIAS,TestPoint_Pad_D1.5mm,,,yes,,
-TP31,TP_SCL1,TestPoint_Pad_D1.5mm,,,yes,,
-TP32,TP_SDA1,TestPoint_Pad_D1.5mm,,,yes,,
-TP33,TP_VLVDS,TestPoint_Pad_D1.5mm,,,yes,,
-TP34,TP_+3V3,TestPoint_Pad_D1.5mm,,,yes,,
-TP35,TP_+2V5,TestPoint_Pad_D1.5mm,,,yes,,
-TP36,TP_DB1_3V3,TestPoint_Pad_D1.5mm,,,yes,,
-TP37,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
-TP38,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
-U1,SN74AVC8T245PW,TSSOP-24_4.4x7.8mm_P0.65mm,C53535,SN74AVC8T245PWR,yes,"8-bit dual-supply level translator, VCCA 2.5 V / VCCB 3.3 V. Gives the HL2 2.5 V outputs 370 mV of GUARANTEED margin into the LVDS driver inputs, which a direct connection does not have","DIR tied to VCCA (+2V5) = A->B, OE* tied low. All eight forward signals including both clocks pass through this one package so they share its propagation delay."
-U2,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C201946,DS90LV047ATM/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. Drives socket O1: all four channels used, none spare",
-U3,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C201946,DS90LV047ATM/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. Drives socket O2: all four channels used, none spare",
-U4,DS90LV048A,TSSOP-16_4.4x5mm_P0.65mm,C87137,DS90LV048ATMTCX/NOPB,yes,"Quad LVDS receiver, 400 Mbps, TSSOP-16. Receives socket IN: all four channels used, none spare",
-U5,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply level translator, VCCA 3.3 V / VCCB 2.5 V. HL2 PIN_88 and PIN_89 are input-only pins in a 2.5 V bank whose PCI clamp would inject DC into the HL2's 2.5 V rail if driven at 3.3 V","DIR tied to VCCA (+3V3) = A->B, OE* tied low. Channels 3 and 4 are unused: inputs tied to GND, outputs to test pads."
-U6,ME6211C25M5G,SOT-23-5,C194395,ME6211C25M5G-N,yes,2.5 V 400 mA LDO. Supplies only the two translators' 2.5 V sides,
-U7,AMS1117-3.3,SOT-223-3_TabPin2,C6186,AMS1117-3.3,DNP,Optional 3.3 V from the IN socket's +5 V pin. NOT the default supply: see DESIGN_NOTES.md 5,NOT FITTED by default. Board A normally runs from HL2 DB1 pins 19/20. In the two-radio configuration there is no 5 V source at all.
+TP11,TP_HL2_I_D0,TestPoint_Pad_D1.5mm,,,yes,,
+TP12,TP_HL2_I_D1,TestPoint_Pad_D1.5mm,,,yes,,
+TP13,TP_HL2_I_D2,TestPoint_Pad_D1.5mm,,,yes,,
+TP14,TP_HL2_INCLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP15,TP_HL2_ROLE_IN,TestPoint_Pad_D1.5mm,,,yes,,
+TP16,TP_ROLE,TestPoint_Pad_D1.5mm,,,yes,,
+TP17,TP_ROLE_N,TestPoint_Pad_D1.5mm,,,yes,,
+TP18,TP_DRVI_O_CLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP19,TP_DRVI_AX_CLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP20,TP_DRVI_AX_D1,TestPoint_Pad_D1.5mm,,,yes,,
+TP21,TP_RXO_I_CLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP22,TP_RXO_I_D0,TestPoint_Pad_D1.5mm,,,yes,,
+TP23,TP_RXO_I_D1,TestPoint_Pad_D1.5mm,,,yes,,
+TP24,TP_RXO_I_D2,TestPoint_Pad_D1.5mm,,,yes,,
+TP25,TP_RXO_AX_CLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP26,TP_RXO_AX_D0,TestPoint_Pad_D1.5mm,,,yes,,
+TP27,TP_RXO_AX_D1,TestPoint_Pad_D1.5mm,,,yes,,
+TP28,TP_RXO_AX_D2,TestPoint_Pad_D1.5mm,,,yes,,
+TP29,TP_X_SP1,TestPoint_Pad_D1.5mm,,,yes,,
+TP30,TP_X_SP2,TestPoint_Pad_D1.5mm,,,yes,,
+TP31,TP_O_HPD,TestPoint_Pad_D1.5mm,,,yes,,
+TP32,TP_AX_HPD,TestPoint_Pad_D1.5mm,,,yes,,
+TP33,TP_I_HPD,TestPoint_Pad_D1.5mm,,,yes,,
+TP34,TP_AX_SLOW,TestPoint_Pad_D1.5mm,,,yes,,
+TP35,TP_I_SLOW,TestPoint_Pad_D1.5mm,,,yes,,
+TP36,TP_O_5V_PIN,TestPoint_Pad_D1.5mm,,,yes,,
+TP37,TP_AX_5V_PIN,TestPoint_Pad_D1.5mm,,,yes,,
+TP38,TP_I_5V_PIN,TestPoint_Pad_D1.5mm,,,yes,,
+TP39,TP_VBIAS,TestPoint_Pad_D1.5mm,,,yes,,
+TP40,TP_SCL1,TestPoint_Pad_D1.5mm,,,yes,,
+TP41,TP_SDA1,TestPoint_Pad_D1.5mm,,,yes,,
+TP42,TP_VLVDS,TestPoint_Pad_D1.5mm,,,yes,,
+TP43,TP_+3V3,TestPoint_Pad_D1.5mm,,,yes,,
+TP44,TP_+2V5,TestPoint_Pad_D1.5mm,,,yes,,
+TP45,TP_DB1_3V3,TestPoint_Pad_D1.5mm,,,yes,,
+TP46,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
+TP47,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
+U1,SN74AVC8T245PW,TSSOP-24_4.4x7.8mm_P0.65mm,C465742,SN74AVC8T245PWR,yes,"8-bit dual-supply level translator, VCCA 2.5 V / VCCB 3.3 V. Gives the HL2 2.5 V outputs 370 mV of GUARANTEED margin into the LVDS driver inputs, which a direct connection does not have. All 8 channels used: OUT clock + 3 OUT lanes + all 4 AUX pins","DIR tied to VCCA (+2V5) = A->B, OE* tied low - ALWAYS enabled. The four AUX channels sit on nets that this board's own 4-bit translators drive when the HL2 pin is an input; a translator A-side input is a ~5 pF load and never a driver, so that is not contention. What decides whether an AUX signal reaches the cable is the LVDS driver's EN, not this part."
+U2,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. OUT: the forward cable. All four channels used, none spare. EN tied high - this socket is always driven",EN tied to +3V3 and EN* to GND: permanently enabled.
+U3,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. AUX group G1 (clock pair + data 0 pair). Two channels used, two spare. EN = ROLE, so this pair is driven only in ROLE A","EN = ROLE. Enabled in ROLE A, tri-stated in ROLE B. Channels 3 and 4 are unused: inputs grounded, outputs left open."
+U4,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. AUX group G2 (data 1 pair + data 2 pair). Two channels used, two spare. EN = ROLE_N, so this pair is driven only in ROLE B","EN = ROLE_N. Enabled in ROLE B, tri-stated in ROLE A. ROLE_N comes from U11 and carries a 10k pull-UP, so a missing or dead inverter leaves this driver enabled but its G2 translator port toward the HL2 DISABLED - the auxiliary link fails to work and nothing is stressed. Channels 3 and 4 unused."
+U5,DS90LV048A,TSSOP-16_4.4x5mm_P0.65mm,C87137,DS90LV048ATMTCX/NOPB,yes,"Quad LVDS receiver, 400 Mbps, TSSOP-16. Receives socket IN: reverse clock and reverse lanes 0,1,2. All four channels used","EN* = RXEN_N, gated by the IN cable detect through J7, so the stock HL2 gateware driving DB1 11/15/17 as LED outputs cannot meet this receiver driving the same pins."
+U6,DS90LV048A,TSSOP-16_4.4x5mm_P0.65mm,C87137,DS90LV048ATMTCX/NOPB,yes,"Quad LVDS receiver, 400 Mbps, TSSOP-16. Sits across ALL FOUR AUX pairs in both roles - the two it receives and the two its own drivers drive","EN tied high, EN* tied low: ALWAYS enabled, in both roles. That is deliberate and it is safe. A receiver input is high impedance, so listening to a pair this board is also driving costs nothing; the outputs for the driven group simply go to a translator port that is disabled, so they reach no HL2 pin."
+U7,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply level translator, VCCA 3.3 V / VCCB 2.5 V. Port 1 (always on) = the IN clock into PIN_88 and the ROLE level into PIN_89. Port 2 = AUX group G2 toward the HL2, enabled only in ROLE A","HL2 PIN_88 and PIN_89 are input-only pins in a 2.5 V bank whose PCI clamp would inject DC into the HL2 2.5 V rail if driven at 3.3 V. 1OE* = GND (always enabled), 2OE* = ROLE_N: the G2 port drives PIN_72 and PIN_80 only in ROLE A, which is exactly when the gateware has those two pins as inputs."
+U8,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply level translator, VCCA 3.3 V / VCCB 2.5 V. Port 1 = AUX group G1 toward the HL2, enabled only in ROLE B. Port 2 is unused","1OE* = ROLE: the G1 port drives PIN_85 and PIN_87 only in ROLE B, which is exactly when the gateware has those two pins as inputs. Port 2 is disabled (2OE* to +3V3) with its inputs grounded and its outputs on test pads."
+U9,ME6211C25M5G,SOT-23-5,C194395,ME6211C25M5G-N,yes,2.5 V 400 mA LDO. Supplies only the 2.5 V sides of the three translators,
+U10,AMS1117-3.3,SOT-223-3_TabPin2,C6186,AMS1117-3.3,DNP,Optional 3.3 V from the IN socket's +5 V pin. NOT the default supply: see DESIGN_NOTES.md 5,NOT FITTED by default. Board A normally runs from HL2 DB1 pins 19/20. In the two-radio configuration there is no 5 V source at all.
+U11,74LVC1G04,SOT-23-5,C7827,SN74LVC1G04DBVR,yes,Single-gate inverter: ROLE_N = NOT ROLE. This one part is what makes the complement a property of the circuit instead of a property of the user remembering to move two shunts the same way,"SOT-23-5, TI DBV pinout (1 NC, 2 A, 3 GND, 4 Y, 5 VCC). Nexperia's 74LVC1G04GW has a DIFFERENT pinout - do not substitute it."

@@ -10,9 +10,17 @@ Writes, next to this tools/ directory:
     ../hl2-bridge/hl2-bridge-bom.csv
     ... and the same set under ../tang-bridge/
 
-rev B: three HDMI sockets per board instead of two dual-link DVI sockets, and
-the role (drive / receive) belongs to the socket rather than to pins inside it,
-so board A works at both ends of a mini-to-mini cable.  See PINMAP.md.
+rev C: three HDMI sockets per board - OUT, AUX, IN - with the two fixed-
+direction sockets on the OUTSIDE and the bidirectional auxiliary socket in the
+middle.  Every lane runs DDR at 153.6 MHz = 307.2 Mbit/s in both directions.
+The auxiliary socket's direction is set by a one-shunt ROLE strap plus a
+single-gate inverter, so one board design works at either end of any cable.
+See PINMAP.md rev C.
+
+Also emitted: a THIRD KiCad project, ../panel/, holding both boards side by
+side on one 94 x 100 mm V-scored production panel with assembly rails, so the
+whole set is one JLCPCB order.  The panel is generated from the same part
+lists, transformed, so it cannot drift from the two individual boards.
 
 Symbol graphics and most footprint land patterns are lifted from the stock
 KiCad libraries and re-emitted as project-local libraries, so the projects are
@@ -59,7 +67,7 @@ FPLIB = K.FpLib([os.path.join(SHARE, 'footprints')])
 LOCAL_SYM = 'gowin-bridge'
 LOCAL_FP = 'gowin-bridge'
 
-REV = 'B'
+REV = 'C'
 
 # ==========================================================================
 #  Mini HDMI (Type C) land pattern - the one footprint not in the stock libs
@@ -278,7 +286,22 @@ TYPES = {
                  'Connector_PinHeader_2.54mm', 'PinHeader_1x03_P2.54mm_Vertical'),
     'MH':       ('Mechanical', 'MountingHole_Pad', 'MountingHole',
                  'MountingHole_3.2mm_M3_Pad'),
+    # Single-gate inverter making ROLE_N = NOT ROLE.  TI SN74LVC1G04DBVR in
+    # DBV (SOT-23-5); LCSC C7827, 150,495 in stock and in JLCPCB's assembly
+    # library as an Extended part (checked 12 Sep 2026 - no Basic-tier
+    # 74LVC1G04 exists in SOT-23-5 at all, from any of the ten
+    # manufacturers JLCPCB lists, so the per-unique-Extended-part fee is
+    # unavoidable for this one chip).  Pinout 1 NC / 2 A / 3 GND / 4 Y /
+    # 5 VCC, taken from the KiCad 74xGxx symbol, which is drawn from the TI
+    # DBV datasheet.  NOTE Nexperia's 74LVC1G04GW is a DIFFERENT pinout
+    # (1 A / 2 GND / 3 Y / 5 VCC) - do not substitute it without changing
+    # INV_PINS below.
+    'INV':      ('74xGxx', '74LVC1G04', 'Package_TO_SOT_SMD', 'SOT-23-5'),
+    'FIDUCIAL': ('Mechanical', 'Fiducial', 'Fiducial', 'Fiducial_1mm_Mask2mm'),
 }
+
+# SN74LVC1G04DBVR pad numbers, so the netlist reads by function.
+INV_A, INV_Y, INV_GND, INV_VCC, INV_NC = '2', '4', '3', '5', '1'
 
 CUSTOM_SYMS = ('DS90LV047A', 'DS90LV048A')
 
@@ -432,6 +455,16 @@ class Board:
         self.texts = []                 # (layer, x, y, rot, size, text)
         self.lines = []                 # (layer, x0, y0, x1, y1, width)
         self.origin_note = origin_note
+        # (layer, net, priority, polygon, name) for anything that is not a
+        # full-board pour: the +2V5 island, and the panel's per-board planes.
+        self.zones_extra = []
+        # Full-board pours are per board too, because the panel has two
+        # independent boards on one outline and must not pour one net across
+        # both.  Empty means "the four standard pours over self.outline".
+        self.zones_full = None
+        # extra graphics the panel needs: V-score lines, mouse-bite drills
+        self.npth = []                  # (x, y, drill) plain holes
+        self.edge_extra = []            # [(x0,y0,x1,y1)] more Edge.Cuts
 
     def calibration_rule(self, x, y, length=50.0):
         """A dimension line on Dwgs.User so the user can confirm that a
@@ -482,11 +515,38 @@ def FLAG(net):
 
 
 # LCSC numbers for the passives, in one place.
-LC = dict(r0='C17168', r22='C25092', r68='C22990', r100='C25076',
-          r150='C25746', r220='C25768', r470='C25117', r1k='C21190',
-          r4k7='C25900', r10k='C25744', r100k='C25741',
-          c100n='C1525', c1u='C52923', c10u='C15525', c33p='C1555',
-          esd='C138714')
+# LCSC numbers for the passives, in one place.  EVERY number here was
+# checked against LCSC's live catalogue on 12 Sep 2026; the rev B set had six
+# numbers that were wrong, non-existent or unbuyable and four that pointed at
+# a different value or package than the BOM claimed.  The surviving set is
+# eleven values, all confirmed in stock and all JLCPCB Basic parts except
+# where noted.  DO NOT add a value here without looking the number up.
+LC = dict(r0='C17168',        # 0R    0402, Basic
+          r22='C25092',       # 22R   0402, Basic
+          r100='C25076',      # 100R  0402, Basic
+          r330='C25104',      # 330R  0402, Basic - 742,400 in stock
+          r4k7='C25900',      # 4k7   0402, Basic
+          r10k='C25744',      # 10k   0402, Basic
+          r100k='C25741',     # 100k  0402, Basic
+          c100n='C1525',      # 100nF 0402, Basic
+          c1u='C52923',       # 1uF   0402, Basic
+          c10u='C15525',      # 10uF  0805, Basic
+          c22p='C1555',       # 22pF  0402, Basic
+          esd='C138714')      # TPD4E05U06DQAR, USON-10
+
+# Silicon, connectors and the hand-fitted sockets.  Same rule: every number
+# verified live.  See STATUS.md for what each one replaced.
+LC_DRV = 'C206491'        # DS90LV047ATMX/NOPB, quad LVDS driver, SOIC-16
+LC_RCV = 'C87137'         # DS90LV048ATMTCX/NOPB, quad LVDS receiver, TSSOP-16
+LC_X8 = 'C465742'         # SN74AVC8T245PWR (rev B's C53535 does not exist)
+LC_X4 = 'C81461'          # SN74AVC4T245PWR
+LC_INV = 'C7827'          # SN74LVC1G04DBVR, SOT-23-5, Extended
+LC_LDO25 = 'C194395'      # ME6211C25M5G-N
+LC_LDO33 = 'C6186'         # AMS1117-3.3, Basic
+LC_HDR = 'C2337'          # 2.54 mm pin header strip
+LC_SKT2x20 = 'C5124634'   # BOOMELE 2.54 2x20P vertical female (C50982: no stock)
+LC_SKT2x10 = 'C42431860'  # JXTCONN PM2.54-2X10P-H85 vertical 2x10 female
+LC_SHUNT = 'C5305'        # jumper shunt for the ROLE strap and the option headers
 
 
 # ==========================================================================
@@ -622,18 +682,71 @@ def ac_coupling(ref, pfx, lanes, note_extra=''):
 
 
 def vbias_network(ref):
-    """The 1.2 V common-mode rail used only by the AC-coupling option."""
+    """The ~1.05 V common-mode rail used only by the AC-coupling option.
+
+    rev B used 1k8 / 1k0 for 1.18 V.  Both of those LCSC numbers turned out
+    to be a different value than the BOM claimed, so the divider is now
+    10 k / 4k7 from confirmed Basic parts: 3.3 x 4.7 / 14.7 = 1.055 V, still
+    mid-range for the DS90LV048A's 0.05 - 2.35 V input common mode.  The
+    divider carries no steady current, because the per-leg 4k7 bias
+    resistors sit in common mode, so the higher 3.2 k Thevenin impedance
+    costs nothing.
+    """
     return [
-        R(ref('R'), '1k8', '+3V3', 'VBIAS', lcsc='C25867', dnp=True,
-          desc='VBIAS divider top: 1k8 / 1k0 from +3V3 gives 1.18 V',
+        R(ref('R'), '10k', '+3V3', 'VBIAS', lcsc=LC['r10k'], dnp=True,
+          desc='VBIAS divider top: 10k / 4k7 from +3V3 gives 1.055 V',
           note='NOT FITTED. Part of the AC-coupling option.'),
-        R(ref('R'), '1k0', 'VBIAS', 'GND', lcsc='C21190', dnp=True,
+        R(ref('R'), '4k7', 'VBIAS', 'GND', lcsc=LC['r4k7'], dnp=True,
           desc='VBIAS divider bottom',
           note='NOT FITTED. Part of the AC-coupling option.'),
         C(ref('C'), '100nF', 'VBIAS', 'GND', lcsc=LC['c100n'], dnp=True,
           desc='VBIAS bypass',
           note='NOT FITTED. Part of the AC-coupling option.'),
     ]
+
+
+def aux_pairs(ref, pfx, term_fitted, role_a_label):
+    """The four AUX pairs: strap-selected 100 R terminations only.
+
+    An AUX pair is BIDIRECTIONAL: on the board side a driver output and a
+    receiver input meet at one node, and that node goes STRAIGHT to the
+    connector pin.  There is deliberately no series link and no AC-coupling
+    option on these pairs, unlike the fixed-direction received pairs:
+
+    * a series 0402 in the middle of a pair that is DRIVEN half the time is
+      an impedance discontinuity on the outgoing signal, and
+    * a series capacitor would break the driver's DC path to the cable and
+      leave the FAR end's receiver common mode undefined, because on a
+      bidirectional pair there is no always-DC-coupled end to set it.
+
+    So the only thing fitted per pair is the differential termination, and
+    which two of the four are fitted is what the ROLE strap selects.  It is a
+    build-time choice, not an electrical one: a switched 100 R would need an
+    analogue switch, and if BOTH ends terminated a driven pair the driver
+    would see 50 R and the differential swing would halve from about 350 mV
+    to about 175 mV against the receiver's 100 mV threshold - 75 mV of margin
+    over a 2 m cable, which is not enough.
+
+    ``term_fitted`` is the set of lanes this board RECEIVES in its shipped
+    role; the other two 100 R positions are left empty.
+    """
+    parts = []
+    for lane in LANES:
+        fit = lane in term_fitted
+        parts.append(R(ref('R'), '100R', '%s_%s_P' % (pfx, lane),
+                       '%s_%s_N' % (pfx, lane), lcsc=LC['r100'],
+                       dnp=not fit,
+                       desc='AUX %s differential termination. %s in %s.'
+                            % (lane, 'FITTED' if fit else 'NOT FITTED',
+                               role_a_label),
+                       note=('FITTED. This board RECEIVES this pair in its '
+                             'shipped role. Place within 5 mm of the '
+                             'receiver pins.' if fit else
+                             'NOT FITTED. This board DRIVES this pair in its '
+                             'shipped role, and the far end terminates it. '
+                             'Fit this one and remove the other two if you '
+                             'move the ROLE shunt.')))
+    return parts
 
 
 def slow_line_rx(ref, cable_net, sink_net, pull='up'):
@@ -650,7 +763,7 @@ def slow_line_rx(ref, cable_net, sink_net, pull='up'):
         parts.append(R(ref('R'), '10k', sink_net, 'GND', lcsc=LC['r10k'],
                        desc='Holds %s low with no cable, so the far end reads '
                             'a break rather than random data' % sink_net))
-    parts.append(C(ref('C'), '33pF', sink_net, 'GND', lcsc=LC['c33p'],
+    parts.append(C(ref('C'), '22pF', sink_net, 'GND', lcsc=LC['c22p'],
                    dnp=True,
                    desc='Optional ringing damper on %s' % sink_net,
                    note='NOT FITTED. Fit if the unterminated cable wire rings '
@@ -817,180 +930,339 @@ MINI_EDGE_Y = BOARD_A_H          # the front board edge; footprint origin
 def board_a():
     OUT = [(0, 0), (BOARD_A_W, 0), (BOARD_A_W, BOARD_A_H), (0, BOARD_A_H)]
     b = Board('hl2-bridge',
-              'Hermes Lite 2 <-> Gowin HDMI bridge, board A (HL2 side), rev B',
+              'Hermes Lite 2 <-> Gowin HDMI bridge, board A (HL2 side), rev C',
               OUT, (BOARD_A_W, BOARD_A_H),
               origin_note='local (0,0) = HL2 main board (70.50, 74.00)')
     ref = RefGen()
 
     # ---------------------------------------------------------------- HL2
-    # DB1 stack-through socket.  Only positions 7,8,10,12,13,14,16,18,19,20
-    # are meant to pass a tail up to a stacked companion board.
+    # DB1 socket.  The link uses positions 1-6, 9, 11, 15 and 17; the
+    # STACK-THROUGH tails exist ONLY on the other ten positions - 7, 8, 10,
+    # 12, 13, 14, 16, 18, 19, 20 - so a companion board stacked on top
+    # physically cannot reach a link signal.  On the Samtec long-tail socket
+    # that means clipping ten tails flush before fitting it.
     b.add(Part('J1', 'SKT2x10', 'DB1 2x10 stack-through', {
-        '1': 'HL2_D0_HDR', '2': 'HL2_D1', '3': 'HL2_D2', '4': 'HL2_D3',
-        '5': 'HL2_D4', '6': 'HL2_D5', '7': 'VLVDS', '8': 'VLVDS',
-        '9': 'HL2_CLKA_RAW', '10': None, '11': 'HL2_REV0', '12': None,
-        '13': 'GND', '14': 'GND', '15': 'HL2_REV1', '16': 'SCL1',
-        '17': 'HL2_REV2', '18': 'SDA1', '19': 'DB1_3V3', '20': 'DB1_3V3',
-    }, lcsc='C5361769',
-        mfr='2.54mm 2x10P stack-through (long-tail) female header, H>=8.5mm',
-        desc='Mates HL2 DB1. Long tails pass DB1 pins 7,8,10,12,13,14,16,18,'
-             '19,20 up to a stacked companion board',
-        at=DB1_PIN1, rot=0, layer='B.Cu', mirror=True,
-        note='Bottom side. CLIP the tails of positions 1-6, 9, 11, 15, 17 '
-             '(used by the link) before stacking anything above.'))
+        '1': 'HL2_AX_G2CLK_HDR', '2': 'HL2_O_D0', '3': 'HL2_O_D1',
+        '4': 'HL2_AX_G2DAT', '5': 'HL2_O_D2', '6': 'HL2_AX_G1CLK',
+        '7': 'VLVDS', '8': 'VLVDS',
+        '9': 'HL2_CLK_RAW', '10': None, '11': 'HL2_I_D0', '12': None,
+        '13': 'GND', '14': 'GND', '15': 'HL2_I_D1', '16': 'SCL1',
+        '17': 'HL2_I_D2', '18': 'SDA1', '19': 'DB1_3V3', '20': 'DB1_3V3',
+    }, lcsc='',
+        mfr='Samtec SSQ-120-01-G-D (or SSQ-120-01-T-D / Harwin M20), '
+            '2.54mm 2x10 female, ~10mm tails',
+        desc='Mates HL2 DB1. HAND SOLDERED - LCSC stocks no long-tail 2x10 '
+             'socket at all (all seven of their 2x10 female listings are '
+             'ordinary ~3.2 mm pins), so this is not a JLCPCB assembly line '
+             'item. The ordinary vertical socket LCSC C42431860 fits the same '
+             'holes if you do not want to stack anything',
+        at=DB1_PIN1, rot=0, layer='B.Cu', mirror=True, dnp=True,
+        note='NOT PLACED BY JLCPCB - hand soldered, bottom side. Clip the '
+             'tails of positions 1,2,3,4,5,6,9,11,15,17 FLUSH before '
+             'fitting: those ten carry the link and must not be passed up to '
+             'a stacked board. The ten that remain are 7,8 (Vlvds), 10,12 '
+             '(CW/PTT), 13,14 (GND), 16,18 (SCL1/SDA1) and 19,20 (+3V3).'))
 
     b.add(Part('J2', 'SKT2x03', 'DB12 2x03 socket', {
-        '1': 'HL2_SLOW_OUT', '2': 'HL2_CLKB', '3': 'GND', '4': 'GND',
-        '5': 'HL2_SLOW_IN', '6': 'HL2_REVCLK',
-    }, lcsc='C124413', mfr='2.54mm 2x3P female header',
-        desc='Mates HL2 DB12. NOTE pin 5 = FPGA PIN_89 (slow in) and pin 6 = '
-             'FPGA PIN_88 (reverse clock); rev A had these two swapped',
-        at=DB12_PIN1, rot=0, layer='B.Cu', mirror=True,
-        note='Bottom side. DB12 is marked "do not install" in the HL2 BOM, so '
-             'the user almost certainly has to solder the male header.'))
+        '1': 'HL2_SLOW_OUT', '2': 'HL2_AX_G1DAT', '3': 'GND', '4': 'GND',
+        '5': 'HL2_ROLE_IN', '6': 'HL2_INCLK',
+    }, lcsc='', mfr='2.54mm 2x3P female header, VERTICAL (top entry)',
+        desc='Mates HL2 DB12. HAND SOLDERED - LCSC has no vertical 2x3 '
+             'female socket (their vertical female headers start at 2x4, and '
+             'the 2x3 they do list, C99515, is side entry). Buy a 2x4 and cut '
+             'it down, or source a 2x3 outside LCSC. NOTE pin 5 = FPGA '
+             'PIN_89 (the ROLE strap read) and pin 6 = FPGA PIN_88 (the IN '
+             'clock); rev A had these two swapped',
+        at=DB12_PIN1, rot=0, layer='B.Cu', mirror=True, dnp=True,
+        note='NOT PLACED BY JLCPCB - hand soldered, bottom side. DB12 is '
+             'marked "do not install" in the HL2 BOM, so the male header on '
+             'the radio almost certainly has to be soldered too.'))
 
     # ---------------------------------------------------------- the sockets
+    # OUT and IN are the two OUTER sockets, so the two-radio case (which uses
+    # only those two) never has three cable boots side by side.
     socket_note = ('Hybrid mount: reflow the SMT contacts, then solder the '
                    'four through-hole shell legs. Mating face is flush with '
                    'the board edge.')
-    b.add(Part('J3', 'HDMI_C', 'OUT 1 (mini HDMI)',
-               hdmi_socket_pins('C', 'O1', None, 'SHLD1'),
+    b.add(Part('J3', 'HDMI_C', 'OUT (mini HDMI)',
+               hdmi_socket_pins('C', 'O', 'O_5V_PIN', 'SHLD1'),
                lcsc='C2682170', mfr='XKB Connection A71-05H4-111N1',
-               desc='OUT 1: board A drives clock A and forward lanes 0,1,2 '
-                    'plus the status UART on SCL',
+               desc='OUT, cable 1: board A drives the 153.6 MHz link clock '
+                    'and lanes 0,1,2 at 307.2 Mbit/s, plus the status UART '
+                    'on SCL. All four pairs driven',
                at=(MINI_X[0], MINI_EDGE_Y), rot=0, note=socket_note))
-    b.add(Part('J4', 'HDMI_C', 'OUT 2 (mini HDMI)',
-               hdmi_socket_pins('C', 'O2', None, 'SHLD2'),
+    b.add(Part('J4', 'HDMI_C', 'AUX (mini HDMI)',
+               hdmi_socket_pins('C', 'AX', 'AX_5V_PIN', 'SHLD2'),
                lcsc='C2682170', mfr='XKB Connection A71-05H4-111N1',
-               desc='OUT 2: board A drives clock B and forward lanes 3,4,5. '
-                    'Slow out is not connected - the HL2 has no pin left',
+               desc='AUX, cable 3: bidirectional, full duplex. G1 = clock '
+                    'pair + data 0 pair, G2 = data 1 pair + data 2 pair. The '
+                    'ROLE strap decides which group this board drives. SCL, '
+                    'HPD and +5 V are test pads only',
                at=(MINI_X[1], MINI_EDGE_Y), rot=0, note=socket_note))
     b.add(Part('J5', 'HDMI_C', 'IN (mini HDMI)',
                hdmi_socket_pins('C', 'I', 'I_5V_PIN', 'SHLD3'),
                lcsc='C2682170', mfr='XKB Connection A71-05H4-111N1',
-               desc='IN: board A receives the reverse clock and reverse lanes '
-                    '0,1,2 plus the command channel on SCL',
+               desc='IN, cable 2: board A receives the reverse clock and '
+                    'reverse lanes 0,1,2 at 307.2 Mbit/s. Its SCL is a test '
+                    'pad only in rev C - PIN_89 reads the ROLE strap now, so '
+                    'there is no destination for a received slow line',
                at=(MINI_X[2], MINI_EDGE_Y), rot=0, note=socket_note))
 
+    # ================================================== the ROLE strap
+    # One 1x3 header with ONE shunt, plus one single-gate inverter, gives two
+    # levels that CANNOT disagree.  PINMAP.md 2.4 has the full argument; the
+    # short version is that any independently settable pair of levels allows
+    # "both low", which enables a translator port toward a pin the gateware is
+    # driving as an output - CMOS against CMOS on PIN_72 and PIN_80.
+    b.add(Part('J9', 'HDR1x03', 'ROLE', {
+        '1': '+3V3', '2': 'ROLE', '3': 'GND',
+    }, lcsc=LC_HDR, mfr='2.54mm 1x3P pin header',
+        desc='ROLE strap, ONE shunt: 1-2 = ROLE A (this board drives AUX G1, '
+             'receives G2) which is how board A ships; 2-3 = ROLE B (drives '
+             'G2, receives G1). The two boards of a link must be strapped '
+             'differently',
+        at=(45.0, 24.0), rot=0,
+        note='Fit ONE shunt (LCSC C5305). Board A ships 1-2 = ROLE A. With '
+             'no shunt at all the 100k pull-down makes it ROLE B, which is '
+             'a safe state, not a floating one.'))
+    b.add(Part('U11', 'INV', '74LVC1G04', {
+        INV_A: 'ROLE', INV_Y: 'ROLE_N', INV_GND: 'GND', INV_VCC: '+3V3',
+        INV_NC: None,
+    }, lcsc=LC_INV, mfr='SN74LVC1G04DBVR',
+        desc='Single-gate inverter: ROLE_N = NOT ROLE. This one part is what '
+             'makes the complement a property of the circuit instead of a '
+             'property of the user remembering to move two shunts the same '
+             'way',
+        at=(38.0, 13.5), rot=0,
+        note='SOT-23-5, TI DBV pinout (1 NC, 2 A, 3 GND, 4 Y, 5 VCC). '
+             "Nexperia's 74LVC1G04GW has a DIFFERENT pinout - do not "
+             'substitute it.'))
+
     # ------------------------------------------------- 2.5 V -> 3.3 V shift
-    # Every HL2 output that feeds an LVDS driver goes through ONE package, so
-    # clock and data pick up the same propagation delay.  Clock A (PIN_98) is
-    # a 3.3 V pin, above the A-side absolute maximum of VCCA + 0.5 V, so it
-    # arrives through a 150 R / 470 R divider first.  DESIGN_NOTES.md 3.2.
+    # Every HL2 output that feeds an LVDS driver input goes through ONE
+    # package, so the link clock, the three OUT lanes and all four AUX pins
+    # pick up the same propagation delay.  The OUT clock (PIN_98) is a 3.3 V
+    # pin, above the A-side absolute maximum of VCCA + 0.5 V, so it arrives
+    # through a 100 R / 660 R divider first.  DESIGN_NOTES.md 3.2.
     x8 = {'1': '+2V5', '23': '+3V3', '24': '+3V3',
           '11': 'GND', '12': 'GND', '13': 'GND',
           '2': '+2V5',          # DIR high (VCCA referenced) = A -> B
           '22': 'GND'}          # OE* low = enabled
     x8_map = [
-        ('HL2_CLKA', 'DRVI_O1_CLK'), ('HL2_D0', 'DRVI_O1_D0'),
-        ('HL2_D1', 'DRVI_O1_D1'), ('HL2_D2', 'DRVI_O1_D2'),
-        ('HL2_CLKB', 'DRVI_O2_CLK'), ('HL2_D3', 'DRVI_O2_D0'),
-        ('HL2_D4', 'DRVI_O2_D1'), ('HL2_D5', 'DRVI_O2_D2'),
+        ('HL2_CLK', 'DRVI_O_CLK'), ('HL2_O_D0', 'DRVI_O_D0'),
+        ('HL2_O_D1', 'DRVI_O_D1'), ('HL2_O_D2', 'DRVI_O_D2'),
+        ('HL2_AX_G1CLK', 'DRVI_AX_CLK'), ('HL2_AX_G1DAT', 'DRVI_AX_D0'),
+        ('HL2_AX_G2CLK', 'DRVI_AX_D1'), ('HL2_AX_G2DAT', 'DRVI_AX_D2'),
     ]
     for i, (a, bn) in enumerate(x8_map, start=1):
         x8[X8_A[i]] = a
         x8[X8_B[i]] = bn
-    b.add(Part('U1', 'XLAT8', 'SN74AVC8T245PW', x8, lcsc='C53535',
+    b.add(Part('U1', 'XLAT8', 'SN74AVC8T245PW', x8, lcsc=LC_X8,
                mfr='SN74AVC8T245PWR',
                desc='8-bit dual-supply level translator, VCCA 2.5 V / '
                     'VCCB 3.3 V. Gives the HL2 2.5 V outputs 370 mV of '
                     'GUARANTEED margin into the LVDS driver inputs, which a '
-                    'direct connection does not have',
-               at=(22.5, 6.0), rot=90,
-               note='DIR tied to VCCA (+2V5) = A->B, OE* tied low. All eight '
-                    'forward signals including both clocks pass through this '
-                    'one package so they share its propagation delay.'))
+                    'direct connection does not have. All 8 channels used: '
+                    'OUT clock + 3 OUT lanes + all 4 AUX pins',
+               at=(22.0, 6.0), rot=90,
+               note='DIR tied to VCCA (+2V5) = A->B, OE* tied low - ALWAYS '
+                    'enabled. The four AUX channels sit on nets that this '
+                    "board's own 4-bit translators drive when the HL2 pin is "
+                    'an input; a translator A-side input is a ~5 pF load and '
+                    'never a driver, so that is not contention. What decides '
+                    'whether an AUX signal reaches the cable is the LVDS '
+                    "driver's EN, not this part."))
 
     # ------------------------------------------------------- LVDS drivers
-    for ref_u, pfx, at in (('U2', 'O1', (32.0, 8.0)),
-                           ('U3', 'O2', (32.0, 20.0))):
-        pins = {'1': '+3V3', '4': '+3V3', '5': 'GND', '8': 'GND'}
+    # THREE drivers, because board A needs three independent enable domains
+    # and the DS90LV047A has one enable per package:
+    #   U2  OUT     4 channels, always enabled
+    #   U3  AUX G1  2 channels, enabled by ROLE
+    #   U4  AUX G2  2 channels, enabled by ROLE_N
+    drv = [
+        ('U2', (6.6, 47.5), '+3V3', {
+            'CLK': ('DRVI_O_CLK', 'O_CLK'), 'D0': ('DRVI_O_D0', 'O_D0'),
+            'D1': ('DRVI_O_D1', 'O_D1'), 'D2': ('DRVI_O_D2', 'O_D2')},
+         'OUT: the forward cable. All four channels used, none spare. EN '
+         'tied high - this socket is always driven',
+         'EN tied to +3V3 and EN* to GND: permanently enabled.'),
+        ('U3', (16.5, 47.5), 'ROLE', {
+            'CLK': ('DRVI_AX_CLK', 'AX_CLK'),
+            'D0': ('DRVI_AX_D0', 'AX_D0')},
+         'AUX group G1 (clock pair + data 0 pair). Two channels used, two '
+         'spare. EN = ROLE, so this pair is driven only in ROLE A',
+         'EN = ROLE. Enabled in ROLE A, tri-stated in ROLE B. Channels 3 and '
+         '4 are unused: inputs grounded, outputs left open.'),
+        ('U4', (24.0, 47.5), 'ROLE_N', {
+            'CLK': ('DRVI_AX_D1', 'AX_D1'),
+            'D0': ('DRVI_AX_D2', 'AX_D2')},
+         'AUX group G2 (data 1 pair + data 2 pair). Two channels used, two '
+         'spare. EN = ROLE_N, so this pair is driven only in ROLE B',
+         'EN = ROLE_N. Enabled in ROLE B, tri-stated in ROLE A. ROLE_N comes '
+         'from U11 and carries a 10k pull-UP, so a missing or dead inverter '
+         'leaves this driver enabled but its G2 translator port toward the '
+         'HL2 DISABLED - the auxiliary link fails to work and nothing is '
+         'stressed. Channels 3 and 4 unused.'),
+    ]
+    for ref_u, at, en, chmap, desc, note in drv:
+        pins = {'1': en, '4': '+3V3', '5': 'GND', '8': 'GND'}
         for i, lane in enumerate(LANES):
-            pins[DRV_IN[i]] = 'DRVI_%s_%s' % (pfx, lane)
-            pins[DRV_P[i]] = '%s_%s_P' % (pfx, lane)
-            pins[DRV_N[i]] = '%s_%s_N' % (pfx, lane)
-        b.add(Part(ref_u, 'LVDS_DRV', 'DS90LV047A', pins, lcsc='C201946',
-                   mfr='DS90LV047ATM/NOPB',
-                   desc='Quad LVDS driver, 400 Mbps, SOIC-16. Drives socket '
-                        '%s: all four channels used, none spare' % pfx,
-                   at=at, rot=0))
+            if lane in chmap:
+                src, pfxlane = chmap[lane]
+                pins[DRV_IN[i]] = src
+                pins[DRV_P[i]] = '%s_P' % pfxlane
+                pins[DRV_N[i]] = '%s_N' % pfxlane
+            else:
+                pins[DRV_IN[i]] = 'GND'
+                pins[DRV_P[i]] = None
+                pins[DRV_N[i]] = None
+        b.add(Part(ref_u, 'LVDS_DRV', 'DS90LV047A', pins, lcsc=LC_DRV,
+                   mfr='DS90LV047ATMX/NOPB',
+                   desc='Quad LVDS driver, 400 Mbps, SOIC-16. ' + desc,
+                   at=at, rot=0, note=note))
 
-    # ------------------------------------------------------- LVDS receiver
+    # ------------------------------------------------------- LVDS receivers
+    # TWO receivers.  A receiver is high-impedance on the LINE, so the AUX
+    # receiver can sit across all four AUX pairs in both roles; what has to
+    # tri-state is its OUTPUT path toward the HL2, and that is done by the
+    # 4-bit translator ports below.
     pins = {'9': 'RXEN_N', '16': '+3V3', '12': 'GND', '13': '+3V3'}
-    rxo = {'CLK': 'RXO_ICLK', 'D0': 'RXO_ID0', 'D1': 'RXO_ID1',
-           'D2': 'RXO_ID2'}
+    rxo = {'CLK': 'RXO_I_CLK', 'D0': 'RXO_I_D0', 'D1': 'RXO_I_D1',
+           'D2': 'RXO_I_D2'}
     for i, lane in enumerate(LANES):
         pins[RCV_P[i]] = 'I_%s_RX_P' % lane
         pins[RCV_N[i]] = 'I_%s_RX_N' % lane
         pins[RCV_OUT[i]] = rxo[lane]
-    b.add(Part('U4', 'LVDS_RCV', 'DS90LV048A', pins, lcsc='C87137',
+    b.add(Part('U5', 'LVDS_RCV', 'DS90LV048A', pins, lcsc=LC_RCV,
                mfr='DS90LV048ATMTCX/NOPB',
                desc='Quad LVDS receiver, 400 Mbps, TSSOP-16. Receives socket '
-                    'IN: all four channels used, none spare',
-               at=(32.0, 31.0), rot=90))
+                    'IN: reverse clock and reverse lanes 0,1,2. All four '
+                    'channels used',
+               at=(41.4, 47.5), rot=0,
+               note='EN* = RXEN_N, gated by the IN cable detect through J7, '
+                    'so the stock HL2 gateware driving DB1 11/15/17 as LED '
+                    'outputs cannot meet this receiver driving the same '
+                    'pins.'))
 
-    # --------------------------- 3.3 V -> 2.5 V shift into the input-only pins
-    x4 = {'1': '+3V3', '16': '+2V5', '8': 'GND', '9': 'GND',
-          '2': '+3V3', '3': '+3V3',      # 1DIR, 2DIR high = A -> B
-          '14': 'GND', '15': 'GND'}      # 1OE*, 2OE* low = enabled
-    x4[X4_A[1]] = 'RXO_ICLK'
-    x4[X4_B[1]] = 'X_REVCLK25'
-    x4[X4_A[2]] = 'X_SLOWIN_A'
-    x4[X4_B[2]] = 'X_SLOWIN25'
-    x4[X4_A[3]] = 'GND'
-    x4[X4_B[3]] = 'X_SP1'
-    x4[X4_A[4]] = 'GND'
-    x4[X4_B[4]] = 'X_SP2'
-    b.add(Part('U5', 'XLAT4', 'SN74AVC4T245PW', x4, lcsc='C81461',
+    pins = {'9': 'GND', '16': '+3V3', '12': 'GND', '13': '+3V3'}
+    rxo = {'CLK': 'RXO_AX_CLK', 'D0': 'RXO_AX_D0', 'D1': 'RXO_AX_D1',
+           'D2': 'RXO_AX_D2'}
+    for i, lane in enumerate(LANES):
+        pins[RCV_P[i]] = 'AX_%s_P' % lane
+        pins[RCV_N[i]] = 'AX_%s_N' % lane
+        pins[RCV_OUT[i]] = rxo[lane]
+    b.add(Part('U6', 'LVDS_RCV', 'DS90LV048A', pins, lcsc=LC_RCV,
+               mfr='DS90LV048ATMTCX/NOPB',
+               desc='Quad LVDS receiver, 400 Mbps, TSSOP-16. Sits across ALL '
+                    'FOUR AUX pairs in both roles - the two it receives and '
+                    'the two its own drivers drive',
+               at=(32.5, 47.5), rot=0,
+               note='EN tied high, EN* tied low: ALWAYS enabled, in both '
+                    'roles. That is deliberate and it is safe. A receiver '
+                    'input is high impedance, so listening to a pair this '
+                    'board is also driving costs nothing; the outputs for '
+                    'the driven group simply go to a translator port that is '
+                    'disabled, so they reach no HL2 pin.'))
+
+    # --------------------------- 3.3 V -> 2.5 V shift into the HL2's pins
+    # U7 port 1: the IN clock and the ROLE level, always on.
+    # U7 port 2: AUX G2 toward the HL2, OE* = ROLE_N.
+    # U8 port 1: AUX G1 toward the HL2, OE* = ROLE.
+    # U8 port 2: unused and disabled.
+    #
+    # THE INVARIANT, and it is the whole safety argument: for each group the
+    # LVDS driver's active-HIGH EN and the translator port's active-LOW OE*
+    # are THE SAME NET.  So the group is either driven onto the cable (EN
+    # high => OE* high => port off) or driven toward the HL2 (EN low => OE*
+    # low => port on), never both, for ANY level on that net - including a
+    # stuck one.  tools/check_netlist.py asserts exactly this.
+    x4a = {'1': '+3V3', '16': '+2V5', '8': 'GND', '9': 'GND',
+           '2': '+3V3', '3': '+3V3',       # 1DIR, 2DIR high = A -> B
+           '14': 'ROLE_N', '15': 'GND'}    # 2OE* = ROLE_N; 1OE* always on
+    x4a[X4_A[1]] = 'RXO_I_CLK'
+    x4a[X4_B[1]] = 'X_INCLK25'
+    x4a[X4_A[2]] = 'ROLE'
+    x4a[X4_B[2]] = 'X_ROLE25'
+    x4a[X4_A[3]] = 'RXO_AX_D1'
+    x4a[X4_B[3]] = 'X_AXG2CLK25'
+    x4a[X4_A[4]] = 'RXO_AX_D2'
+    x4a[X4_B[4]] = 'X_AXG2DAT25'
+    b.add(Part('U7', 'XLAT4', 'SN74AVC4T245PW', x4a, lcsc=LC_X4,
                mfr='SN74AVC4T245PWR',
                desc='4-bit dual-supply level translator, VCCA 3.3 V / '
-                    'VCCB 2.5 V. HL2 PIN_88 and PIN_89 are input-only pins in '
-                    'a 2.5 V bank whose PCI clamp would inject DC into the '
-                    "HL2's 2.5 V rail if driven at 3.3 V",
-               at=(22.5, 25.0), rot=90,
-               note='DIR tied to VCCA (+3V3) = A->B, OE* tied low. Channels 3 '
-                    'and 4 are unused: inputs tied to GND, outputs to test '
-                    'pads.'))
+                    'VCCB 2.5 V. Port 1 (always on) = the IN clock into '
+                    'PIN_88 and the ROLE level into PIN_89. Port 2 = AUX '
+                    'group G2 toward the HL2, enabled only in ROLE A',
+               at=(31.0, 6.0), rot=90,
+               note='HL2 PIN_88 and PIN_89 are input-only pins in a 2.5 V '
+                    'bank whose PCI clamp would inject DC into the HL2 2.5 V '
+                    'rail if driven at 3.3 V. 1OE* = GND (always enabled), '
+                    '2OE* = ROLE_N: the G2 port drives PIN_72 and PIN_80 '
+                    'only in ROLE A, which is exactly when the gateware has '
+                    'those two pins as inputs.'))
+
+    x4b = {'1': '+3V3', '16': '+2V5', '8': 'GND', '9': 'GND',
+           '2': '+3V3', '3': '+3V3',        # 1DIR, 2DIR high = A -> B
+           '14': '+3V3', '15': 'ROLE'}      # 2OE* high = off; 1OE* = ROLE
+    x4b[X4_A[1]] = 'RXO_AX_CLK'
+    x4b[X4_B[1]] = 'X_AXG1CLK25'
+    x4b[X4_A[2]] = 'RXO_AX_D0'
+    x4b[X4_B[2]] = 'X_AXG1DAT25'
+    x4b[X4_A[3]] = 'GND'
+    x4b[X4_B[3]] = 'X_SP1'
+    x4b[X4_A[4]] = 'GND'
+    x4b[X4_B[4]] = 'X_SP2'
+    b.add(Part('U8', 'XLAT4', 'SN74AVC4T245PW', x4b, lcsc=LC_X4,
+               mfr='SN74AVC4T245PWR',
+               desc='4-bit dual-supply level translator, VCCA 3.3 V / '
+                    'VCCB 2.5 V. Port 1 = AUX group G1 toward the HL2, '
+                    'enabled only in ROLE B. Port 2 is unused',
+               at=(38.0, 6.0), rot=90,
+               note='1OE* = ROLE: the G1 port drives PIN_85 and PIN_87 only '
+                    'in ROLE B, which is exactly when the gateware has those '
+                    'two pins as inputs. Port 2 is disabled (2OE* to +3V3) '
+                    'with its inputs grounded and its outputs on test pads.'))
 
     # ------------------------------------------------------------- power
-    b.add(Part('U6', 'LDO25', 'ME6211C25M5G', {
+    b.add(Part('U9', 'LDO25', 'ME6211C25M5G', {
         '1': '+3V3', '2': 'GND', '3': '+3V3', '5': '+2V5',
-    }, lcsc='C194395', mfr='ME6211C25M5G-N',
-        desc='2.5 V 400 mA LDO. Supplies only the two translators\' 2.5 V '
-             'sides', at=(8.0, 31.0)))
-    b.add(Part('U7', 'LDO33', 'AMS1117-3.3', {
+    }, lcsc=LC_LDO25, mfr='ME6211C25M5G-N',
+        desc='2.5 V 400 mA LDO. Supplies only the 2.5 V sides of the three '
+             'translators', at=(24.0, 13.5)))
+    b.add(Part('U10', 'LDO33', 'AMS1117-3.3', {
         '1': 'GND', '2': 'LDO3V3', '3': 'P5V_IN',
-    }, lcsc='C6186', mfr='AMS1117-3.3',
+    }, lcsc=LC_LDO33, mfr='AMS1117-3.3',
         desc='Optional 3.3 V from the IN socket\'s +5 V pin. NOT the default '
-             'supply: see DESIGN_NOTES.md 5', at=(43.0, 31.5), dnp=True,
+             'supply: see DESIGN_NOTES.md 5', at=(37.5, 21.5), dnp=True,
         note='NOT FITTED by default. Board A normally runs from HL2 DB1 '
              'pins 19/20. In the two-radio configuration there is no 5 V '
              'source at all.'))
 
     b.add(Part('J6', 'HDR1x03', '3V3 SRC', {
         '1': 'DB1_3V3', '2': '+3V3', '3': 'LDO3V3',
-    }, lcsc='C2337', mfr='2.54mm 1x3P pin header',
+    }, lcsc=LC_HDR, mfr='2.54mm 1x3P pin header',
         desc='Board supply select: 1-2 = HL2 DB1 +3V3 (DEFAULT), 2-3 = the '
              'on-board LDO fed from the IN socket +5 V pin',
-        at=(44.0, 4.0), rot=0))
+        at=(45.0, 6.0), rot=0))
     b.add(Part('J7', 'HDR1x03', 'RX MODE', {
         '1': '+3V3', '2': 'RXEN_N', '3': 'I_HPD',
-    }, lcsc='C2337', mfr='2.54mm 1x3P pin header',
+    }, lcsc=LC_HDR, mfr='2.54mm 1x3P pin header',
         desc='IN receiver enable: 2-3 = auto, enabled only while a cable is '
              'in the IN socket (DEFAULT); 1-2 = force disabled; no shunt = '
-             'always enabled',
-        at=(44.0, 13.0), rot=0))
+             'always enabled. Does NOT affect the AUX receiver, which is '
+             'always on',
+        at=(45.0, 15.0), rot=0))
     b.add(Part('J8', 'HDR1x02', 'GND CLIP', {'1': 'GND', '2': 'GND'},
-               lcsc='C2337', mfr='2.54mm 1x2P pin header',
-               desc='Ground clip / scope reference', at=(44.0, 22.0), rot=0))
+               lcsc=LC_HDR, mfr='2.54mm 1x2P pin header',
+               desc='Ground clip / scope reference', at=(45.0, 33.0),
+               rot=0))
 
     # -------------------------------------------------------------- ESD
     lines = []
-    for pfx in ('O1', 'O2', 'I'):
+    for pfx in ('O', 'AX', 'I'):
         for lane in LANES:
             lines += ['%s_%s_P' % (pfx, lane), '%s_%s_N' % (pfx, lane)]
-        lines += ['%s_SLOW' % pfx, '%s_HPD' % pfx]
-    lines += ['I_5V_PIN']
+        lines += ['%s_SLOW' % pfx, '%s_HPD' % pfx, '%s_5V_PIN' % pfx]
     arr, _ = esd_arrays('D', 1, lines,
                         'Place within 5 mm of the HDMI connector pins, on the '
                         'connector side of everything else.')
@@ -998,27 +1270,44 @@ def board_a():
 
     # ------------------------------------------- resistors, links, options
     rs = []
-    rs.append(R('R1', '0R', 'HL2_D0_HDR', 'HL2_D0', lcsc=LC['r0'],
+    rs.append(R('R1', '0R', 'HL2_AX_G2CLK_HDR', 'HL2_AX_G2CLK',
+                lcsc=LC['r0'],
                 desc='SL_D0: cuttable link on DB1 pin 1. That HL2 net reaches '
                      'PIN_72 only through the HL2 jumper J25 and also carries '
-                     'uFL pad CL8',
-                note='FITTED. Cut to isolate board A from DB1 pin 1.'))
-    # clock A divider: 3.3 V output down to ~2.4 V for the translator A side
-    rs.append(R('R2', '150R', 'HL2_CLKA_RAW', 'HL2_CLKA', lcsc=LC['r150'],
-                desc='Clock A divider, top. 3.3 V PIN_98 -> 2.40 V, which is '
-                     'inside the translator A-side maximum of VCCA + 0.5 V'))
-    rs.append(R('R3', '470R', 'HL2_CLKA', 'GND', lcsc=LC['r470'],
-                desc='Clock A divider, bottom. Thevenin 113 R, 5.1 mA from '
-                     'PIN_98 - inside its 8 mA drive setting'))
-    # the seven 2.5 V forward signals get a pull-down so they are defined
-    # while the HL2 FPGA is unconfigured.  Clock A does NOT: the HL2's own
-    # LED pull-up plus the divider already define it, and a pull-down there
-    # would park the node in the translator's forbidden band.
-    for net in ('HL2_D0', 'HL2_D1', 'HL2_D2', 'HL2_D3', 'HL2_D4', 'HL2_D5',
-                'HL2_CLKB'):
+                     'uFL pad CL8, an unterminated stub no bridge board can '
+                     'remove',
+                note='FITTED. Cut to isolate board A from DB1 pin 1. HL2 '
+                     'jumper J25 must be CLOSED or the AUX G2 clock is '
+                     'dead.'))
+    # OUT clock divider: 3.3 V PIN_98 down to 2.77 V for the translator A
+    # side.  100 R series plus 660 R shunt as two 330 R in series, because
+    # 330 R is the JLCPCB Basic part in that range and 100/330 alone would
+    # have drawn 7.25 mA and forced PIN_98 to its 16 mA drive setting.
+    rs.append(R('R2', '100R', 'HL2_CLK_RAW', 'HL2_CLK', lcsc=LC['r100'],
+                desc='OUT clock divider, series leg. 3.3 V PIN_98 -> 2.77 V, '
+                     '1.14 V over the translator threshold and 230 mV under '
+                     'its 3.0 V absolute maximum'))
+    rs.append(R('R3', '330R', 'HL2_CLK', 'CLKDIV_MID', lcsc=LC['r330'],
+                desc='OUT clock divider, shunt leg 1 of 2. 660 R total: '
+                     '4.2 mA from PIN_98, inside its 8 mA drive setting; '
+                     'Thevenin 87 ohm; 0.77 ns into the translator input'))
+    rs.append(R('R4', '330R', 'CLKDIV_MID', 'GND', lcsc=LC['r330'],
+                desc='OUT clock divider, shunt leg 2 of 2'))
+    # Pull-downs so every 2.5 V net into the translator is DEFINED while
+    # nothing drives it, including the four bidirectional AUX pins.  The OUT
+    # clock does NOT get one: the HL2's own LED pull-up plus the divider
+    # already define it, and a pull-down there would park the node in the
+    # translator's forbidden band.
+    for net, why in (('HL2_O_D0', 'OUT lane 0'), ('HL2_O_D1', 'OUT lane 1'),
+                     ('HL2_O_D2', 'OUT lane 2'),
+                     ('HL2_AX_G1CLK', 'AUX G1 clock, bidirectional'),
+                     ('HL2_AX_G1DAT', 'AUX G1 data, bidirectional'),
+                     ('HL2_AX_G2CLK', 'AUX G2 clock, bidirectional'),
+                     ('HL2_AX_G2DAT', 'AUX G2 data, bidirectional')):
         rs.append(R(ref('R'), '10k', net, 'GND', lcsc=LC['r10k'],
-                    desc='Defines %s while the HL2 FPGA is unconfigured'
-                         % net))
+                    desc='Defines %s (%s) while nothing drives it - the HL2 '
+                         'FPGA unconfigured, or the local translator port '
+                         'disabled by the strap' % (net, why)))
     # translator bypass links, so the whole level-shift stage can be removed
     for a, bn in x8_map:
         rs.append(R(ref('R'), '0R', a, bn, lcsc=LC['r0'], dnp=True,
@@ -1026,40 +1315,68 @@ def board_a():
                     note='NOT FITTED. Fitting all eight and removing U1 falls '
                          'back to connecting the HL2 2.5 V outputs directly '
                          'to the LVDS drivers, which works in practice but '
-                         'has 0 mV of guaranteed margin (DESIGN_NOTES.md 3.2). '
-                         'Also remove R3 if you bypass clock A.'))
-    # reverse lanes into the HL2's 3.3 V bank
-    for i, (a, c) in enumerate([('RXO_ID0', 'HL2_REV0'),
-                                ('RXO_ID1', 'HL2_REV1'),
-                                ('RXO_ID2', 'HL2_REV2')]):
+                         'has 0 mV of guaranteed margin (DESIGN_NOTES.md '
+                         '3.2). Also remove R3/R4 if you bypass the clock.'))
+    # IN lanes into the HL2's 3.3 V bank
+    for i, (a, c) in enumerate([('RXO_I_D0', 'HL2_I_D0'),
+                                ('RXO_I_D1', 'HL2_I_D1'),
+                                ('RXO_I_D2', 'HL2_I_D2')]):
         rs.append(R(ref('R'), '0R', a, c, lcsc=LC['r0'],
-                    desc='Reverse lane %d into DB1 (3.3 V bank). 0402 pads '
-                         'take 22 R instead if damping is wanted' % i))
-    rs.append(R(ref('R'), '0R', 'X_REVCLK25', 'HL2_REVCLK', lcsc=LC['r0'],
-                desc='Reverse clock (2.5 V) into HL2 PIN_88 = DB12 pin 6'))
-    rs.append(R(ref('R'), '0R', 'X_SLOWIN25', 'HL2_SLOW_IN', lcsc=LC['r0'],
-                desc='Slow in (2.5 V) into HL2 PIN_89 = DB12 pin 5'))
-    rs.append(R(ref('R'), '100R', 'HL2_SLOW_OUT', 'O1_SLOW', lcsc=LC['r100'],
-                desc='Status UART out of DB12-1 (2.5 V) onto OUT 1 SCL. '
-                     'Source damping for an unterminated cable wire'))
-    rs.append(R(ref('R'), '1k', 'O1_HPD', 'GND', lcsc=LC['r1k'],
-                desc='OUT 1 HPD to ground so the far end detects the cable'))
-    rs.append(R(ref('R'), '1k', 'O2_HPD', 'GND', lcsc=LC['r1k'],
-                desc='OUT 2 HPD to ground so the far end detects the cable'))
+                    desc='IN lane %d into DB1 (3.3 V bank). 0402 pads take '
+                         '22 R instead if damping is wanted' % i))
+    # the 2.5 V translator outputs into the HL2's pins
+    for a, c, why in (
+            ('X_INCLK25', 'HL2_INCLK',
+             'IN clock (2.5 V) into HL2 PIN_88 = DB12 pin 6'),
+            ('X_ROLE25', 'HL2_ROLE_IN',
+             'the ROLE level (2.5 V) into HL2 PIN_89 = DB12 pin 5, so the '
+             'gateware knows its own role and sets its four AUX pin '
+             'directions to match'),
+            ('X_AXG1CLK25', 'HL2_AX_G1CLK',
+             'AUX G1 clock (2.5 V) into HL2 PIN_85 = DB1 pin 6, in ROLE B '
+             'only'),
+            ('X_AXG1DAT25', 'HL2_AX_G1DAT',
+             'AUX G1 data (2.5 V) into HL2 PIN_87 = DB12 pin 2, in ROLE B '
+             'only'),
+            ('X_AXG2CLK25', 'HL2_AX_G2CLK',
+             'AUX G2 clock (2.5 V) into HL2 PIN_72 = DB1 pin 1, in ROLE A '
+             'only'),
+            ('X_AXG2DAT25', 'HL2_AX_G2DAT',
+             'AUX G2 data (2.5 V) into HL2 PIN_80 = DB1 pin 4, in ROLE A '
+             'only. PIN_80 is VREFB5N0 with ~21 pF of pin capacitance and is '
+             'the slowest lane in the design')):
+        rs.append(R(ref('R'), '0R', a, c, lcsc=LC['r0'], desc=why))
+    rs.append(R(ref('R'), '100R', 'HL2_SLOW_OUT', 'O_SLOW', lcsc=LC['r100'],
+                desc='Status UART out of DB12-1 (2.5 V) onto the OUT socket '
+                     'SCL. Source damping for an unterminated cable wire'))
+    rs.append(R(ref('R'), '100R', 'O_HPD', 'GND', lcsc=LC['r100'],
+                desc='OUT HPD to ground so the far end detects the cable. '
+                     '100 R against the far 10 k gives 0.033 V, at 0.33 mA '
+                     'of idle current'))
     rs.append(R(ref('R'), '10k', 'I_HPD', '+3V3', lcsc=LC['r10k'],
                 desc='IN cable detect pull-up; LOW = cable plugged in'))
     rs.append(R(ref('R'), '100k', 'RXEN_N', 'GND', lcsc=LC['r100k'],
-                desc='Holds the receiver enabled when J7 has no shunt, so '
+                desc='Holds the IN receiver enabled when J7 has no shunt, so '
                      '"no shunt" is a defined state rather than a floating '
                      'enable pin'))
+    rs.append(R(ref('R'), '100k', 'ROLE', 'GND', lcsc=LC['r100k'],
+                desc='Makes "no shunt on J9" mean ROLE B rather than a '
+                     'floating inverter input. 33 uA through the shunt in '
+                     'the ROLE A position'))
+    rs.append(R(ref('R'), '10k', 'ROLE_N', '+3V3', lcsc=LC['r10k'],
+                desc='ROLE_N pull-UP. THE DIRECTION MATTERS: if U11 is '
+                     'missing, unpowered or dead, ROLE_N reads HIGH, which '
+                     'DISABLES the G2 translator port toward the HL2. The '
+                     'auxiliary link then does not work and nothing is '
+                     'stressed. A pull-down would have enabled it instead'))
     rs.append(R(ref('R'), '0R', 'I_5V_PIN', 'P5V_IN', lcsc=LC['r0'], dnp=True,
-                desc='SL_5V: lets the IN socket\'s +5 V pin feed U7',
+                desc='SL_5V: lets the IN socket\'s +5 V pin feed U10',
                 note='NOT FITTED. See DESIGN_NOTES.md 5 for why this is not '
                      'the default.'))
     rs.append(R(ref('R'), '0R', 'VLVDS', '+2V5', lcsc=LC['r0'], dnp=True,
                 desc='SL_VLVDS: reference the translators\' 2.5 V side to the '
-                     "HL2's own Vlvds rail (DB1 pins 7/8) instead of U6",
-                note='NOT FITTED. Do not fit together with U6. Electrically '
+                     "HL2's own Vlvds rail (DB1 pins 7/8) instead of U9",
+                note='NOT FITTED. Do not fit together with U9. Electrically '
                      'ideal - the thresholds then track the FPGA bank supply '
                      'exactly - but it draws ~10 mA from the HL2 TPS730 whose '
                      'headroom is unverified.'))
@@ -1069,10 +1386,12 @@ def board_a():
                          'can be lifted if a ground loop appears' % i))
     b.add(*rs)
 
-    # DC/AC coupling option and terminations on the four received pairs
+    # DC/AC coupling option and terminations on the four RECEIVED IN pairs
     b.add(*ac_coupling(ref, 'I', LANES))
     b.add(*vbias_network(ref))
-    b.add(*slow_line_rx(ref, 'I_SLOW', 'X_SLOWIN_A', pull='up'))
+    # The four AUX pairs: strap-selected terminations, nothing else in line.
+    # Board A ships ROLE A, so it RECEIVES G2 = the D1 and D2 pairs.
+    b.add(*aux_pairs(ref, 'AX', {'D1', 'D2'}, 'ROLE A (how board A ships)'))
 
     # ------------------------------------------------------- decoupling
     cs = [
@@ -1081,30 +1400,39 @@ def board_a():
         ('100nF', '+3V3', 'U2 VCC', LC['c100n'], False),
         ('100nF', '+3V3', 'U3 VCC', LC['c100n'], False),
         ('100nF', '+3V3', 'U4 VCC', LC['c100n'], False),
-        ('100nF', '+3V3', 'U5 VCCA', LC['c100n'], False),
-        ('100nF', '+2V5', 'U5 VCCB', LC['c100n'], False),
+        ('100nF', '+3V3', 'U5 VCC', LC['c100n'], False),
+        ('100nF', '+3V3', 'U6 VCC', LC['c100n'], False),
+        ('100nF', '+3V3', 'U7 VCCA', LC['c100n'], False),
+        ('100nF', '+2V5', 'U7 VCCB', LC['c100n'], False),
+        ('100nF', '+3V3', 'U8 VCCA', LC['c100n'], False),
+        ('100nF', '+2V5', 'U8 VCCB', LC['c100n'], False),
+        ('100nF', '+3V3', 'U11 VCC (the inverter)', LC['c100n'], False),
         ('10uF', '+3V3', '+3V3 bulk', LC['c10u'], True),
         ('100nF', '+3V3', '+3V3 bulk HF', LC['c100n'], False),
-        ('1uF', '+2V5', 'U6 output', LC['c1u'], False),
-        ('100nF', '+3V3', 'U6 input', LC['c100n'], False),
+        ('1uF', '+2V5', 'U9 output', LC['c1u'], False),
+        ('100nF', '+3V3', 'U9 input', LC['c100n'], False),
         ('100nF', 'DB1_3V3', 'DB1 +3V3 entry', LC['c100n'], False),
-        ('10uF', 'P5V_IN', 'U7 input bulk (option)', LC['c10u'], True),
-        ('10uF', 'LDO3V3', 'U7 output bulk (option)', LC['c10u'], True),
+        ('10uF', 'P5V_IN', 'U10 input bulk (option)', LC['c10u'], True),
+        ('10uF', 'LDO3V3', 'U10 output bulk (option)', LC['c10u'], True),
     ]
     for val, net, why, lc, big in cs:
         b.add(C(ref('C'), val, net, 'GND', lcsc=lc, big=big, desc=why))
 
     # ------------------------------------------------------- test points
-    tps = ['HL2_CLKA_RAW', 'HL2_CLKA', 'HL2_D0', 'HL2_D1', 'HL2_D2', 'HL2_D3',
-           'HL2_D4', 'HL2_D5', 'HL2_CLKB', 'HL2_SLOW_OUT', 'HL2_REV0',
-           'HL2_REV1', 'HL2_REV2', 'HL2_REVCLK', 'HL2_SLOW_IN',
-           'DRVI_O1_CLK', 'DRVI_O2_CLK', 'RXO_ICLK', 'RXO_ID0', 'RXO_ID1',
-           'RXO_ID2', 'X_SLOWIN_A', 'X_SP1', 'X_SP2',
-           'O1_HPD', 'O2_HPD', 'I_HPD', 'O2_SLOW', 'I_5V_PIN', 'VBIAS',
+    tps = ['HL2_CLK_RAW', 'HL2_CLK', 'HL2_O_D0', 'HL2_O_D1', 'HL2_O_D2',
+           'HL2_AX_G1CLK', 'HL2_AX_G1DAT', 'HL2_AX_G2CLK', 'HL2_AX_G2DAT',
+           'HL2_SLOW_OUT', 'HL2_I_D0', 'HL2_I_D1', 'HL2_I_D2', 'HL2_INCLK',
+           'HL2_ROLE_IN', 'ROLE', 'ROLE_N',
+           'DRVI_O_CLK', 'DRVI_AX_CLK', 'DRVI_AX_D1',
+           'RXO_I_CLK', 'RXO_I_D0', 'RXO_I_D1', 'RXO_I_D2',
+           'RXO_AX_CLK', 'RXO_AX_D0', 'RXO_AX_D1', 'RXO_AX_D2',
+           'X_SP1', 'X_SP2',
+           'O_HPD', 'AX_HPD', 'I_HPD', 'AX_SLOW', 'I_SLOW',
+           'O_5V_PIN', 'AX_5V_PIN', 'I_5V_PIN', 'VBIAS',
            'SCL1', 'SDA1', 'VLVDS', '+3V3', '+2V5', 'DB1_3V3']
     for net in tps:
         b.add(TP(ref('TP'), net))
-    for at in ((24.0, 50.0), (13.0, 50.0)):
+    for at in ((11.0, 32.5), (11.0, 36.5)):
         g = TP(ref('TP'), 'GND', t='TPBIG')
         g.at = at
         b.add(g)
@@ -1115,33 +1443,44 @@ def board_a():
     # with. Grounding for a scope lead is the J8 header and the two
     # through-hole ground pads instead. DESIGN_NOTES.md section 6.
 
-    for net in ['GND', '+3V3', 'DB1_3V3', 'VLVDS', 'I_5V_PIN', 'P5V_IN']:
+    for net in ['GND', '+3V3', 'DB1_3V3', 'VLVDS', 'I_5V_PIN', 'P5V_IN',
+                'O_5V_PIN', 'AX_5V_PIN']:
         b.add(FLAG(net))
 
-    autoplace(b, [(9.0, 1.5, 46.5, 30.5), (1.5, 31.5, 46.5, 47.5)])
+    # The +2V5 island has to reach U1's VCCA, U7 and U8's VCCB, U9's output
+    # and the SL_VLVDS link, so it spans the translator row.
+    b.zones_extra.append(('In2.Cu', '+2V5', 10,
+                          [(17.0, 1.0), (43.0, 1.0), (43.0, 18.0),
+                           (17.0, 18.0)],
+                          'power plane island: +2V5'))
 
-    b.calibration_rule(-1.0, 52.5, 50.0)
+    autoplace(b, [(8.6, 0.8, 42.6, 28.8),
+                  (1.0, 29.2, 42.6, 40.6),
+                  (1.0, 41.0, 47.0, 56.8)])
+
+    b.calibration_rule(-1.0, 56.5, 50.0)
     b.texts = [
-        ('F.SilkS', 24.0, 1.6, 0, 1.3,
+        ('F.SilkS', 24.0, 39.6, 0, 1.3,
          'gowin-bridge board A  HL2 side  rev %s' % REV),
-        ('Dwgs.User', 24.0, 56.5, 0, 1.4,
+        ('Dwgs.User', 24.0, 59.0, 0, 1.4,
          'board A = 48.00 x 66.00 mm. Socket centres at x 6.60 / 24.00 / '
          '41.40, front edge y 66.00.'),
-        ('Dwgs.User', 24.0, 58.5, 0, 1.4,
+        ('Dwgs.User', 24.0, 61.0, 0, 1.4,
          'Local (0,0) = Hermes-Lite 2 main board (70.50, 74.00) mm. '
          'DB1 pin 1 hole at (3.54, 3.96), DB12 pin 1 at (13.00, 13.46).'),
-        ('F.SilkS', MINI_X[0], 55.5, 0, 2.2, 'OUT 1'),
-        ('F.SilkS', MINI_X[1], 55.5, 0, 2.2, 'OUT 2'),
-        ('F.SilkS', MINI_X[2], 55.5, 0, 2.2, 'IN'),
-        ('F.SilkS', 24.0, 51.0, 0, 1.3, 'OUT goes to IN'),
-        ('F.SilkS', 24.0, 53.0, 0, 1.0,
-         '2 RADIOS: USE OUT 1 AND IN ONLY, LEAVE OUT 2 EMPTY'),
+        ('F.SilkS', MINI_X[0], 55.8, 0, 2.2, 'OUT'),
+        ('F.SilkS', MINI_X[1], 55.8, 0, 2.2, 'AUX'),
+        ('F.SilkS', MINI_X[2], 55.8, 0, 2.2, 'IN'),
+        ('F.SilkS', 24.0, 53.8, 0, 1.1, 'OUT GOES TO IN.  AUX GOES TO AUX'),
+        ('F.SilkS', 24.0, 41.0, 0, 1.0,
+         '2 RADIOS: OUT AND IN ONLY. ONE BOARD ROLE A, THE OTHER ROLE B'),
+        ('F.SilkS', 40.6, 26.5, 90, 1.0, 'ROLE 1-2=A 2-3=B'),
         ('F.SilkS', 9.6, 4.0, 90, 1.0, 'DB1 p1'),
         ('F.SilkS', 18.8, 9.6, 0, 1.0, 'DB12 p1'),
-        ('F.SilkS', 2.0, 31.5, 0, 0.9,
-         'TAILS 1-6 9 11 15 17 = USED BY LINK - CLIP'),
-        ('B.SilkS', 24.0, 42.0, 0, 1.2, 'SOCKETS J1 J2 ON THIS SIDE'),
-        ('B.SilkS', 24.0, 44.5, 0, 1.0, 'DB12 p5=PIN_89 p6=PIN_88'),
+        ('B.SilkS', 24.0, 31.0, 0, 1.2, 'SOCKETS J1 J2 ON THIS SIDE'),
+        ('B.SilkS', 24.0, 33.5, 0, 1.0, 'DB12 p5=PIN_89(ROLE) p6=PIN_88(CLK)'),
+        ('B.SilkS', 24.0, 36.0, 0, 0.9,
+         'CLIP DB1 TAILS 1-6 9 11 15 17 FLUSH'),
     ]
     return b
 
@@ -1162,136 +1501,253 @@ def board_b():
     OUT = [(0, 0), (BOARD_B_W, 0), (BOARD_B_W, BOARD_B_H), (0, BOARD_B_H)]
     b = Board('tang-bridge',
               'Hermes Lite 2 <-> Gowin HDMI bridge, board B '
-              '(Tang Mega 138K dock), rev B',
+              '(Tang Mega 138K dock), rev C',
               OUT, (BOARD_B_W, BOARD_B_H),
               origin_note='local (0,0) is 4 mm outboard of J14 pin 1 - '
                           'UNVERIFIED, the user must measure the dock')
     ref = RefGen()
 
+    # Every J14 pin not listed is left electrically OPEN, so PMOD0 (1-8),
+    # PMOD1 and the DVP camera pins (21-30, 37-40) stay usable.  rev C uses
+    # 15 signal pins and leaves pin 36 (ball U17) spare - the first spare
+    # J14 pin in any revision.
     j14 = {str(n): None for n in range(1, 41)}
     j14.update({
         '9': 'LINK_R0', '10': 'LINK_D0', '11': 'P5V_J14', '12': 'GND',
         '13': 'LINK_R1', '14': 'LINK_D1', '15': 'LINK_R2', '16': 'LINK_D2',
-        '17': 'LINK_SLOW_OUT', '18': 'LINK_D3',
-        '19': 'LINK_SLOW_IN', '20': 'LINK_CLK_A',
-        '31': 'LINK_PRESENT2', '32': 'LINK_CLK_B',
-        '33': 'LINK_PRESENT1', '34': 'LINK_D5',
-        '35': 'LINK_REVCLK', '36': 'LINK_D4',
+        '17': 'LINK_AUX_G2_CLK', '18': 'LINK_AUX_G1_DAT',
+        '19': 'LINK_SLOW_IN', '20': 'LINK_CLK',
+        '31': 'LINK_AUX_G2_DAT', '32': 'LINK_AUX_G1_CLK',
+        '33': 'LINK_PRESENT', '34': 'LINK_ROLE',
+        '35': 'LINK_REVCLK', '36': None,
     })
     b.add(Part('J1', 'SKT2x20', 'J14 2x20 socket', j14,
-               lcsc='C50982', mfr='2.54mm 2x20P female header',
+               lcsc=LC_SKT2x20, mfr='BOOMELE 2.54mm 2x20P female header, '
+                                    'vertical',
                desc='Mates the 2x20 male header the user solders into the '
                     'Tang dock J14 holes (Bank 4)',
                at=(6.0, 8.0), rot=90, layer='B.Cu',
-               note='Bottom side. Every J14 pin not in PINMAP.md is left '
-                    'electrically open so PMOD0, PMOD1 and the DVP camera '
-                    'stay usable.'))
+               note='Bottom side. J14 pin 36 (ball U17) is deliberately '
+                    'open: it is the one spare pin, and the gateware should '
+                    'leave it unconstrained.'))
 
     socket_note = ('Hybrid mount: reflow the 19 SMT contacts, then solder the '
                    'four through-hole shell legs. Mating face flush with the '
                    'board edge.')
-    b.add(Part('J2', 'HDMI_A', 'IN 1 (HDMI)',
-               hdmi_socket_pins('A', 'I1', 'I1_5V_PIN', 'SHLD1'),
+    b.add(Part('J2', 'HDMI_A', 'IN (HDMI)',
+               hdmi_socket_pins('A', 'I', 'I_5V_PIN', 'SHLD1'),
                lcsc=TYPEA_LCSC, mfr=TYPEA_MFR,
-               desc='IN 1: receives forward clock A and lanes 0,1,2 plus the '
-                    'status UART on SCL',
+               desc='IN, cable 1: receives the 153.6 MHz link clock and '
+                    'lanes 0,1,2 at 307.2 Mbit/s, plus the HL2 status UART '
+                    'on SCL, which is the ONLY slow line with a destination '
+                    'in rev C',
                at=(TYPEA_X[0], TYPEA_ORIGIN_Y), rot=0, note=socket_note))
-    b.add(Part('J3', 'HDMI_A', 'IN 2 (HDMI)',
-               hdmi_socket_pins('A', 'I2', 'I2_5V_PIN', 'SHLD2'),
+    b.add(Part('J3', 'HDMI_A', 'AUX (HDMI)',
+               hdmi_socket_pins('A', 'AX', 'AX_5V_PIN', 'SHLD2'),
                lcsc=TYPEA_LCSC, mfr=TYPEA_MFR,
-               desc='IN 2: receives forward clock B and lanes 3,4,5. Its slow '
-                    'line is unused - board A has no pin left to drive it',
+               desc='AUX, cable 3: bidirectional, full duplex. G1 = clock '
+                    'pair + data 0 pair, G2 = data 1 pair + data 2 pair. '
+                    'Board B ships strapped ROLE B, so it receives G1 and '
+                    'drives G2. SCL, HPD and +5 V are test pads only',
                at=(TYPEA_X[1], TYPEA_ORIGIN_Y), rot=0, note=socket_note))
     b.add(Part('J4', 'HDMI_A', 'OUT (HDMI)',
                hdmi_socket_pins('A', 'O', 'O_5V_PIN', 'SHLD3'),
                lcsc=TYPEA_LCSC, mfr=TYPEA_MFR,
-               desc='OUT: drives the reverse clock and reverse lanes 0,1,2 '
-                    'plus the command channel on SCL',
+               desc='OUT, cable 2: drives the reverse clock and reverse '
+                    'lanes 0,1,2 at 307.2 Mbit/s. Its SCL has no source in '
+                    'rev C (J14 pin 36 is left spare) and is a test pad only',
                at=(TYPEA_X[2], TYPEA_ORIGIN_Y), rot=0, note=socket_note))
 
+    # ================================================== the ROLE strap
+    b.add(Part('J7', 'HDR1x03', 'ROLE', {
+        '1': '+3V3', '2': 'ROLE', '3': 'GND',
+    }, lcsc=LC_HDR, mfr='2.54mm 1x3P pin header',
+        desc='ROLE strap, ONE shunt: 1-2 = ROLE A (drives AUX G1, receives '
+             'G2); 2-3 = ROLE B (drives G2, receives G1) which is how board '
+             'B ships. The two boards of a link must be strapped differently',
+        at=(70.0, 2.0), rot=0,
+        note='Fit ONE shunt (LCSC C5305). Board B ships 2-3 = ROLE B, so '
+             'the Gowin reads link_role LOW on J14 pin 34.'))
+    b.add(Part('U8', 'INV', '74LVC1G04', {
+        INV_A: 'ROLE', INV_Y: 'ROLE_N', INV_GND: 'GND', INV_VCC: '+3V3',
+        INV_NC: None,
+    }, lcsc=LC_INV, mfr='SN74LVC1G04DBVR',
+        desc='Single-gate inverter: ROLE_N = NOT ROLE. Makes the complement '
+             'a property of the circuit rather than of the user',
+        at=(78.0, 4.0), rot=0,
+        note='SOT-23-5, TI DBV pinout (1 NC, 2 A, 3 GND, 4 Y, 5 VCC). '
+             "Nexperia's 74LVC1G04GW has a DIFFERENT pinout - do not "
+             'substitute it.'))
+
     # ------------------------------------------------------- receivers
-    for ref_u, pfx, lanes_out, at in (
-            ('U1', 'I1', ['LINK_RX_CLK_A', 'LINK_RX_D0', 'LINK_RX_D1',
-                          'LINK_RX_D2'], (18.0, 28.0)),
-            ('U2', 'I2', ['LINK_RX_CLK_B', 'LINK_RX_D3', 'LINK_RX_D4',
-                          'LINK_RX_D5'], (42.0, 28.0))):
-        pins = {'9': 'RXEN_N', '16': '+3V3', '12': 'GND', '13': '+3V3'}
-        for i, lane in enumerate(LANES):
-            pins[RCV_P[i]] = '%s_%s_RX_P' % (pfx, lane)
-            pins[RCV_N[i]] = '%s_%s_RX_N' % (pfx, lane)
-            pins[RCV_OUT[i]] = lanes_out[i]
-        b.add(Part(ref_u, 'LVDS_RCV', 'DS90LV048A', pins, lcsc='C87137',
-                   mfr='DS90LV048ATMTCX/NOPB',
-                   desc='Quad LVDS receiver, 400 Mbps, TSSOP-16. Receives '
-                        'socket %s: all four channels used, none spare' % pfx,
-                   at=at, rot=0))
-
-    # -------------------------------------------------------- driver
-    pins = {'1': '+3V3', '4': '+3V3', '5': 'GND', '8': 'GND'}
-    drv_src = {'CLK': 'DRVI_REVCLK', 'D0': 'DRVI_R0', 'D1': 'DRVI_R1',
-               'D2': 'DRVI_R2'}
+    # U1 = IN, gated by the IN cable detect.  U2 = AUX, always on and sitting
+    # across all four AUX pairs in both roles; what tri-states is its OUTPUT
+    # path toward the Gowin, which is U6.
+    pins = {'9': 'RXEN_N', '16': '+3V3', '12': 'GND', '13': '+3V3'}
+    rxo = {'CLK': 'LINK_RX_CLK', 'D0': 'LINK_RX_D0', 'D1': 'LINK_RX_D1',
+           'D2': 'LINK_RX_D2'}
     for i, lane in enumerate(LANES):
-        pins[DRV_IN[i]] = drv_src[lane]
-        pins[DRV_P[i]] = 'O_%s_P' % lane
-        pins[DRV_N[i]] = 'O_%s_N' % lane
-    b.add(Part('U3', 'LVDS_DRV', 'DS90LV047A', pins, lcsc='C201946',
-               mfr='DS90LV047ATM/NOPB',
-               desc='Quad LVDS driver, 400 Mbps, SOIC-16. Drives socket OUT: '
-                    'all four channels used, none spare',
-               at=(66.0, 28.0), rot=0))
+        pins[RCV_P[i]] = 'I_%s_RX_P' % lane
+        pins[RCV_N[i]] = 'I_%s_RX_N' % lane
+        pins[RCV_OUT[i]] = rxo[lane]
+    b.add(Part('U1', 'LVDS_RCV', 'DS90LV048A', pins, lcsc=LC_RCV,
+               mfr='DS90LV048ATMTCX/NOPB',
+               desc='Quad LVDS receiver, 400 Mbps, TSSOP-16. Receives socket '
+                    'IN: the link clock and lanes 0,1,2. All four channels '
+                    'used',
+               at=(21.0, 28.0), rot=0,
+               note='EN* = RXEN_N, gated by the IN cable detect through J5.'))
 
-    b.add(Part('U4', 'LDO33', 'AMS1117-3.3', {
+    pins = {'9': 'GND', '16': '+3V3', '12': 'GND', '13': '+3V3'}
+    rxo = {'CLK': 'RXO_AX_CLK', 'D0': 'RXO_AX_D0', 'D1': 'RXO_AX_D1',
+           'D2': 'RXO_AX_D2'}
+    for i, lane in enumerate(LANES):
+        pins[RCV_P[i]] = 'AX_%s_P' % lane
+        pins[RCV_N[i]] = 'AX_%s_N' % lane
+        pins[RCV_OUT[i]] = rxo[lane]
+    b.add(Part('U2', 'LVDS_RCV', 'DS90LV048A', pins, lcsc=LC_RCV,
+               mfr='DS90LV048ATMTCX/NOPB',
+               desc='Quad LVDS receiver, 400 Mbps, TSSOP-16. Sits across ALL '
+                    'FOUR AUX pairs in both roles',
+               at=(45.0, 28.0), rot=0,
+               note='EN tied high, EN* tied low: always enabled. Safe, '
+                    'because a receiver input is high impedance; it is this '
+                    "receiver's OUTPUTS that must not reach a Gowin pin the "
+                    'gateware is driving, and U6 is what stops them.'))
+
+    # -------------------------------------------------------- drivers
+    # THREE drivers for the same reason as board A: three enable domains and
+    # one enable per DS90LV047A package.
+    drv = [
+        ('U3', (69.0, 28.0), '+3V3', {
+            'CLK': ('DRVI_REVCLK', 'O_CLK'), 'D0': ('DRVI_R0', 'O_D0'),
+            'D1': ('DRVI_R1', 'O_D1'), 'D2': ('DRVI_R2', 'O_D2')},
+         'OUT: the reverse cable. All four channels used, none spare',
+         'EN tied to +3V3 and EN* to GND: permanently enabled.'),
+        ('U4', (33.0, 28.0), 'ROLE', {
+            'CLK': ('DRVI_AX_G1CLK', 'AX_CLK'),
+            'D0': ('DRVI_AX_G1DAT', 'AX_D0')},
+         'AUX group G1 (clock pair + data 0 pair). Two channels used, two '
+         'spare. EN = ROLE, so G1 is driven only in ROLE A',
+         'EN = ROLE. Tri-stated in ROLE B, which is how board B ships. '
+         'Channels 3 and 4 unused: inputs grounded, outputs open.'),
+        ('U5', (57.0, 28.0), 'ROLE_N', {
+            'CLK': ('DRVI_AX_G2CLK', 'AX_D1'),
+            'D0': ('DRVI_AX_G2DAT', 'AX_D2')},
+         'AUX group G2 (data 1 pair + data 2 pair). Two channels used, two '
+         'spare. EN = ROLE_N, so G2 is driven only in ROLE B',
+         'EN = ROLE_N. Enabled in ROLE B, which is how board B ships. '
+         'Channels 3 and 4 unused.'),
+    ]
+    for ref_u, at, en, chmap, desc, note in drv:
+        pins = {'1': en, '4': '+3V3', '5': 'GND', '8': 'GND'}
+        for i, lane in enumerate(LANES):
+            if lane in chmap:
+                src, pfxlane = chmap[lane]
+                pins[DRV_IN[i]] = src
+                pins[DRV_P[i]] = '%s_P' % pfxlane
+                pins[DRV_N[i]] = '%s_N' % pfxlane
+            else:
+                pins[DRV_IN[i]] = 'GND'
+                pins[DRV_P[i]] = None
+                pins[DRV_N[i]] = None
+        b.add(Part(ref_u, 'LVDS_DRV', 'DS90LV047A', pins, lcsc=LC_DRV,
+                   mfr='DS90LV047ATMX/NOPB',
+                   desc='Quad LVDS driver, 400 Mbps, SOIC-16. ' + desc,
+                   at=at, rot=0, note=note))
+
+    # ------------- the strap-gated buffer between the AUX receiver and J14
+    # This part is board B's equivalent of board A's two 4-bit translator
+    # ports, and it is NOT optional.  Without it the always-on AUX
+    # receiver's outputs for the group this board DRIVES would land on the
+    # two Gowin pins the gateware is driving as outputs in that role - CMOS
+    # against CMOS, which is exactly the failure PINMAP.md 2.4 exists to
+    # prevent.  Board B has no level shift to do (everything is 3.3 V), so
+    # both rails are tied to +3V3 and the part is used purely as two
+    # independently gated 2-channel buffers.
+    #
+    # THE INVARIANT, identical to board A: for each group the LVDS driver's
+    # active-HIGH EN and this buffer port's active-LOW OE* are THE SAME NET,
+    # so the group is either driven onto the cable or driven toward the
+    # Gowin, never both, whatever that net does.
+    x4 = {'1': '+3V3', '16': '+3V3', '8': 'GND', '9': 'GND',
+          '2': '+3V3', '3': '+3V3',          # 1DIR, 2DIR high = A -> B
+          '15': 'ROLE', '14': 'ROLE_N'}      # 1OE* = ROLE, 2OE* = ROLE_N
+    x4[X4_A[1]] = 'RXO_AX_CLK'
+    x4[X4_B[1]] = 'LINK_AUX_G1_CLK'
+    x4[X4_A[2]] = 'RXO_AX_D0'
+    x4[X4_B[2]] = 'LINK_AUX_G1_DAT'
+    x4[X4_A[3]] = 'RXO_AX_D1'
+    x4[X4_B[3]] = 'LINK_AUX_G2_CLK'
+    x4[X4_A[4]] = 'RXO_AX_D2'
+    x4[X4_B[4]] = 'LINK_AUX_G2_DAT'
+    b.add(Part('U6', 'XLAT4', 'SN74AVC4T245PW', x4, lcsc=LC_X4,
+               mfr='SN74AVC4T245PWR',
+               desc='Strap-gated buffer, VCCA = VCCB = 3.3 V, used as two '
+                    'independent 2-channel 3-state buffers: port 1 = AUX G1 '
+                    'toward the Gowin (enabled in ROLE B), port 2 = AUX G2 '
+                    'toward the Gowin (enabled in ROLE A). No level shift - '
+                    'this part exists only to tri-state',
+               at=(45.0, 16.0), rot=0,
+               note='1OE* = ROLE: the G1 port drives J14 pins 32 and 18 only '
+                    'in ROLE B. 2OE* = ROLE_N: the G2 port drives J14 pins '
+                    '17 and 31 only in ROLE A. ROLE_N carries a 10k pull-UP, '
+                    'so a missing or dead inverter disables the G2 port '
+                    'rather than enabling it. A 74LVC125A quad buffer with '
+                    'four independent enables would also do this job in one '
+                    'smaller package; the AVC4T245 was chosen because board '
+                    'A already carries two of them, so the panel has one '
+                    'fewer unique part.'))
+
+    b.add(Part('U7', 'LDO33', 'AMS1117-3.3', {
         '1': 'GND', '2': '+3V3', '3': 'P5V_J14',
-    }, lcsc='C6186', mfr='AMS1117-3.3',
+    }, lcsc=LC_LDO33, mfr='AMS1117-3.3',
         desc='3.3 V board supply from J14 pin 11 (5V_Peripheral). Dissipates '
-             '(5.0 - 3.3) x 0.13 = 0.22 W: flood the SOT-223 tab to the power '
-             'plane with at least six thermal vias',
-        at=(84.0, 20.0)))
+             '(5.0 - 3.3) x 0.15 = 0.26 W: flood the SOT-223 tab to the '
+             'power plane with at least six thermal vias',
+        at=(84.0, 22.0)))
 
     b.add(Part('J5', 'HDR1x03', 'RX MODE', {
-        '1': '+3V3', '2': 'RXEN_N', '3': 'I1_HPD',
-    }, lcsc='C2337', mfr='2.54mm 1x3P pin header',
-        desc='IN receiver enable (both receivers): 2-3 = auto, enabled only '
-             'while a cable is in IN 1 (DEFAULT); 1-2 = force disabled, which '
-             'is what the direct-LVDS experiment needs; no shunt = always '
-             'enabled', at=(44.0, 16.0), rot=0))
+        '1': '+3V3', '2': 'RXEN_N', '3': 'I_HPD',
+    }, lcsc=LC_HDR, mfr='2.54mm 1x3P pin header',
+        desc='IN receiver enable: 2-3 = auto, enabled only while a cable is '
+             'in the IN socket (DEFAULT); 1-2 = force disabled, which is '
+             'what the direct-LVDS experiment needs; no shunt = always '
+             'enabled. Does NOT affect the AUX receiver',
+        at=(62.0, 2.0), rot=0))
     b.add(Part('J6', 'HDR1x02', 'GND AUX', {'1': 'GND', '2': 'GND'},
-               lcsc='C2337', mfr='2.54mm 1x2P pin header',
+               lcsc=LC_HDR, mfr='2.54mm 1x2P pin header',
                desc='Extra ground wire to a dock PMOD GND pin. J14 has only '
                     'one ground pin and that is not enough for eight CMOS '
                     'outputs switching at up to 307 Mbit/s - fit the wire',
-               at=(85.0, 4.0), rot=0))
+               at=(86.0, 4.0), rot=0))
 
     # -------------------------------------------------------------- ESD
     lines = []
-    for pfx in ('I1', 'I2', 'O'):
+    for pfx in ('I', 'AX', 'O'):
         for lane in LANES:
             lines += ['%s_%s_P' % (pfx, lane), '%s_%s_N' % (pfx, lane)]
-        lines += ['%s_SLOW' % pfx, '%s_HPD' % pfx]
-    lines += ['I1_5V_PIN', 'I2_5V_PIN', 'O_5V_PIN']
+        lines += ['%s_SLOW' % pfx, '%s_HPD' % pfx, '%s_5V_PIN' % pfx]
     arr, _ = esd_arrays('D', 1, lines,
                         'Place within 5 mm of the HDMI connector pins, on the '
                         'connector side of everything else.')
     b.add(*arr)
 
     rs = []
-    # receiver output damping into the Gowin pins
-    rx_to_j14 = [('LINK_RX_CLK_A', 'LINK_CLK_A'),
-                 ('LINK_RX_CLK_B', 'LINK_CLK_B'),
-                 ('LINK_RX_D0', 'LINK_D0'), ('LINK_RX_D1', 'LINK_D1'),
-                 ('LINK_RX_D2', 'LINK_D2'), ('LINK_RX_D3', 'LINK_D3'),
-                 ('LINK_RX_D4', 'LINK_D4'), ('LINK_RX_D5', 'LINK_D5')]
-    for a, c in rx_to_j14:
+    # IN receiver output damping into the Gowin pins
+    for a, c in (('LINK_RX_CLK', 'LINK_CLK'), ('LINK_RX_D0', 'LINK_D0'),
+                 ('LINK_RX_D1', 'LINK_D1'), ('LINK_RX_D2', 'LINK_D2')):
         rs.append(R(ref('R'), '22R', a, c, lcsc=LC['r22'],
                     desc='Receiver output damping into J14, %s' % c))
-    # direct-LVDS bypass links, all DNP (7 pairs; lane 5 has no pair partner)
-    direct = [('I1', 'CLK', 'LINK_CLK_A', 'LINK_SLOW_IN'),
-              ('I1', 'D0', 'LINK_D0', 'LINK_R0'),
-              ('I1', 'D1', 'LINK_D1', 'LINK_R1'),
-              ('I1', 'D2', 'LINK_D2', 'LINK_R2'),
-              ('I2', 'CLK', 'LINK_CLK_B', 'LINK_PRESENT2'),
-              ('I2', 'D0', 'LINK_D3', 'LINK_SLOW_OUT'),
-              ('I2', 'D1', 'LINK_D4', 'LINK_REVCLK')]
+    # direct-LVDS bypass links: SIX pairs, twelve DNP 0 R.  rev C gets all
+    # six received pairs onto the A (T) leg of a true Gowin pair, which rev B
+    # could not manage for one lane.  PINMAP.md 5.3.
+    direct = [('I', 'CLK', 'LINK_CLK', 'LINK_SLOW_IN'),
+              ('I', 'D0', 'LINK_D0', 'LINK_R0'),
+              ('I', 'D1', 'LINK_D1', 'LINK_R1'),
+              ('I', 'D2', 'LINK_D2', 'LINK_R2'),
+              ('AX', 'D0', 'LINK_AUX_G1_DAT', 'LINK_AUX_G2_CLK'),
+              ('AX', 'CLK', 'LINK_AUX_G1_CLK', 'LINK_AUX_G2_DAT')]
     for pfx, lane, aleg, bleg in direct:
         rs.append(R(ref('R'), '0R', '%s_%s_P' % (pfx, lane), aleg,
                     lcsc=LC['r0'], dnp=True,
@@ -1305,27 +1761,64 @@ def board_b():
                          'leg' % (pfx, lane),
                     note='NOT FITTED. Fitting this disables whatever signal '
                          'normally lives on that B leg (%s).' % bleg))
-    # driver input damping and pull-downs
-    for src, dst in (('LINK_REVCLK', 'DRVI_REVCLK'), ('LINK_R0', 'DRVI_R0'),
-                     ('LINK_R1', 'DRVI_R1'), ('LINK_R2', 'DRVI_R2')):
+    # driver input damping and pull-downs.  The AUX ones are on nets the
+    # Gowin drives in one role and U6 drives in the other, so the pull-down
+    # is what defines them while neither does.
+    for src, dst, why in (
+            ('LINK_REVCLK', 'DRVI_REVCLK', 'OUT clock'),
+            ('LINK_R0', 'DRVI_R0', 'OUT lane 0'),
+            ('LINK_R1', 'DRVI_R1', 'OUT lane 1'),
+            ('LINK_R2', 'DRVI_R2', 'OUT lane 2'),
+            ('LINK_AUX_G1_CLK', 'DRVI_AX_G1CLK', 'AUX G1 clock'),
+            ('LINK_AUX_G1_DAT', 'DRVI_AX_G1DAT', 'AUX G1 data'),
+            ('LINK_AUX_G2_CLK', 'DRVI_AX_G2CLK', 'AUX G2 clock'),
+            ('LINK_AUX_G2_DAT', 'DRVI_AX_G2DAT', 'AUX G2 data')):
         rs.append(R(ref('R'), '22R', src, dst, lcsc=LC['r22'],
-                    desc='Driver input damping, %s' % dst))
+                    desc='Driver input damping, %s (%s)' % (dst, why)))
         rs.append(R(ref('R'), '10k', dst, 'GND', lcsc=LC['r10k'],
                     desc='Defines %s while the Gowin is unconfigured' % dst))
-    rs.append(R(ref('R'), '100R', 'LINK_SLOW_OUT', 'O_SLOW', lcsc=LC['r100'],
-                desc='Command channel out of J14 pin 17 onto OUT SCL. Source '
-                     'damping for an unterminated cable wire'))
-    for i, (hpd, present) in enumerate((('I1_HPD', 'LINK_PRESENT1'),
-                                        ('I2_HPD', 'LINK_PRESENT2')), start=1):
-        rs.append(R(ref('R'), '10k', hpd, '+3V3', lcsc=LC['r10k'],
-                    desc='IN %d cable detect pull-up; LOW = cable plugged in'
-                         % i))
-        rs.append(R(ref('R'), '0R', hpd, present, lcsc=LC['r0'],
-                    desc='IN %d cable detect into J14' % i))
-    rs.append(R(ref('R'), '1k', 'O_HPD', 'GND', lcsc=LC['r1k'],
-                desc='OUT HPD to ground so board A detects the cable'))
+    rs.append(R(ref('R'), '0R', 'I_SLOW', 'LINK_SLOW_IN', lcsc=LC['r0'],
+                desc='The HL2 status UART arrives on the IN socket SCL and '
+                     'goes to J14 pin 19. That pin MUST be constrained '
+                     'IO_TYPE=LVTTL33: it is driven by an HL2 2.5 V output '
+                     'down an unshielded wire, and LVCMOS33\'s 2.0 V '
+                     'threshold would leave zero guaranteed margin where '
+                     'LVTTL33\'s 1.7 V leaves 300 mV',
+                note='FITTED. Cut to isolate the slow line.'))
+    rs.append(R(ref('R'), '10k', 'LINK_SLOW_IN', 'GND', lcsc=LC['r10k'],
+                desc='Holds the slow line low with no cable, so the Gowin '
+                     'reads a break rather than random data'))
+    rs.append(C(ref('C'), '22pF', 'LINK_SLOW_IN', 'GND', lcsc=LC['c22p'],
+                dnp=True,
+                desc='Optional ringing damper on LINK_SLOW_IN',
+                note='NOT FITTED. 22 pF into 100 R is 2.2 ns. Fit if the '
+                     'unterminated cable wire rings enough to double-clock '
+                     'the receiver.'))
+    rs.append(R(ref('R'), '10k', 'I_HPD', '+3V3', lcsc=LC['r10k'],
+                desc='IN cable detect pull-up; LOW = cable plugged in'))
+    rs.append(R(ref('R'), '0R', 'I_HPD', 'LINK_PRESENT', lcsc=LC['r0'],
+                desc='IN cable detect into J14 pin 33. rev C has only one '
+                     'cable detect: the AUX cable is detected by clock '
+                     'activity in the gateware, not by HPD'))
+    rs.append(R(ref('R'), '0R', 'ROLE', 'LINK_ROLE', lcsc=LC['r0'],
+                desc='The ROLE level into J14 pin 34, so the gateware knows '
+                     'its own role and sets its four AUX pin directions to '
+                     'match. Board B ships ROLE B, so this reads LOW'))
+    rs.append(R(ref('R'), '100R', 'O_HPD', 'GND', lcsc=LC['r100'],
+                desc='OUT HPD to ground so board A detects the cable. 100 R '
+                     'against the far 10 k gives 0.033 V'))
     rs.append(R(ref('R'), '100k', 'RXEN_N', 'GND', lcsc=LC['r100k'],
-                desc='Holds both receivers enabled when J5 has no shunt'))
+                desc='Holds the IN receiver enabled when J5 has no shunt'))
+    rs.append(R(ref('R'), '100k', 'ROLE', 'GND', lcsc=LC['r100k'],
+                desc='Makes "no shunt on J7" mean ROLE B rather than a '
+                     'floating inverter input - and ROLE B is how board B '
+                     'ships, so a lost shunt is not even a change'))
+    rs.append(R(ref('R'), '10k', 'ROLE_N', '+3V3', lcsc=LC['r10k'],
+                desc='ROLE_N pull-UP. THE DIRECTION MATTERS: if U8 is '
+                     'missing, unpowered or dead, ROLE_N reads HIGH, which '
+                     'DISABLES the G2 buffer port toward the Gowin. The '
+                     'auxiliary link then does not work and nothing is '
+                     'stressed'))
     rs.append(R(ref('R'), '0R', 'P5V_J14', 'O_5V_PIN', lcsc=LC['r0'],
                 dnp=True,
                 desc='SL_5V_OUT: put the dock\'s 5 V on the OUT socket so '
@@ -1338,38 +1831,43 @@ def board_b():
                     desc='Socket %d shell to board ground' % i))
     b.add(*rs)
 
-    # DC/AC coupling and terminations on the eight received pairs
-    b.add(*ac_coupling(ref, 'I1', LANES))
-    b.add(*ac_coupling(ref, 'I2', LANES))
+    # DC/AC coupling and terminations on the four RECEIVED IN pairs
+    b.add(*ac_coupling(ref, 'I', LANES))
     b.add(*vbias_network(ref))
-    # IN 1 slow line goes to the Gowin; IN 2 slow line is unused
-    b.add(*slow_line_rx(ref, 'I1_SLOW', 'LINK_SLOW_IN', pull='down'))
-    b.add(R(ref('R'), '10k', 'I2_SLOW', 'GND', lcsc=LC['r10k'],
-            desc='IN 2 slow line is unused: hold it low rather than floating'))
+    # The four AUX pairs.  Board B ships ROLE B, so it RECEIVES G1 = the CLK
+    # and D0 pairs, and those two get the 100 R.
+    b.add(*aux_pairs(ref, 'AX', {'CLK', 'D0'}, 'ROLE B (how board B ships)'))
 
     cs = [
         ('100nF', '+3V3', 'U1 VCC', LC['c100n'], False),
         ('100nF', '+3V3', 'U2 VCC', LC['c100n'], False),
         ('100nF', '+3V3', 'U3 VCC', LC['c100n'], False),
+        ('100nF', '+3V3', 'U4 VCC', LC['c100n'], False),
+        ('100nF', '+3V3', 'U5 VCC', LC['c100n'], False),
+        ('100nF', '+3V3', 'U6 VCCA', LC['c100n'], False),
+        ('100nF', '+3V3', 'U6 VCCB', LC['c100n'], False),
+        ('100nF', '+3V3', 'U8 VCC (the inverter)', LC['c100n'], False),
         ('10uF', '+3V3', '+3V3 bulk', LC['c10u'], True),
         ('100nF', '+3V3', '+3V3 bulk HF', LC['c100n'], False),
         ('10uF', 'P5V_J14', '5 V input bulk', LC['c10u'], True),
         ('100nF', 'P5V_J14', '5 V input HF', LC['c100n'], False),
-        ('10uF', '+3V3', 'U4 output bulk', LC['c10u'], True),
+        ('10uF', '+3V3', 'U7 output bulk', LC['c10u'], True),
         ('100nF', '+3V3', 'extra +3V3', LC['c100n'], False),
     ]
     for val, net, why, lc, big in cs:
         b.add(C(ref('C'), val, net, 'GND', lcsc=lc, big=big, desc=why))
 
-    tps = ['LINK_CLK_A', 'LINK_CLK_B', 'LINK_D0', 'LINK_D1', 'LINK_D2',
-           'LINK_D3', 'LINK_D4', 'LINK_D5', 'LINK_SLOW_IN', 'LINK_SLOW_OUT',
-           'LINK_PRESENT1', 'LINK_PRESENT2', 'LINK_REVCLK', 'LINK_R0',
-           'LINK_R1', 'LINK_R2', 'DRVI_REVCLK',
-           'I1_HPD', 'I2_HPD', 'O_HPD', 'I2_SLOW',
-           'I1_5V_PIN', 'I2_5V_PIN', 'O_5V_PIN', 'VBIAS', '+3V3', 'P5V_J14']
+    tps = ['LINK_CLK', 'LINK_D0', 'LINK_D1', 'LINK_D2', 'LINK_SLOW_IN',
+           'LINK_AUX_G1_CLK', 'LINK_AUX_G1_DAT', 'LINK_AUX_G2_CLK',
+           'LINK_AUX_G2_DAT', 'LINK_PRESENT', 'LINK_ROLE', 'LINK_REVCLK',
+           'LINK_R0', 'LINK_R1', 'LINK_R2', 'DRVI_REVCLK',
+           'ROLE', 'ROLE_N',
+           'RXO_AX_CLK', 'RXO_AX_D0', 'RXO_AX_D1', 'RXO_AX_D2',
+           'I_HPD', 'AX_HPD', 'O_HPD', 'AX_SLOW', 'O_SLOW',
+           'I_5V_PIN', 'AX_5V_PIN', 'O_5V_PIN', 'VBIAS', '+3V3', 'P5V_J14']
     for net in tps:
         b.add(TP(ref('TP'), net))
-    for at in ((86.5, 30.0), (86.5, 14.0)):
+    for at in ((86.5, 32.0), (86.5, 15.0)):
         g = TP(ref('TP'), 'GND', t='TPBIG')
         g.at = at
         b.add(g)
@@ -1378,28 +1876,29 @@ def board_b():
         b.add(Part('H%d' % i, 'MH', 'M3', {'1': 'GND'}, at=at,
                    desc='M3 mounting hole, grounded'))
 
-    for net in ['GND', 'P5V_J14', 'I1_5V_PIN', 'I2_5V_PIN', 'O_5V_PIN']:
+    for net in ['GND', 'P5V_J14', 'I_5V_PIN', 'AX_5V_PIN', 'O_5V_PIN']:
         b.add(FLAG(net))
 
-    autoplace(b, [(1.5, 13.0, 88.5, 34.0), (1.5, 1.0, 88.5, 4.5)])
+    autoplace(b, [(1.5, 13.0, 88.5, 34.5), (1.5, 0.8, 59.5, 11.5)])
 
-    b.calibration_rule(20.0, 27.5, 50.0)
+    b.calibration_rule(20.0, 36.5, 50.0)
     b.texts = [
         ('F.SilkS', 45.0, 2.0, 0, 1.3,
          'gowin-bridge board B  Tang Mega 138K dock  rev %s' % REV),
         ('Dwgs.User', 45.0, 24.0, 0, 1.4,
          'board B = 90.00 x 46.00 mm. Socket centres at x 21.00 / 45.00 / '
          '69.00, front edge y 46.00.'),
-        ('Dwgs.User', 45.0, 31.5, 0, 1.4,
+        ('Dwgs.User', 45.0, 39.0, 0, 1.4,
          'J14 SOCKET POSITION IS UNVERIFIED. Pin 1 hole at local '
          '(6.00, 8.00); odd pins (J14 silk "N") on the y = 8.00 row, even '
          'pins ("P") on y = 10.54, ascending in +x to pin 39/40 at x 54.26.'),
-        ('Dwgs.User', 45.0, 33.5, 0, 1.4,
+        ('Dwgs.User', 45.0, 41.0, 0, 1.4,
          'Offer this print up to the dock and check both before ordering.'),
-        ('F.SilkS', TYPEA_X[0], 31.0, 0, 2.2, 'IN 1'),
-        ('F.SilkS', TYPEA_X[1], 31.0, 0, 2.2, 'IN 2'),
-        ('F.SilkS', TYPEA_X[2], 31.0, 0, 2.2, 'OUT'),
-        ('F.SilkS', 45.0, 34.0, 0, 1.3, 'OUT goes to IN'),
+        ('F.SilkS', TYPEA_X[0], 34.8, 0, 2.2, 'IN'),
+        ('F.SilkS', TYPEA_X[1], 34.8, 0, 2.2, 'AUX'),
+        ('F.SilkS', TYPEA_X[2], 34.8, 0, 2.2, 'OUT'),
+        ('F.SilkS', 45.0, 36.5, 0, 1.2, 'OUT GOES TO IN.  AUX GOES TO AUX'),
+        ('F.SilkS', 70.0, 10.6, 0, 1.0, 'ROLE 1-2=A 2-3=B (SHIPS B)'),
         ('F.SilkS', 6.0, 6.0, 0, 1.0, 'J14 p1'),
         ('B.SilkS', 45.0, 9.0, 0, 1.2,
          'SOCKET J1 ON THIS SIDE - MATES DOCK J14'),
@@ -1854,6 +2353,33 @@ def write_pcb(outdir, board, fps):
         w.line('uuid', q(uuid_for(board.name, 'edge', i)))
         w.close_inline()
 
+    for i, (ex0, ey0, ex1, ey1) in enumerate(board.edge_extra):
+        w.open('gr_line')
+        w.line('start', fmt(ox + ex0), fmt(oy + ey0))
+        w.line('end', fmt(ox + ex1), fmt(oy + ey1))
+        w.line('stroke', '(width 0.1)', '(type default)')
+        w.line('layer', q('Edge.Cuts'))
+        w.line('uuid', q(uuid_for(board.name, 'edgex', i)))
+        w.close_inline()
+
+    # Unplated holes with no footprint: the mouse-bite perforations.  Emitted
+    # as a footprint per hole, because KiCad has no bare-drill primitive.
+    for i, (hx, hy, hd) in enumerate(board.npth):
+        w.open('footprint', q('MouseBite:Drill'))
+        w.line('layer', q('F.Cu'))
+        w.line('uuid', q(uuid_for(board.name, 'mb', i)))
+        w.line('at', fmt(ox + hx), fmt(oy + hy))
+        w.line('descr', q('Mouse-bite perforation, unplated'))
+        w.line('attr', 'exclude_from_pos_files', 'exclude_from_bom',
+               'allow_missing_courtyard')
+        w.open('pad', q(''), 'np_thru_hole', 'circle')
+        w.line('at', '0', '0')
+        w.line('size', fmt(hd), fmt(hd))
+        w.line('drill', fmt(hd))
+        w.line('layers', q('F&B.Cu'), q('*.Mask'))
+        w.close_inline()
+        w.close_inline()
+
     for (layer, lx0, ly0, lx1, ly1, lw) in board.lines:
         w.open('gr_line')
         w.line('start', fmt(ox + lx0), fmt(oy + ly0))
@@ -1903,13 +2429,20 @@ def write_pcb(outdir, board, fps):
         w.close_inline()
         w.close_inline()
 
-    zone('In1.Cu', 'GND', 0, pts, 'GND plane (layer 2) - DO NOT CUT')
-    zone('F.Cu', 'GND', 0, pts, 'top ground fill')
-    zone('B.Cu', 'GND', 0, pts, 'bottom ground fill')
-    zone('In2.Cu', '+3V3', 0, pts, 'power plane (layer 3): +3V3')
-    if '+2V5' in nets:
-        isl = [(13.0, 2.0), (27.0, 2.0), (27.0, 28.0), (13.0, 28.0)]
-        zone('In2.Cu', '+2V5', 10, isl, 'power plane island: +2V5')
+    # Full-board pours.  ``board.zones_full`` lets the panel pour each of its
+    # two boards separately, because a panel is one outline carrying two
+    # electrically independent boards and one net must not cross from one to
+    # the other.
+    if board.zones_full is None:
+        zone('In1.Cu', 'GND', 0, pts, 'GND plane (layer 2) - DO NOT CUT')
+        zone('F.Cu', 'GND', 0, pts, 'top ground fill')
+        zone('B.Cu', 'GND', 0, pts, 'bottom ground fill')
+        zone('In2.Cu', '+3V3', 0, pts, 'power plane (layer 3): +3V3')
+    else:
+        for (zlayer, znet, zprio, zpoly, zname) in board.zones_full:
+            zone(zlayer, znet, zprio, zpoly, zname)
+    for (zlayer, znet, zprio, zpoly, zname) in board.zones_extra:
+        zone(zlayer, znet, zprio, zpoly, zname)
 
     w.close_inline()
     with open(path, 'w', encoding='utf-8') as f:
@@ -2002,7 +2535,11 @@ PRO_TEMPLATE = '''{
 }
 '''
 
-PAIR_PREFIXES = ('O1_', 'O2_', 'I_', 'I1_', 'I2_', 'O_')
+# Net-name prefixes that mark a differential pair, so the project file can
+# put them in the LVDS100 net class.  rev C: three sockets per board, OUT /
+# AUX / IN, and the panel prefixes every net with its board letter.
+PAIR_PREFIXES = ('O_', 'AX_', 'I_',
+                 'A_O_', 'A_AX_', 'A_I_', 'B_O_', 'B_AX_', 'B_I_')
 
 
 def is_pair_net(name):

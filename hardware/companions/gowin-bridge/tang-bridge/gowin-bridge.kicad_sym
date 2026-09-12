@@ -780,6 +780,70 @@
 					(effects (font (size 1.27 1.27))))
 				(number "3"
 					(effects (font (size 1.27 1.27)))))))
+	(symbol "74LVC1G04"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "U"
+			(at 0 0 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "74LVC1G04"
+			(at 0 -2.54 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "gowin-bridge:SOT-23-5"
+			(at 0 -5.08 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/sn74lvc1g04.pdf"
+			(at 0 -7.62 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Single NOT Gate, Low-Voltage CMOS"
+			(at 0 -10.16 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "74LVC1G04_0_1"
+			(polyline
+				(pts
+					(xy -7.62 6.35)
+					(xy -7.62 -6.35)
+					(xy 5.08 0)
+					(xy -7.62 6.35))
+				(stroke (width 0.254) (type default))
+				(fill (type background))))
+		(symbol "74LVC1G04_1_1"
+			(pin no_connect line
+				(at -7.62 2.54 0)
+				(length 2.54)
+				(name "NC"
+					(effects (font (size 1.27 1.27))))
+				(number "1"
+					(effects (font (size 1.27 1.27)))))
+			(pin input line
+				(at -15.24 0 0)
+				(length 7.62)
+				(name ""
+					(effects (font (size 1.27 1.27))))
+				(number "2"
+					(effects (font (size 1.27 1.27)))))
+			(pin power_in line
+				(at -5.08 -10.16 90)
+				(length 5.08)
+				(name "GND"
+					(effects (font (size 1.27 1.27))))
+				(number "3"
+					(effects (font (size 1.27 1.27)))))
+			(pin output inverted
+				(at 12.7 0 180)
+				(length 7.62)
+				(name ""
+					(effects (font (size 1.27 1.27))))
+				(number "4"
+					(effects (font (size 1.27 1.27)))))
+			(pin power_in line
+				(at -5.08 10.16 270)
+				(length 5.08)
+				(name "VCC"
+					(effects (font (size 1.27 1.27))))
+				(number "5"
+					(effects (font (size 1.27 1.27)))))))
 	(symbol "AMS1117-3.3"
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1839,4 +1903,142 @@
 				(name "1"
 					(effects (font (size 1.27 1.27))))
 				(number "1"
+					(effects (font (size 1.27 1.27)))))))
+	(symbol "SN74AVC4T245PW"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "U"
+			(at 0 0 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "SN74AVC4T245PW"
+			(at 0 -2.54 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "gowin-bridge:TSSOP-16_4.4x5mm_P0.65mm"
+			(at 0 -5.08 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/sn74avc4t245.pdf"
+			(at 0 -7.62 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "4-Bit Dual-Supply Bus Transceiver With Configurable Voltage Translation and 3-State Outputs, TSSOP-16"
+			(at 0 -10.16 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "SN74AVC4T245PW_0_1"
+			(rectangle
+				(start -10.16 12.7)
+				(end 10.16 -12.7)
+				(stroke (width 0.254) (type default))
+				(fill (type background))))
+		(symbol "SN74AVC4T245PW_1_1"
+			(pin power_in line
+				(at -2.54 15.24 270)
+				(length 2.54)
+				(name "VCCA"
+					(effects (font (size 1.27 1.27))))
+				(number "1"
+					(effects (font (size 1.27 1.27)))))
+			(pin input line
+				(at -12.7 5.08 0)
+				(length 2.54)
+				(name "1DIR"
+					(effects (font (size 1.27 1.27))))
+				(number "2"
+					(effects (font (size 1.27 1.27)))))
+			(pin input line
+				(at -12.7 2.54 0)
+				(length 2.54)
+				(name "2DIR"
+					(effects (font (size 1.27 1.27))))
+				(number "3"
+					(effects (font (size 1.27 1.27)))))
+			(pin bidirectional line
+				(at -12.7 -2.54 0)
+				(length 2.54)
+				(name "1A1"
+					(effects (font (size 1.27 1.27))))
+				(number "4"
+					(effects (font (size 1.27 1.27)))))
+			(pin bidirectional line
+				(at -12.7 -5.08 0)
+				(length 2.54)
+				(name "1A2"
+					(effects (font (size 1.27 1.27))))
+				(number "5"
+					(effects (font (size 1.27 1.27)))))
+			(pin bidirectional line
+				(at -12.7 -7.62 0)
+				(length 2.54)
+				(name "2A1"
+					(effects (font (size 1.27 1.27))))
+				(number "6"
+					(effects (font (size 1.27 1.27)))))
+			(pin bidirectional line
+				(at -12.7 -10.16 0)
+				(length 2.54)
+				(name "2A2"
+					(effects (font (size 1.27 1.27))))
+				(number "7"
+					(effects (font (size 1.27 1.27)))))
+			(pin power_in line
+				(at 0 -15.24 90)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27))))
+				(number "8"
+					(effects (font (size 1.27 1.27)))))
+			(pin passive line
+				(at 0 -15.24 90)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27))))
+				(number "9"
+					(effects (font (size 1.27 1.27)))))
+			(pin bidirectional line
+				(at 12.7 -10.16 180)
+				(length 2.54)
+				(name "2B2"
+					(effects (font (size 1.27 1.27))))
+				(number "10"
+					(effects (font (size 1.27 1.27)))))
+			(pin bidirectional line
+				(at 12.7 -7.62 180)
+				(length 2.54)
+				(name "2B1"
+					(effects (font (size 1.27 1.27))))
+				(number "11"
+					(effects (font (size 1.27 1.27)))))
+			(pin bidirectional line
+				(at 12.7 -5.08 180)
+				(length 2.54)
+				(name "1B2"
+					(effects (font (size 1.27 1.27))))
+				(number "12"
+					(effects (font (size 1.27 1.27)))))
+			(pin bidirectional line
+				(at 12.7 -2.54 180)
+				(length 2.54)
+				(name "1B1"
+					(effects (font (size 1.27 1.27))))
+				(number "13"
+					(effects (font (size 1.27 1.27)))))
+			(pin input line
+				(at -12.7 7.62 0)
+				(length 2.54)
+				(name "2~{OE}"
+					(effects (font (size 1.27 1.27))))
+				(number "14"
+					(effects (font (size 1.27 1.27)))))
+			(pin input line
+				(at -12.7 10.16 0)
+				(length 2.54)
+				(name "1~{OE}"
+					(effects (font (size 1.27 1.27))))
+				(number "15"
+					(effects (font (size 1.27 1.27)))))
+			(pin power_in line
+				(at 2.54 15.24 270)
+				(length 2.54)
+				(name "VCCB"
+					(effects (font (size 1.27 1.27))))
+				(number "16"
 					(effects (font (size 1.27 1.27))))))))
