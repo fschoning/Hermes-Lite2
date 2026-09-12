@@ -34,9 +34,11 @@ Updated 2026-09-12 ~13:50. Resume from this file.
   Fix applied in `gowin/rtl/gl_lane_rx.v` (`ifdef SIM` pulses VALUE on every tap change).
   The live-sample bit-exact checks and the "fast serial 0 errors" check failed as a
   consequence (no forward lock; one fast-serial packet is lost during bootstrap, the check
-  now allows <= 2). A rerun with the fix was started but not finished when this session
-  stopped: run `cd gowin/sim && ./run_sim.sh link 6` (about 10 minutes) and read
-  `gowin/sim/build/tb_link_6.log` (last line PASS/FAIL, plus one "ok:/FAIL:" line per check).
+  now allows <= 2). NOTE: the first rerun after the fix silently used the stale .vvp
+  (the run script's -I path was broken; fixed in run_sim.sh), so the fix is still UNVERIFIED.
+  A correctly compiled run was started at the very end of the session; check
+  `gowin/sim/build/tb_link_6.log` (last line PASS/FAIL, one "ok:/FAIL:" line per check),
+  or rerun `cd gowin/sim && ./run_sim.sh link 6` (about 10 minutes).
 - `tb_link` LANES=3 never run: `./run_sim.sh link 3`.
 
 ## Synthesis state

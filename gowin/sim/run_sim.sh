@@ -11,6 +11,7 @@ IVERILOG=${IVERILOG:-/c/tools/oss-cad-suite/bin/iverilog.exe}
 VVP=${VVP:-/c/tools/oss-cad-suite/bin/vvp.exe}
 GOWIN_SIMLIB=${GOWIN_SIMLIB:-/c/Gowin/Gowin_V1.9.11.03_Education/Gowin_V1.9.11.03_Education_x64/IDE/simlib/gw5a/prim_sim.v}
 export PATH="$(dirname "$IVERILOG")":"$(dirname "$IVERILOG")/../lib":$PATH
+SIMLIB_DIR=$(dirname "$GOWIN_SIMLIB")
 BUILD="$HERE/build"
 mkdir -p "$BUILD"
 
@@ -43,7 +44,7 @@ run_link() {
   L=$1
   echo "== tb_link LANES=$L"
   "$IVERILOG" -g2012 -DSIM -s tb_link -Ptb_link.LANES=$L -o "$BUILD/tb_link_$L.vvp" -I "$GRTL" \
-      $SRC -I "$(dirname "$GOWIN_SIMLIB")" "$HERE/gowin_prim_ts.v" "$HERE/tb_cable.v" "$HERE/tb_link.v" 2>&1 | grep -v "prim_sim.v.*warning" || true
+      $SRC -I "$SIMLIB_DIR" "$HERE/gowin_prim_ts.v" "$HERE/tb_cable.v" "$HERE/tb_link.v" 2>&1 | grep -v "prim_sim.v.*warning" || true
   "$VVP" -n "$BUILD/tb_link_$L.vvp" | tee "$BUILD/tb_link_$L.log"
 }
 
