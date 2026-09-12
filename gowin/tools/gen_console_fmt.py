@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+"""
+gen_console_fmt.py — generates gowin/rtl/gl_console_fmt.vh, the "format program" of the
+debug console (gl_console.v).
+
+The console prints one line per period built from segments: literal text and hexadecimal
+fields taken from one wide 'fields' vector. This script defines the field list (name,
+width) and the line layouts for 6-lane and 3-lane builds, and emits:
+
+  * FMT_FIELDS_W and the `fields` concatenation (gl_console_fields.vh)
+  * fmt_lit(i)   : literal character ROM
+  * fmt_seg6(i), fmt_seg3(i), fmt_segh(i): segment tables, entry = {hex, len[5:0], off[11:0]}
+      hex = 0: 'len' characters starting at literal ROM index 'off'
+      hex = 1: 'len' hex digits of fields[off + 4*len - 1 : off], most significant first
+
+Run:  python gowin/tools/gen_console_fmt.py   (from the repository root)
+"""
+import os
+
+# (name, width) — MSB first in the concatenation
+FIELDS = [
+    ("f_st", 4), ("f_fail", 4), ("f_mode", 4), ("f_scr", 4), ("f_clk", 4), ("f_pll", 4),
+    ("f_swap", 4), ("f_rev", 4), ("f_salive", 4),
+    ("f_tap", 48), ("f_eye", 48), ("f_off", 24), ("f_err", 192),
+    ("f_words", 40), ("f_werr", 32), ("f_sf", 16), ("f_se", 16), ("f_tx", 16),
+    ("f_hl2", 256),
+]
+
+total = sum(w for _, w in FIELDS)
+offs = {}
+pos = total
+for name, w in FIELDS:
+    pos -= w
+    offs[name] = pos          # bit offset of the LSB of the field
+
+def fld(name, ndig, sub=0, subw=None):
+    """hex segment: field 'name', sub-element 'sub' of width subw (bits), ndig digits"""
+    base = offs[name]
+    if subw is not None:
+        base += sub * subw
+    return ("hex", base, ndig)
+
+def hl2byte(b, nbytes=1):
+    """bytes b..b+nbytes-1 of the HL2 status payload (byte 1 = f_hl2[255:248])"""
+    base = offs["f_hl2"] + 256 - 8 * (b + nbytes - 1)
+    return ("hex", base, 2 * nbytes)
+
+def line(lanes):
+    s = [("lit", "GL st="), fld("f_st", 1), ("lit", " fail="), fld("f_fail", 1),
+         ("lit", " mode="), fld("f_mode", 1), ("lit", " scr="), fld("f_scr", 1),
+         ("lit", " clk="), fld("f_clk", 1), ("lit", " pll="), fld("f_pll", 1),
+         ("lit", " swap="), fld("f_swap", 1), ("lit", " rev="), fld("f_rev", 1),
+         ("lit", " st="), fld("f_salive", 1)]
+    def arr(label, name, ndig, subw):
+        out = [("lit", " " + label + "=")]
+        for j in range(lanes):
+            if j:
+                out.append(("lit", ","))
+            out.append(fld(name, ndig, j, subw))
+        return out
+    s += arr("tap", "f_tap", 2, 8)
+    s += arr("eye", "f_eye", 2, 8)
+    s += arr("off", "f_off", 1, 4)
+    s += arr("err", "f_err", 8, 32)
+    s += [("lit", " words="), fld("f_words", 10), ("lit", " werr="), fld("f_werr", 8),
+          ("lit", " sf="), fld("f_sf", 4), ("lit", " se="), fld("f_se", 4),
+          ("lit", " tx="), fld("f_tx", 4),
+          ("lit", " hl2: fl="), hl2byte(1), ("lit", " md="), hl2byte(2),
+          ("lit", " clip="), hl2byte(3, 2), ("lit", " t="), hl2byte(5, 2),
+          ("lit", " f="), hl2byte(7, 2), ("lit", " r="), hl2byte(9, 2),
+          ("lit", " b="), hl2byte(11, 2), ("lit", " ok="), hl2byte(13),
+          ("lit", " er="), hl2byte(14), ("lit", " ec="), hl2byte(15),
+          ("lit", " sq="), hl2byte(16), ("lit", " rst="), hl2byte(17),
+          ("lit", " rn="), hl2byte(18), ("lit", " rsw="), hl2byte(19),
+          ("lit", " roff="), hl2byte(20, 2), ("lit", " re="), hl2byte(22, 2),
+          ("lit", ","), hl2byte(24, 2), ("lit", ","), hl2byte(26, 2),
+          ("lit", " rw="), hl2byte(28, 2), ("lit", " fs="), hl2byte(30),
+          ("lit", ","), hl2byte(31), ("lit", ","), hl2byte(32),
+          ("lit", "\r\n")]
+    return s
+
+HELP = [("lit", "GL gowinlink console. cmds: t=train p=prbs l=live c=counter o=toggle "
+                "s=scrambler r=reset h=help\r\n")]
+
+def build(progs):
+    """merge literals into one ROM, return (rom, {name: [entries]})"""
+    rom = []
+    out = {}
+    for name, segs in progs.items():
+        entries = []
+        for seg in segs:
+            if seg[0] == "lit":
+                text = seg[1]
+                while text:
+                    chunk, text = text[:63], text[63:]
+                    start = len(rom)
+                    rom.extend(ord(c) for c in chunk)
+                    entries.append((0, len(chunk), start))
+            else:
+                entries.append((1, seg[2], seg[1]))
+        out[name] = entries
+    return rom, out
+
+def emit_func(fname, entries):
+    lines = [f"function [18:0] {fname};", "  input integer i;", "  begin", "    case (i)"]
+    for i, (h, n, o) in enumerate(entries):
+        assert n < 64 and o < 4096
+        lines.append(f"      {i}: {fname} = {{1'b{h}, 6'd{n}, 12'd{o}}};")
+    lines.append(f"      default: {fname} = 19'd0;")
+    lines += ["    endcase", "  end", "endfunction", ""]
+    return "\n".join(lines)
+
+def main():
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    rom, progs = build({"seg6": line(6), "seg3": line(3), "segh": HELP})
+    v = ["// Generated by gowin/tools/gen_console_fmt.py - do not edit.",
+         f"localparam integer FMT_FIELDS_W = {total};",
+         f"localparam integer FMT_NSEG6 = {len(progs['seg6'])};",
+         f"localparam integer FMT_NSEG3 = {len(progs['seg3'])};",
+         f"localparam integer FMT_NSEGH = {len(progs['segh'])};",
+         f"localparam integer FMT_ROM_N = {len(rom)};", ""]
+    v.append(emit_func("fmt_seg6", progs["seg6"]))
+    v.append(emit_func("fmt_seg3", progs["seg3"]))
+    v.append(emit_func("fmt_segh", progs["segh"]))
+    v += ["function [7:0] fmt_lit;", "  input integer i;", "  begin", "    case (i)"]
+    for i, c in enumerate(rom):
+        v.append(f"      {i}: fmt_lit = 8'h{c:02X};")
+    v += ["      default: fmt_lit = 8'h3F;", "    endcase", "  end", "endfunction", ""]
+    with open(os.path.join(root, "rtl", "gl_console_fmt.vh"), "w", newline="\n") as f:
+        f.write("\n".join(v))
+    # fields concatenation
+    names = ", ".join(n for n, _ in FIELDS)
+    fv = ["// Generated by gowin/tools/gen_console_fmt.py - do not edit.",
+          "// Field order (MSB first) and widths:"]
+    for n, w in FIELDS:
+        fv.append(f"//   {n:10s} {w:4d} bits at [{offs[n] + w - 1}:{offs[n]}]")
+    fv.append(f"wire [FMT_FIELDS_W-1:0] fields = {{{names}}};")
+    fv.append("")
+    with open(os.path.join(root, "rtl", "gl_console_fields.vh"), "w", newline="\n") as f:
+        f.write("\n".join(fv))
+    print(f"fields {total} bits, rom {len(rom)} chars, segs 6/3/h = "
+          f"{len(progs['seg6'])}/{len(progs['seg3'])}/{len(progs['segh'])}")
+
+if __name__ == "__main__":
+    main()

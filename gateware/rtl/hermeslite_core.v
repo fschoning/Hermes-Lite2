@@ -94,7 +94,15 @@ module hermeslite_core (
   output       fan_pwm                   ,
   input  [1:0] linkrx                    ,
   output [1:0] linktx                    ,
-  output [3:0] debug_out
+  output [3:0] debug_out                 ,
+  // Gowin link (GOWINLINK = 1), see gateware/gowinlink/LINK_SPEC.md
+  output       gl_clk                    ,
+  output [GL_LANES-1:0] gl_d             ,
+  output       gl_status_txd             ,
+  output       gl_aux_out                ,
+  input        gl_rev_clk                ,
+  input  [2:0] gl_rev                    ,
+  input        gl_fs_rxd
 );
 
 
@@ -137,6 +145,11 @@ parameter       DSIQ_FIFO_DEPTH = 16384;
 
 parameter       BYPASS_VERSA = 0;
 
+// HL2 <-> Tang Mega 138K link (gateware/rtl/gowinlink): 0 = absent, 1 = present
+parameter       GOWINLINK = 0;
+parameter       GL_LANES = 6;      // forward data lanes: 6 (76.8 MHz DDR) or 3 (153.6 MHz DDR)
+parameter       GL_CMD_UART = 0;   // 1 = plain command UART on gl_fs_rxd instead of the fast serial channel
+
 localparam      TUSERWIDTH = (AK4951 == 1) ? 16 : 2;
 
 localparam      VERSION_MAJOR = (BOARD==2) ? 8'd54 : 8'd74;
@@ -147,6 +160,13 @@ logic   [31:0]  cmd_data;
 logic           cmd_cnt;
 logic           cmd_is_alt;
 logic           cmd_resprqst;
+
+// Ethernet-originated command bus before the Gowin-link arbiter (equal to cmd_* when GOWINLINK = 0)
+logic   [5:0]   eth_cmd_addr;
+logic   [31:0]  eth_cmd_data;
+logic           eth_cmd_cnt;
+logic           eth_cmd_is_alt;
+logic           eth_cmd_resprqst;
 
 logic   [5:0]   ds_cmd_addr;
 logic   [31:0]  ds_cmd_data;
@@ -1229,11 +1249,11 @@ if (HL2LINK == 1) begin
     .ds_cmd_resprqst(ds_cmd_resprqst   ),
     .ds_cmd_is_alt  (ds_cmd_is_alt     ),
     .ds_cmd_mask    (ds_cmd_mask       ),
-    .cmd_addr       (cmd_addr          ),
-    .cmd_data       (cmd_data          ),
-    .cmd_cnt        (cmd_cnt           ),
-    .cmd_resprqst   (cmd_resprqst      ),
-    .cmd_is_alt     (cmd_is_alt        ),
+    .cmd_addr       (eth_cmd_addr      ),
+    .cmd_data       (eth_cmd_data      ),
+    .cmd_cnt        (eth_cmd_cnt       ),
+    .cmd_resprqst   (eth_cmd_resprqst  ),
+    .cmd_is_alt     (eth_cmd_is_alt    ),
     .cmd_rqst       (cmd_rqst_ad9866   ),
     .hl2link_rst_req(hl2link_rst_req   ),
     .hl2link_rst_ack(hl2link_rst_ack   ),
@@ -1250,17 +1270,91 @@ end else begin
   assign rst_all        = 1'b0;
   assign rst_nco        = 1'b0;
 
-  assign cmd_addr           = ds_cmd_addr;
-  assign cmd_data           = ds_cmd_data;
-  assign cmd_cnt            = ds_cmd_cnt;
-  assign cmd_is_alt         = ds_cmd_is_alt;
-  assign cmd_resprqst       = ds_cmd_resprqst;
+  assign eth_cmd_addr       = ds_cmd_addr;
+  assign eth_cmd_data       = ds_cmd_data;
+  assign eth_cmd_cnt        = ds_cmd_cnt;
+  assign eth_cmd_is_alt     = ds_cmd_is_alt;
+  assign eth_cmd_resprqst   = ds_cmd_resprqst;
   assign link_running       = 1'b0;
   assign link_master        = 1'b0;
   assign lm_data       = 24'hXXXXXX;
   assign lm_valid = 1'b1;
 end
 
+endgenerate
+
+
+/////////////////////////////////////////////////////
+// HL2 <-> Tang Mega 138K link
+
+generate
+if (GOWINLINK == 1) begin : GOWINLINK_ON
+
+  // eth_cmd_cnt as a toggle in the clk_ad9866 domain: hl2link_app's output already is one;
+  // with HL2LINK = 0 it comes from the Ethernet RX clock and is synchronised here.
+  logic eth_cmd_cnt_ad9866;
+  if (HL2LINK == 1) begin
+    assign eth_cmd_cnt_ad9866 = eth_cmd_cnt;
+  end else begin
+    sync sync_eth_cmd_cnt_ad9866 (
+      .clock(clk_ad9866),
+      .sig_in(eth_cmd_cnt),
+      .sig_out(eth_cmd_cnt_ad9866)
+    );
+  end
+
+  gowinlink_hl2 #(
+    .LANES    (GL_LANES   ),
+    .CMD_UART (GL_CMD_UART)
+  ) gowinlink_hl2_i (
+    .clk              (clk_ad9866                  ),
+    .lane_clk         ((GL_LANES == 3) ? clk_ad9866_2x : clk_ad9866),
+    .adc_data         (rx_data                     ),
+    .link_clk_pin     (gl_clk                      ),
+    .link_d_pin       (gl_d                        ),
+    .status_txd       (gl_status_txd               ),
+    .aux_out          (gl_aux_out                  ),
+    .rev_clk_pin      (gl_rev_clk                  ),
+    .gl_rev           (gl_rev                      ),
+    .fs_rxd           (gl_fs_rxd                   ),
+    .eth_cmd_addr     (eth_cmd_addr                ),
+    .eth_cmd_data     (eth_cmd_data                ),
+    .eth_cmd_cnt      (eth_cmd_cnt_ad9866          ),
+    .eth_cmd_resprqst (eth_cmd_resprqst            ),
+    .eth_cmd_is_alt   (eth_cmd_is_alt              ),
+    .cmd_addr         (cmd_addr                    ),
+    .cmd_data         (cmd_data                    ),
+    .cmd_cnt          (cmd_cnt                     ),
+    .cmd_resprqst     (cmd_resprqst                ),
+    .cmd_is_alt       (cmd_is_alt                  ),
+    .run              (run_ad9866sync              ),
+    .tx_on            (tx_on                       ),
+    .cw_on            (cw_on                       ),
+    .ptt              (ext_ptt_ad9866sync          ),
+    .key              (cw_keydown_ad9866sync       ),
+    .temperature      (temperature                 ),
+    .fwdpwr           (fwdpwr                      ),
+    .revpwr           (revpwr                      ),
+    .bias             (bias                        ),
+    .link_ptt         (                            ),
+    .rev_clk          (                            ),
+    .rev_sample       (                            ),
+    .rev_sample_valid (                            )
+  );
+
+end else begin : GOWINLINK_OFF
+
+  assign cmd_addr      = eth_cmd_addr;
+  assign cmd_data      = eth_cmd_data;
+  assign cmd_cnt       = eth_cmd_cnt;
+  assign cmd_is_alt    = eth_cmd_is_alt;
+  assign cmd_resprqst  = eth_cmd_resprqst;
+  assign gl_clk        = 1'b0;
+  assign gl_d          = {GL_LANES{1'b0}};
+  assign gl_status_txd = 1'b1;
+  assign gl_aux_out    = 1'b0;
+
+end
 endgenerate
 
 

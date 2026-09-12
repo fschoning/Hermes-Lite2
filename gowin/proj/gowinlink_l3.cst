@@ -1,0 +1,102 @@
+// gowinlink.cst — pin constraints for the Tang Mega 138K (GW5AST-LV138PG484AC1/I0)
+// side of the HL2 <-> Gowin link. THE ONLY FILE WITH PIN LOCATIONS ON THE GOWIN SIDE.
+//
+// STATUS: PROVISIONAL. The adapter PCBs (LVDS driver/receiver boards joined by DVI
+// cables) are being designed; the PCB worker will publish the final J14 assignment in
+//   hardware/companions/gowin-bridge/PINMAP.md
+// (worktree G:\proj\worktrees\Hermes-Lite2-gowin-bridge-pcb). Update this file to match.
+//
+// Physical: J14, the (soldered) 2x20 2.54 mm header at the top edge, FPGA Bank 4 (bottom
+// bank, VCCIO 3.3 V, on-die 100 ohm differential termination available). Even pins are
+// the "A"/P legs, odd pins the "B"/N legs of the same differential pair (Gowin IOBnnA/B).
+// J14 pins 1-8 and 21-28 are shared with the PMOD sockets and are avoided. Pins 29/30 sit
+// behind 0 ohm option resistors and are avoided. Pin 11 is 5 V, pin 12 GND.
+// Ball names from TANG_MEGA_138K_FACTS.md section 2.5 (dock schematic rev 1.3).
+//
+// Lane naming: link_d[j] carries HL2 sample bits s[4j+3 : 4j] (B = 4) and is
+// HL2 DB1 data lane j (see gateware/variants/hl2b5up_gowinlink/gowinlink_pins.tcl).
+//
+// Two input standards are supported for cable 1; select ONE block:
+//   (A) 3.3 V CMOS from an LVDS receiver chip on the adapter (default):
+//       LVTTL33 (VIH min 1.7 V), hysteresis OFF, no pull.
+//   (B) true LVDS straight into Bank 4 with on-die termination: LVDS25 input pairs
+//       (legal on a 3.3 V bank per DS1239 Table 2-2), DIFF_RESISTOR=ON.
+//       With (B) every forward pair's B leg is taken, so status_rxd moves to Y21
+//       (J14 pin 22, shared with PMOD1) — see the commented block.
+
+// ---------------------------------------------------------------- 50 MHz oscillator
+IO_LOC  "clk50" V22;
+IO_PORT "clk50" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+
+// ---------------------------------------------------------------- cable 1: HL2 -> Gowin
+// (A) 3.3 V CMOS — default
+IO_LOC  "fwd_clk"   U20;        // J14 pin 20, IOB120A, SGCLKT_5 / BPLL2,3 CLKIN0
+IO_PORT "fwd_clk"   IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.3;
+IO_LOC  "link_d[0]" V17;        // J14 pin 10, IOB106A
+IO_LOC  "link_d[1]" W21;        // J14 pin 14, IOB124A
+IO_LOC  "link_d[2]" N17;        // J14 pin 16, IOB135A
+IO_PORT "link_d[0]" IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.3;
+IO_PORT "link_d[1]" IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.3;
+IO_PORT "link_d[2]" IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.3;
+IO_LOC  "status_rxd" W17;       // J14 pin 9,  IOB106B  (status UART from HL2 PIN_86)
+IO_PORT "status_rxd" IO_TYPE=LVTTL33 PULL_MODE=UP HYSTERESIS=OFF BANK_VCCIO=3.3;
+IO_LOC  "aux_in"     W22;       // J14 pin 13, IOB124B  (reserved, HL2 PIN_87)
+IO_PORT "aux_in"     IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.3;
+
+// (B) true LVDS into Bank 4 — uncomment and comment out block (A)
+//IO_LOC  "fwd_clk"   U20,V20;    // J14 pins 20/19
+//IO_PORT "fwd_clk"   IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+//IO_LOC  "link_d[0]" V17,W17;    // J14 pins 10/9
+//IO_LOC  "link_d[1]" W21,W22;    // J14 pins 14/13
+//IO_LOC  "link_d[2]" N17,P17;    // J14 pins 16/15
+//IO_LOC  "link_d[3]" N13,N14;    // J14 pins 18/17
+//IO_LOC  "link_d[4]" Y18,Y19;    // J14 pins 32/31
+//IO_LOC  "link_d[5]" U17,U18;    // J14 pins 36/35
+//IO_PORT "link_d[0]" IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+//IO_PORT "link_d[1]" IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+//IO_PORT "link_d[2]" IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+//IO_PORT "link_d[3]" IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+//IO_PORT "link_d[4]" IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+//IO_PORT "link_d[5]" IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+//IO_LOC  "status_rxd" Y21;       // J14 pin 22 (shared with PMOD1_IO0)
+//IO_PORT "status_rxd" IO_TYPE=LVTTL33 PULL_MODE=UP HYSTERESIS=OFF BANK_VCCIO=3.3;
+//IO_LOC  "aux_in"     AB21;      // J14 pin 24 (shared with PMOD1_IO2)
+//IO_PORT "aux_in"     IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.3;
+
+// ---------------------------------------------------------------- cable 2: Gowin -> HL2
+// 3.3 V CMOS outputs into the adapter's LVDS drivers. rev_clk_out is placed on the A leg
+// of a differential-capable pair so the adapter can route it to the TMDS clock pair.
+IO_LOC  "rev_clk_out" P15;      // J14 pin 38, IOB140A  -> HL2 PIN_88 (153.6 MHz)
+IO_LOC  "gl_rev[0]"   P14;      // J14 pin 40, IOB133A  -> HL2 PIN_99
+IO_LOC  "gl_rev[1]"   R14;      // J14 pin 39, IOB133B  -> HL2 PIN_100
+IO_LOC  "gl_rev[2]"   R16;      // J14 pin 37, IOB140B  -> HL2 PIN_101
+IO_LOC  "fs_txd"      T20;      // J14 pin 33, IOB102B  -> HL2 PIN_89 (fast serial, commands)
+IO_LOC  "cmd_txd"     N15;      // J14 pin 34, IOB146A  -> HL2 PIN_89 in the CMD_UART variant
+IO_PORT "rev_clk_out" IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_PORT "gl_rev[0]"   IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_PORT "gl_rev[1]"   IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_PORT "gl_rev[2]"   IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_PORT "fs_txd"      IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_PORT "cmd_txd"     IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
+// open-drain command UART variant (CMD_OPEN_DRAIN=1 in RTL drives 0/Z); the attribute
+// below is the hardware equivalent if the RTL tristate is not used:
+//IO_PORT "cmd_txd"     IO_TYPE=LVCMOS33 OPEN_DRAIN=ON PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+
+// ---------------------------------------------------------------- debug (BL616 USB-UART, keys, LEDs)
+IO_LOC  "dbg_txd" U15;          // FPGA -> BL616 UART (Sipeed pin file "txp")
+IO_LOC  "dbg_rxd" V14;          // BL616 -> FPGA     (Sipeed pin file "rxp")
+IO_PORT "dbg_txd" IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_PORT "dbg_rxd" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
+IO_LOC  "key_n"   AB13;         // user key 0 (Sipeed pin file "Key_in[0]"), active low
+IO_PORT "key_n"   IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
+// The dock has no FPGA-driven LEDs of its own; these are the PMOD0 socket pins that drive
+// Sipeed's "PMOD_LED" module (LEDs[0..3] in the official pin file).
+// led[0] heartbeat 1 Hz, led[1] forward link locked, led[2] reverse link locked, led[3] forward clock present
+IO_LOC  "led[0]"  T18;
+IO_LOC  "led[1]"  R18;
+IO_LOC  "led[2]"  R17;
+IO_LOC  "led[3]"  P16;
+IO_PORT "led[0]"  IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_PORT "led[1]"  IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_PORT "led[2]"  IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_PORT "led[3]"  IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
