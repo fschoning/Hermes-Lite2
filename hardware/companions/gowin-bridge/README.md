@@ -25,6 +25,7 @@ had two dual-link DVI-D sockets. Both are in git history.
 | **`PINMAP.md`** | The authoritative wire-by-wire map. The FPGA gateware constraints must match it exactly. |
 | **`ROUTING.md`** | Step-by-step routing instructions for EasyEDA Pro, with the numbers, including the panel. |
 | **`DESIGN_NOTES.md`** | Signal-integrity assumptions, the strap circuit and its failure analysis, the 2.5 V threshold resolution, the mechanical and panel arithmetic, the power budget, and everything unverified. |
+| **`COST.md`** | Why rev C costs more than rev B, line by line in the categories the fab bills; whether panelising saves money; what the third cable cost; what could be cut and what it would save. |
 | **`STATUS.md`** | What is done, what is unverified, exact next steps. |
 | **`templates/`** | 1:1 printable PDFs to offer up to the real hardware **before ordering**. |
 
@@ -305,9 +306,10 @@ parts.
 
 **If the fab queries the panel, the fallback is two separate orders** — board A
 on its own and board B on its own, from the `hl2-bridge/` and `tang-bridge/`
-projects, which are kept for exactly this reason. Expect it to cost roughly
-**$40 more**, mostly because the assembly setup, stencil and per-unique-part
-fees are then paid twice.
+projects, which are kept for exactly this reason. **It costs about $9.70 more**
+at two sets, and it is close enough to break-even that it is not worth
+arguing with the fab about. `COST.md` prices both, line by line. An earlier
+note in this repository guessed "$40 more"; that guess was wrong.
 
 ---
 
@@ -422,6 +424,12 @@ not sell you three.
   does not change the picture.
 * **Nothing here includes shipping from Mouser or Phoenix Enterprises** for the
   two hand-soldered sockets. That is unverified.
+* **`COST.md` takes this apart line by line** against rev B, says whether
+  panelising actually saves money, separates what the third cable cost from
+  what came from elsewhere, and lists what could be cut with numbers. The
+  short version: **the bare-PCB line is larger than the entire increase**, and
+  a cheaper shipping choice plus hand-fitting the through-hole headers takes
+  two sets to **$171.99** without touching the schematic.
 
 ---
 

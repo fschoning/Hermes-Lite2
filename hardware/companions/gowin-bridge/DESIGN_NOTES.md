@@ -1040,7 +1040,7 @@ body; and its mounting holes moved from local x 4/86 to 6/84, because a
 mouse-bite separations only; Standard allows mouse-bite or V-cut.** This
 panel mixes both. **Flag it for the fab before ordering.** The fallback, if
 the fab queries the panel: order the two boards as two separate jobs, at
-roughly $40 more.
+about $9.70 more at two sets; `COST.md` prices both.
 
 ---
 
