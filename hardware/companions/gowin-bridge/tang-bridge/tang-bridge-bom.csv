@@ -1,0 +1,115 @@
+Designator,Value,Footprint,LCSC,MfrPart,Populate,Function,Note
+C1,100nF,C_0402_1005Metric,C1525,,yes,U1 VCC,
+C2,100nF,C_0402_1005Metric,C1525,,yes,U2 VCC,
+C3,100nF,C_0402_1005Metric,C1525,,yes,U3 VCC,
+C4,100nF,C_0402_1005Metric,C1525,,yes,U4 VCC,
+C5,10uF,C_0805_2012Metric,C15525,,yes,+3V3 bulk,
+C6,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
+C7,10uF,C_0805_2012Metric,C15525,,yes,5 V input bulk,
+C8,100nF,C_0402_1005Metric,C1525,,yes,5 V input HF,
+C9,10uF,C_0805_2012Metric,C15525,,yes,U5 output bulk,
+C10,100nF,C_0402_1005Metric,C1525,,yes,extra +3V3,
+D1,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",Place within 5 mm of the DVI connector pins.
+D2,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",Place within 5 mm of the DVI connector pins.
+D3,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",Place within 5 mm of the DVI connector pins.
+D4,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",Place within 5 mm of the DVI connector pins.
+D5,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",Place within 5 mm of the DVI connector pins.
+D6,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",Place within 5 mm of the DVI connector pins.
+D7,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",Place within 5 mm of the DVI connector pins.
+D8,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",Place within 5 mm of the DVI connector pins.
+D9,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",Place within 5 mm of the DVI connector pins.
+H1,M3,MountingHole_3.2mm_M3_Pad,,,yes,"M3 mounting hole, grounded",
+H2,M3,MountingHole_3.2mm_M3_Pad,,,yes,"M3 mounting hole, grounded",
+J1,J14 2x20 socket,PinSocket_2x20_P2.54mm_Vertical,C50982,2.54mm 2x20P female header,yes,Mates the 2x20 male header the user solders into the Tang dock J14 holes (Bank 4),"Bottom side. Every J14 pin not in PINMAP.md is left open so PMOD0, PMOD1 and the DVP camera stay usable."
+J2,DVI-D dual link FWD,DVI-D_Molex_74320-4004_Horizontal,,"Molex 74320-4004 or equivalent DVI-D dual-link receptacle, right angle, through hole",yes,"Cable 1 ""FWD"": HL2 -> Gowin, 7 pairs received by this board",
+J3,DVI-D dual link REV,DVI-D_Molex_74320-4004_Horizontal,,"Molex 74320-4004 or equivalent DVI-D dual-link receptacle, right angle, through hole",yes,"Cable 2 ""REV"": Gowin -> HL2, 7 pairs driven by this board",
+J4,RX MODE,PinHeader_1x03_P2.54mm_Vertical,C2337,2.54mm 1x3P pin header,yes,"Cable-1 receiver enable: 2-3 = auto (default), 1-2 = force disabled (needed for the direct-LVDS mode), open = always enabled",
+J5,SPARE IN,PinHeader_2x02_P2.54mm_Vertical,C124375,2.54mm 2x2P pin header,DNP,Drives the two spare cable-2 lanes from a flying lead,
+J6,GND AUX,PinHeader_1x02_P2.54mm_Vertical,C2337,2.54mm 1x2P pin header,yes,Extra ground wire to a dock PMOD GND pin; J14 has only one ground pin,
+R1,22R,R_0402_1005Metric,C25092,,yes,"Receiver output damping into J14, lane CLK",
+R2,22R,R_0402_1005Metric,C25092,,yes,"Receiver output damping into J14, lane D0",
+R3,22R,R_0402_1005Metric,C25092,,yes,"Receiver output damping into J14, lane D1",
+R4,22R,R_0402_1005Metric,C25092,,yes,"Receiver output damping into J14, lane D2",
+R5,22R,R_0402_1005Metric,C25092,,yes,"Receiver output damping into J14, lane D3",
+R6,22R,R_0402_1005Metric,C25092,,yes,"Receiver output damping into J14, lane D4",
+R7,22R,R_0402_1005Metric,C25092,,yes,"Receiver output damping into J14, lane D5",
+R10,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 CLK+ straight to the J14 A (T) leg",Fit only in direct-LVDS mode; see PINMAP.md 4.3.
+R11,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 CLK- straight to the J14 B (C) leg",Fit only in direct-LVDS mode; disables the signal normally on that B leg.
+R12,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D0+ straight to the J14 A (T) leg",Fit only in direct-LVDS mode; see PINMAP.md 4.3.
+R13,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D0- straight to the J14 B (C) leg",Fit only in direct-LVDS mode; disables the signal normally on that B leg.
+R14,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D1+ straight to the J14 A (T) leg",Fit only in direct-LVDS mode; see PINMAP.md 4.3.
+R15,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D1- straight to the J14 B (C) leg",Fit only in direct-LVDS mode; disables the signal normally on that B leg.
+R16,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D2+ straight to the J14 A (T) leg",Fit only in direct-LVDS mode; see PINMAP.md 4.3.
+R17,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D2- straight to the J14 B (C) leg",Fit only in direct-LVDS mode; disables the signal normally on that B leg.
+R18,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D3+ straight to the J14 A (T) leg",Fit only in direct-LVDS mode; see PINMAP.md 4.3.
+R19,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D3- straight to the J14 B (C) leg",Fit only in direct-LVDS mode; disables the signal normally on that B leg.
+R20,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D4+ straight to the J14 A (T) leg",Fit only in direct-LVDS mode; see PINMAP.md 4.3.
+R21,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D4- straight to the J14 B (C) leg",Fit only in direct-LVDS mode; disables the signal normally on that B leg.
+R22,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D5+ straight to the J14 A (T) leg",Fit only in direct-LVDS mode; see PINMAP.md 4.3.
+R23,0R,R_0402_1005Metric,C17168,,DNP,"Direct-LVDS link, cable-1 D5- straight to the J14 B (C) leg",Fit only in direct-LVDS mode; disables the signal normally on that B leg.
+R40,22R,R_0402_1005Metric,C25092,,yes,"Driver input damping, DRVI_REVCLK",
+R41,22R,R_0402_1005Metric,C25092,,yes,"Driver input damping, DRVI_R0",
+R42,22R,R_0402_1005Metric,C25092,,yes,"Driver input damping, DRVI_R1",
+R43,22R,R_0402_1005Metric,C25092,,yes,"Driver input damping, DRVI_R2",
+R44,22R,R_0402_1005Metric,C25092,,yes,"Driver input damping, DRVI_FSER",
+R50,10k,R_0402_1005Metric,C25744,,yes,Defines DRVI_REVCLK while the Gowin is unconfigured,
+R51,10k,R_0402_1005Metric,C25744,,yes,Defines DRVI_R0 while the Gowin is unconfigured,
+R52,10k,R_0402_1005Metric,C25744,,yes,Defines DRVI_R1 while the Gowin is unconfigured,
+R53,10k,R_0402_1005Metric,C25744,,yes,Defines DRVI_R2 while the Gowin is unconfigured,
+R54,10k,R_0402_1005Metric,C25744,,yes,Defines DRVI_FSER while the Gowin is unconfigured,
+R55,10k,R_0402_1005Metric,C25744,,yes,Defines DRVI_SP0 while the Gowin is unconfigured,
+R56,10k,R_0402_1005Metric,C25744,,yes,Defines DRVI_SP1 while the Gowin is unconfigured,
+R60,0R,R_0402_1005Metric,C17168,,DNP,"Optional: drive spare lane 0 from J14 pin 40 (P14, shared with the DVP camera)",
+R61,0R,R_0402_1005Metric,C17168,,DNP,"Optional: drive spare lane 1 from J14 pin 39 (R14, shared with the DVP camera)",
+R62,0R,R_0402_1005Metric,C17168,,yes,Status UART from the HL2 into J14 pin 19; remove in direct-LVDS mode,
+R63,0R,R_0402_1005Metric,C17168,,yes,Aux slow line from the HL2 into J14 pin 34,
+R64,0R,R_0402_1005Metric,C17168,,yes,Cable-1 detect into J14 pin 33,
+R65,10k,R_0402_1005Metric,C25744,,yes,Cable-1 detect pull-up; low = cable 1 plugged in,
+R66,1k,R_0402_1005Metric,C21190,,yes,"Ties cable-2 HPD low so board A sees ""cable present""",
+R67,100R,R_0402_1005Metric,C25076,,yes,Slow command UART out of J14 pin 17 onto cable 2 DDC SDA,
+R70,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, cable 1 lane CLK. Keep fitted in direct-LVDS mode and set DIFF_RESISTOR=OFF.",
+R71,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, cable 1 lane D0. Keep fitted in direct-LVDS mode and set DIFF_RESISTOR=OFF.",
+R72,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, cable 1 lane D1. Keep fitted in direct-LVDS mode and set DIFF_RESISTOR=OFF.",
+R73,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, cable 1 lane D2. Keep fitted in direct-LVDS mode and set DIFF_RESISTOR=OFF.",
+R74,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, cable 1 lane D3. Keep fitted in direct-LVDS mode and set DIFF_RESISTOR=OFF.",
+R75,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, cable 1 lane D4. Keep fitted in direct-LVDS mode and set DIFF_RESISTOR=OFF.",
+R76,100R,R_0402_1005Metric,C25076,,yes,"Differential termination, cable 1 lane D5. Keep fitted in direct-LVDS mode and set DIFF_RESISTOR=OFF.",
+R80,10k,R_0402_1005Metric,C25744,,yes,Bias for the unused receiver channel,
+R81,10k,R_0402_1005Metric,C25744,,yes,Bias for the unused receiver channel,
+R82,0R,R_0805_2012Metric,C17168,,yes,Cable-1 shell to board ground,
+R83,0R,R_0805_2012Metric,C17168,,yes,Cable-2 shell to board ground,
+TP1,TP_LINK_CLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP2,TP_LINK_D0,TestPoint_Pad_D1.5mm,,,yes,,
+TP3,TP_LINK_D1,TestPoint_Pad_D1.5mm,,,yes,,
+TP4,TP_LINK_D2,TestPoint_Pad_D1.5mm,,,yes,,
+TP5,TP_LINK_D3,TestPoint_Pad_D1.5mm,,,yes,,
+TP6,TP_LINK_D4,TestPoint_Pad_D1.5mm,,,yes,,
+TP7,TP_LINK_D5,TestPoint_Pad_D1.5mm,,,yes,,
+TP8,TP_LINK_STAT,TestPoint_Pad_D1.5mm,,,yes,,
+TP9,TP_LINK_AUX,TestPoint_Pad_D1.5mm,,,yes,,
+TP10,TP_LINK_PRESENT,TestPoint_Pad_D1.5mm,,,yes,,
+TP11,TP_LINK_CMD,TestPoint_Pad_D1.5mm,,,yes,,
+TP12,TP_LINK_REVCLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP13,TP_LINK_R0,TestPoint_Pad_D1.5mm,,,yes,,
+TP14,TP_LINK_R1,TestPoint_Pad_D1.5mm,,,yes,,
+TP15,TP_LINK_R2,TestPoint_Pad_D1.5mm,,,yes,,
+TP16,TP_LINK_FSER,TestPoint_Pad_D1.5mm,,,yes,,
+TP17,TP_C1_HPD,TestPoint_Pad_D1.5mm,,,yes,,
+TP18,TP_C2_HPD,TestPoint_Pad_D1.5mm,,,yes,,
+TP19,TP_C2_SCL,TestPoint_Pad_D1.5mm,,,yes,,
+TP20,TP_C1_5V_NC,TestPoint_Pad_D1.5mm,,,yes,,
+TP21,TP_C2_5V_NC,TestPoint_Pad_D1.5mm,,,yes,,
+TP22,TP_+3V3,TestPoint_Pad_D1.5mm,,,yes,,
+TP23,TP_P5V_J14,TestPoint_Pad_D1.5mm,,,yes,,
+TP24,TP_RXO_UNUSED,TestPoint_Pad_D1.5mm,,,yes,,
+TP25,TP_DRV_SP_P,TestPoint_Pad_D1.5mm,,,yes,,
+TP26,TP_DRV_SP_N,TestPoint_Pad_D1.5mm,,,yes,,
+TP27,TP_DRVI_SP0,TestPoint_Pad_D1.5mm,,,yes,,
+TP28,TP_DRVI_SP1,TestPoint_Pad_D1.5mm,,,yes,,
+TP101,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
+TP102,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
+U1,DS90LV048A,TSSOP-16_4.4x5mm_P0.65mm,C87137,DS90LV048ATMTCX/NOPB,yes,"Quad LVDS receiver, >=400 Mbps, TSSOP-16",
+U2,DS90LV048A,TSSOP-16_4.4x5mm_P0.65mm,C87137,DS90LV048ATMTCX/NOPB,yes,"Quad LVDS receiver, >=400 Mbps, TSSOP-16",
+U3,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C201946,DS90LV047ATM/NOPB,yes,"Quad LVDS driver, >=400 Mbps, SOIC-16",
+U4,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C201946,DS90LV047ATM/NOPB,yes,"Quad LVDS driver, >=400 Mbps, SOIC-16",
+U5,AMS1117-3.3,SOT-223-3_TabPin2,C6186,AMS1117-3.3,yes,3.3 V board supply from J14 pin 11 (5V_Peripheral),
