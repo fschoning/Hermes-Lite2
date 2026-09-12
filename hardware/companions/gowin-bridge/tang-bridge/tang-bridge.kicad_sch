@@ -11296,7 +11296,7 @@
 		(property "Footprint" "gowin-bridge:C_0805_2012Metric"
 			(at 1075.69 368.3 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C15525"
+		(property "LCSC" "C15850"
 			(at 1075.69 368.3 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "+3V3 bulk"
@@ -11402,7 +11402,7 @@
 		(property "Footprint" "gowin-bridge:C_0805_2012Metric"
 			(at 127 405.13 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C15525"
+		(property "LCSC" "C15850"
 			(at 127 405.13 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "5 V input bulk"
@@ -11508,7 +11508,7 @@
 		(property "Footprint" "gowin-bridge:C_0805_2012Metric"
 			(at 273.05 405.13 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C15525"
+		(property "LCSC" "C15850"
 			(at 273.05 405.13 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "U7 output bulk"

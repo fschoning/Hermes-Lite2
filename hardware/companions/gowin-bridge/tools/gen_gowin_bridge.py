@@ -530,7 +530,13 @@ LC = dict(r0='C17168',        # 0R    0402, Basic
           r100k='C25741',     # 100k  0402, Basic
           c100n='C1525',      # 100nF 0402, Basic
           c1u='C52923',       # 1uF   0402, Basic
-          c10u='C15525',      # 10uF  0805, Basic
+          # C15525 was in the rev B BOM as "10uF 0805". It is NOT: it is
+          # Samsung CL05A106MQ5NUNC, 10 uF 6.3 V X5R in **0402**, checked on
+          # LCSC's own page. On 0805 pads that is the wrong part, and 6.3 V
+          # on the 5 V input bulk would lose most of its capacitance to DC
+          # bias anyway. Replaced by Samsung CL21A106KAYNNNE, 10 uF 25 V X5R
+          # 0805, JLCPCB Basic, 2,760,420 in stock, $0.085 at the MOQ of 20.
+          c10u='C15850',      # 10uF 25V 0805, Basic
           c22p='C1555',       # 22pF  0402, Basic
           esd='C138714')      # TPD4E05U06DQAR, USON-10
 

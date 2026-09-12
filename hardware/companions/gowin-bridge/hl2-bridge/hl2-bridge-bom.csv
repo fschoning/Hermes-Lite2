@@ -20,13 +20,13 @@ C18,100nF,C_0402_1005Metric,C1525,,yes,U7 VCCB,
 C19,100nF,C_0402_1005Metric,C1525,,yes,U8 VCCA,
 C20,100nF,C_0402_1005Metric,C1525,,yes,U8 VCCB,
 C21,100nF,C_0402_1005Metric,C1525,,yes,U11 VCC (the inverter),
-C22,10uF,C_0805_2012Metric,C15525,,yes,+3V3 bulk,
+C22,10uF,C_0805_2012Metric,C15850,,yes,+3V3 bulk,
 C23,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
 C24,1uF,C_0402_1005Metric,C52923,,yes,U9 output,
 C25,100nF,C_0402_1005Metric,C1525,,yes,U9 input,
 C26,100nF,C_0402_1005Metric,C1525,,yes,DB1 +3V3 entry,
-C27,10uF,C_0805_2012Metric,C15525,,yes,U10 input bulk (option),
-C28,10uF,C_0805_2012Metric,C15525,,yes,U10 output bulk (option),
+C27,10uF,C_0805_2012Metric,C15850,,yes,U10 input bulk (option),
+C28,10uF,C_0805_2012Metric,C15850,,yes,U10 output bulk (option),
 D1,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D2,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D3,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."

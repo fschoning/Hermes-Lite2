@@ -12578,7 +12578,7 @@
 		(property "Footprint" "gowin-bridge:C_0805_2012Metric"
 			(at 199.39 427.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C15525"
+		(property "LCSC" "C15850"
 			(at 199.39 427.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "+3V3 bulk"
@@ -12843,7 +12843,7 @@
 		(property "Footprint" "gowin-bridge:C_0805_2012Metric"
 			(at 565.15 427.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C15525"
+		(property "LCSC" "C15850"
 			(at 565.15 427.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "U10 input bulk (option)"
@@ -12896,7 +12896,7 @@
 		(property "Footprint" "gowin-bridge:C_0805_2012Metric"
 			(at 637.54 427.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C15525"
+		(property "LCSC" "C15850"
 			(at 637.54 427.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "U10 output bulk (option)"
@@ -24098,7 +24098,7 @@
 		(property "Footprint" "gowin-bridge:C_0805_2012Metric"
 			(at 273.05 941.07 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C15525"
+		(property "LCSC" "C15850"
 			(at 273.05 941.07 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "+3V3 bulk"
@@ -24204,7 +24204,7 @@
 		(property "Footprint" "gowin-bridge:C_0805_2012Metric"
 			(at 419.1 941.07 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C15525"
+		(property "LCSC" "C15850"
 			(at 419.1 941.07 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "5 V input bulk"
@@ -24310,7 +24310,7 @@
 		(property "Footprint" "gowin-bridge:C_0805_2012Metric"
 			(at 565.15 941.07 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C15525"
+		(property "LCSC" "C15850"
 			(at 565.15 941.07 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "U7 output bulk"
