@@ -97,11 +97,13 @@ Two geometries to know about but not use:
 | Solder mask minimum dam | 0.10 mm |
 
 The KiCad projects already carry these, plus three net classes which should
-survive the import:
+survive the import. The `LVDS100` numbers are the section 1.2 geometry, and
+the projects also define a second differential preset of **0.15 mm / 0.17 mm**
+for the connector fan-out neck (section 3.1):
 
 | Net class | Applies to | Track | Clearance | Diff width / gap |
 |---|---|---|---|---|
-| `LVDS100` | every `*_P` / `*_N` net | 0.20 mm | 0.13 mm | 0.25 / 0.20 mm |
+| `LVDS100` | every `*_P` / `*_N` net | 0.25 mm | 0.13 mm | **0.25 / 0.20 mm** |
 | `Power` | `+3V3`, `+2V5`, `DB1_3V3`, `P5V_*`, `LDO3V3` | 0.60 mm | 0.20 mm | - |
 | `Default` | everything else, GND included | 0.25 mm | 0.15 mm | - |
 
