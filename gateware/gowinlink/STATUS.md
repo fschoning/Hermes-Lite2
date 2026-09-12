@@ -38,9 +38,8 @@ Updated 2026-09-12 ~13:50. Resume from this file.
   FINAL RESULT: `tb_link` LANES=6 **PASS** (25 checks, 10.8 ms simulated, ~10 min wall).
 - `tb_link` LANES=3 (fallback, 3 forward lanes at 153.6 MHz DDR): same result as LANES=6 —
   forward link locks at 1.7 ms (taps 0x80, eye 255), reverse locks, PRBS/injection/reset/
-  command/live-ramp/counter/fast-serial/arbiter checks all pass; the same three testbench
-  artefacts failed (fixed in the testbench). Rerun started at the end of the session:
-  `gowin/sim/build/tb_link_3.log`, or `./run_sim.sh link 3`.
+  command/live-ramp/counter/fast-serial/arbiter checks all pass.
+  FINAL RESULT with the corrected testbench: `tb_link` LANES=3 **PASS** (25 checks).
 
 ## Synthesis state
 - Gowin (gw_sh 1.9.11.03 Education): synthesis of `gl_top` (6 lanes) passes. The `.cst`
