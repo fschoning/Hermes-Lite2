@@ -213,7 +213,7 @@ def emit_symbol(w, name, sym, parent, footprint, datasheet='', description='',
 
     props = [
         ('Reference', _prop(sym, src, 'Reference', 'U')),
-        ('Value', name),
+        ('Value', name.split(':')[-1]),
         ('Footprint', footprint),
         ('Datasheet', datasheet or _prop(sym, src, 'Datasheet', '')),
         ('Description', description or _prop(sym, src, 'Description', '')),
@@ -231,12 +231,14 @@ def emit_symbol(w, name, sym, parent, footprint, datasheet='', description='',
         w.raw(effects(hide=True))
         w.close_inline()
 
-    # graphics: copy every sub-symbol body from the source
+    # graphics: copy every sub-symbol body from the source.
+    # Sub-symbol names inside lib_symbols carry NO library prefix.
+    base = name.split(':')[-1]
     for sub in kids(src, 'symbol'):
         subname = atoms(sub)[0]
-        # rename <src>_a_b -> <name>_a_b
+        # rename <src>_a_b -> <base>_a_b
         suffix = subname[subname.rfind('_', 0, subname.rfind('_')):]
-        w.open('symbol', q(name + suffix))
+        w.open('symbol', q(base + suffix))
         for item in sub[1:]:
             if not isinstance(item, list):
                 continue

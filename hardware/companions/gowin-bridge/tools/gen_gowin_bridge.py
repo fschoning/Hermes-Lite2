@@ -135,20 +135,21 @@ def build_custom_symbol(w, name, pins, footprint, datasheet, desc):
     rows = max(len(left), len(right))
     half_h = (rows + 1) * 2.54 / 2.0
     half_w = 12.7
+    base = name.split(':')[-1]
     w.open('symbol', q(name))
     w.line('pin_names', '(offset 1.016)')
     w.line('exclude_from_sim', 'no')
     w.line('in_bom', 'yes')
     w.line('on_board', 'yes')
     for i, (k, v, hide) in enumerate([
-            ('Reference', 'U', False), ('Value', name, False),
+            ('Reference', 'U', False), ('Value', name.split(':')[-1], False),
             ('Footprint', footprint, True), ('Datasheet', datasheet, True),
             ('Description', desc, True)]):
         w.open('property', q(k), q(v))
         w.line('at', '0', fmt(half_h + 2.54 - i * 2.54), '0')
         w.raw(effects(hide=hide))
         w.close_inline()
-    w.open('symbol', q(name + '_0_1'))
+    w.open('symbol', q(base + '_0_1'))
     w.open('rectangle')
     w.line('start', fmt(-half_w), fmt(half_h))
     w.line('end', fmt(half_w), fmt(-half_h))
@@ -156,7 +157,7 @@ def build_custom_symbol(w, name, pins, footprint, datasheet, desc):
     w.line('fill', '(type background)')
     w.close_inline()
     w.close_inline()
-    w.open('symbol', q(name + '_1_1'))
+    w.open('symbol', q(base + '_1_1'))
 
     def pin(num, nm, etype, x, y, rot):
         w.open('pin', etype, 'line')
@@ -298,6 +299,38 @@ def esd_arrays(prefix, start_index, lines, note):
     return out, idx
 
 
+def autoplace(board, regions, reserved, pitch=3.2, types=('R', 'R0805', 'C',
+                                                         'C0805', 'TP', 'ESD4')):
+    """Drop every small part on a coarse grid inside `region`, skipping the
+    rectangles in `reserved`.  This is a placement *starting point* only: the
+    board is meant to be routed by hand (or in EasyEDA Pro), and the grid keeps
+    courtyards clear so DRC is quiet before routing begins."""
+    slots = []
+    if isinstance(regions[0], (int, float)):
+        regions = [regions]
+    for (x0, y0, x1, y1) in regions:
+        y = y0
+        while y <= y1:
+            x = x0
+            while x <= x1:
+                ok = True
+                for (rx0, ry0, rx1, ry1) in reserved:
+                    if (rx0 - 1.6 <= x <= rx1 + 1.6
+                            and ry0 - 1.6 <= y <= ry1 + 1.6):
+                        ok = False
+                        break
+                if ok:
+                    slots.append((x, y))
+                x += pitch
+            y += pitch
+    todo = [p for p in board.parts if p.ptype in types]
+    if len(todo) > len(slots):
+        raise SystemExit('autoplace: %d parts but only %d slots'
+                         % (len(todo), len(slots)))
+    for p, sl in zip(todo, slots):
+        p.at = sl
+
+
 # ==========================================================================
 #  BOARD A  -  hl2-bridge
 # ==========================================================================
@@ -410,7 +443,7 @@ def board_a():
         '4': 'RXO_REVCLK', '13': 'X_REVCLK25',
         '5': 'RXO_FSER', '12': 'X_FSER25',
         '6': 'C2_SDA', '11': 'X_CMD25',
-        '7': 'GND', '10': 'X_SPARE25',
+        '7': 'X_SPARE_IN', '10': 'X_SPARE25',
     }, lcsc='C81461', mfr='SN74AVC4T245PWR',
         desc='4-bit dual-supply level translator, VCCA 3.3 V / VCCB 2.5 V, '
              'up to 380 Mbps; DIR high = A->B, OE low = enabled',
@@ -510,6 +543,8 @@ def board_a():
                 desc='SL_VLVDS: take the translator B-side supply from the HL2 '
                      'Vlvds rail (DB1 7/8) instead of U6',
                 note='Do not fit together with U6.'))
+    rs.append(R('R39', '0R', 'X_SPARE_IN', 'GND', lcsc='C17168',
+                desc='Ties the spare translator channel input low'))
     rs.append(R('R37', '0R', 'SHLD1', 'GND', lcsc='C17168', big=True,
                 desc='Cable-1 shell to board ground'))
     rs.append(R('R38', '0R', 'SHLD2', 'GND', lcsc='C17168', big=True,
@@ -548,7 +583,7 @@ def board_a():
            'HL2_REVCLK', 'HL2_FSER', 'SCL1', 'SDA1', 'VLVDS', 'C1_HPD',
            'C2_HPD', 'C2_SCL', '+3V3', '+2V5', 'P5V_DVI', 'DB1_3V3',
            'RXO_SP0', 'RXO_SP1', 'RXO_UNUSED', 'DRV_SP_P', 'DRV_SP_N',
-           'X_SPARE25', 'C2_5V_NC']
+           'X_SPARE25', 'C2_5V_NC', 'X_SPARE_IN']
     for i, net in enumerate(tps):
         p = TP('TP%d' % (i + 1), net, lcsc='')
         p.at = (2.0 + (i % 16) * 2.6, 44.0 + (i // 16) * 2.6)
@@ -566,8 +601,28 @@ def board_a():
               desc='M3 mounting hole, grounded')
     b.add(h1, h2)
 
-    for net in ['GND', '+3V3', '+2V5', 'P5V_DVI', 'DB1_3V3', 'LDO3V3', 'VLVDS']:
+    # A PWR_FLAG only where no component already provides a power-output pin
+    # (U6 drives +2V5 and U7 drives LDO3V3, so those must not get a flag).
+    for net in ['GND', '+3V3', 'P5V_DVI', 'DB1_3V3', 'VLVDS', 'C2_5V_NC']:
         b.add(FLAG(net))
+
+    # Reserved: DB1 socket, DB12 socket, the two DVI sockets, the ICs,
+    # the three headers and the mounting holes.
+    autoplace(b, [(2.0, 2.0, 78.0, 45.0), (2.0, 48.0, 70.0, 52.0)], [
+        (0.0, 0.0, 12.0, 32.0),      # DB1 stack-through socket + its keep-out
+        (11.0, 13.0, 19.0, 21.0),    # DB12 socket
+        (2.0, 53.0, 78.0, 66.0),     # both DVI sockets
+        (8.0, 30.0, 22.0, 46.0),     # U1, U2
+        (28.0, 30.0, 42.0, 46.0),    # U3, U4
+        (16.0, 20.0, 32.0, 28.0),    # U5
+        (2.0, 20.0, 11.0, 28.0),     # U6
+        (64.0, 26.0, 78.0, 34.0),    # U7
+        (42.0, 20.0, 62.0, 28.0),    # J5, J6
+        (70.0, 52.0, 78.0, 60.0),    # J7
+        (41.0, 0.0, 47.0, 6.0),      # H1
+        (41.0, 41.0, 47.0, 47.0),    # H2
+        (73.0, 46.0, 79.0, 66.0),    # ground clip pads
+    ])
 
     b.texts = [
         ('F.SilkS', 40.0, 2.0, 0, 1.5, 'gowin-bridge board A  (HL2 side)  rev A'),
@@ -816,8 +871,21 @@ def board_b():
                  desc='M3 mounting hole, grounded')
         b.add(h)
 
-    for net in ['GND', '+3V3', 'P5V_J14']:
+    # U5 drives +3V3, so only the passively-fed rails need a flag.
+    for net in ['GND', 'P5V_J14', 'C1_5V_NC', 'C2_5V_NC']:
         b.add(FLAG(net))
+
+    autoplace(b, [(2.0, 2.0, 88.0, 28.0), (2.0, 30.0, 88.0, 33.0)], [
+        (2.0, 5.0, 88.0, 13.0),      # J14 socket + keep-out
+        (2.0, 34.0, 88.0, 46.0),     # DVI sockets
+        (12.0, 26.0, 26.0, 40.0),    # U1, U2
+        (54.0, 26.0, 68.0, 40.0),    # U3, U4
+        (78.0, 16.0, 88.0, 24.0),    # U5
+        (41.0, 16.0, 54.0, 24.0),    # J4, J5
+        (85.0, 2.0, 90.0, 10.0),     # J6
+        (0.0, 0.0, 7.0, 7.0),        # H1
+        (83.0, 39.0, 90.0, 46.0),    # H2
+    ])
 
     b.texts = [
         ('F.SilkS', 45.0, 3.0, 0, 1.5, 'gowin-bridge board B  (Tang Mega 138K)  rev A'),
@@ -941,8 +1009,9 @@ def write_sch(outdir, board):
             cursor_y += row_h + 10.0
             row_h = 0.0
         # symbol origin so that the leftmost pin sits LBL from the cell edge
-        ox = cursor_x + LBL - minx
-        oy = cursor_y + 10.0 + maxy
+        snap = lambda v: round(v / 1.27) * 1.27
+        ox = snap(cursor_x + LBL - minx)
+        oy = snap(cursor_y + 10.0 + maxy)
         placed.append((p, ox, oy))
         cursor_x += wpx + 5.0
         row_h = max(row_h, wpy)
@@ -1035,13 +1104,19 @@ def write_sch(outdir, board):
         w.close_inline()
 
         # wire + label per pin
-        for num, (sx, sy, rot, length, nm, et) in g.items():
+        for num, (sx, sy, rot, length, nm, et) in g.items():  # noqa: E501
             px = ox + sx
             py = oy - sy
             d = {0: (-2.54, 0.0), 180: (2.54, 0.0), 90: (0.0, 2.54),
                  270: (0.0, -2.54)}[rot % 360]
             ex, ey = px + d[0], py + d[1]
             net = p.pins.get(num)
+            if net is None and et == 'no_connect':
+                w.open('no_connect')
+                w.line('at', fmt(px), fmt(py))
+                w.line('uuid', q(uuid_for(board.name, p.ref, 'nc', num)))
+                w.close_inline()
+                continue
             w.open('wire')
             w.open('pts')
             w.line('xy', fmt(px), fmt(py))
