@@ -584,14 +584,16 @@ def ac_coupling(ref, pfx, lanes, note_extra=''):
     VBIAS rail, which is what sets the receiver common mode once the DC path
     is broken.
 
-    Cable-side nets are ``<pfx>_<lane>_P/N``; receiver-side nets are
-    ``..._PR/_NR``.  Only the receiver-side nets touch the receiver.
+    Cable-side nets are ``<pfx>_<lane>_P/_N``; receiver-side nets are
+    ``<pfx>_<lane>_RX_P/_RX_N``.  Only the receiver-side nets touch the
+    receiver.  Both halves keep the ``_P``/``_N`` suffix so EasyEDA Pro's
+    automatic differential-pair detection finds all of them.
     """
     parts = []
     for lane in lanes:
         for leg in ('P', 'N'):
             cab = '%s_%s_%s' % (pfx, lane, leg)
-            rec = '%s_%s_%sR' % (pfx, lane, leg)
+            rec = '%s_%s_RX_%s' % (pfx, lane, leg)
             parts.append(C(ref('C'), '100nF', cab, rec, lcsc=LC['c100n'],
                            dnp=True,
                            desc='AC-coupling option, %s %s %s leg'
@@ -605,13 +607,13 @@ def ac_coupling(ref, pfx, lanes, note_extra=''):
                                 % (pfx, lane, leg),
                            note='FITTED. Remove to use the AC-coupling '
                                 'capacitor in parallel with it.'))
-        parts.append(R(ref('R'), '100R', '%s_%s_PR' % (pfx, lane),
-                       '%s_%s_NR' % (pfx, lane), lcsc=LC['r100'],
+        parts.append(R(ref('R'), '100R', '%s_%s_RX_P' % (pfx, lane),
+                       '%s_%s_RX_N' % (pfx, lane), lcsc=LC['r100'],
                        desc='Differential termination, %s %s. Place within '
                             '5 mm of the receiver pins.' % (pfx, lane)))
         for leg in ('P', 'N'):
             parts.append(R(ref('R'), '4k7', 'VBIAS',
-                           '%s_%s_%sR' % (pfx, lane, leg), lcsc=LC['r4k7'],
+                           '%s_%s_RX_%s' % (pfx, lane, leg), lcsc=LC['r4k7'],
                            dnp=True,
                            desc='AC-coupling common-mode bias, %s %s %s leg'
                                 % (pfx, lane, leg),
@@ -779,8 +781,25 @@ def autoplace(board, regions):
 # 13.46).  The two headers are NOT on a common 0.1 inch grid.
 BOARD_A_W = 48.0
 BOARD_A_H = 66.0
-DB1_PIN1 = (3.54, 3.96)
-DB12_PIN1 = (13.00, 13.46)
+
+# Where board A's local origin sits on the Hermes-Lite 2 board.  The corridor
+# left free by the N2ADR filter board is HL2 x 70.00 to 120.05, so a 48.00 mm
+# board can sit anywhere from x 70.00 to 72.05.  70.50 leaves 1.55 mm to the
+# filter board's edge; moving it up to 1.5 mm further right buys the same
+# amount of clearance between the leftmost cable boot and the extrusion's
+# inner wall, at the cost of that gap.  DESIGN_NOTES.md section 6.2 has both
+# numbers.  CHANGE THIS ONE CONSTANT AND REGENERATE to move the board.
+HL2_ORIGIN = (70.50, 74.00)
+
+# DB1 and DB12 hole positions, derived from the HL2 PCB rather than written
+# down.  DB1  = HERMESLITE:10x2 at (75.31, 89.39) rot 270 -> odd pins at HL2
+# x 74.04, even at 76.58, pin 1/2 at y 77.96 stepping +2.54.  DB12 =
+# HERMESLITE:3x2 at (83.50, 90.00) rot 0 -> odd x 83.50, even 86.04, rows
+# y 87.46 / 90.00 / 92.54.  Both read out of hardware/hl/hermeslite.kicad_pcb
+# and re-verified against the Excellon export; tools/check_geometry.py
+# recomputes them independently.
+DB1_PIN1 = (round(74.04 - HL2_ORIGIN[0], 3), round(77.96 - HL2_ORIGIN[1], 3))
+DB12_PIN1 = (round(83.50 - HL2_ORIGIN[0], 3), round(87.46 - HL2_ORIGIN[1], 3))
 
 # Socket centre lines along the front edge.  17.40 mm is the LARGEST pitch the
 # 48 mm corridor allows: the outer shell-leg pads reach 6.05 mm either side of
@@ -901,8 +920,8 @@ def board_a():
     rxo = {'CLK': 'RXO_ICLK', 'D0': 'RXO_ID0', 'D1': 'RXO_ID1',
            'D2': 'RXO_ID2'}
     for i, lane in enumerate(LANES):
-        pins[RCV_P[i]] = 'I_%s_PR' % lane
-        pins[RCV_N[i]] = 'I_%s_NR' % lane
+        pins[RCV_P[i]] = 'I_%s_RX_P' % lane
+        pins[RCV_N[i]] = 'I_%s_RX_N' % lane
         pins[RCV_OUT[i]] = rxo[lane]
     b.add(Part('U4', 'LVDS_RCV', 'DS90LV048A', pins, lcsc='C87137',
                mfr='DS90LV048ATMTCX/NOPB',
@@ -1198,8 +1217,8 @@ def board_b():
                           'LINK_RX_D5'], (42.0, 28.0))):
         pins = {'9': 'RXEN_N', '16': '+3V3', '12': 'GND', '13': '+3V3'}
         for i, lane in enumerate(LANES):
-            pins[RCV_P[i]] = '%s_%s_PR' % (pfx, lane)
-            pins[RCV_N[i]] = '%s_%s_NR' % (pfx, lane)
+            pins[RCV_P[i]] = '%s_%s_RX_P' % (pfx, lane)
+            pins[RCV_N[i]] = '%s_%s_RX_N' % (pfx, lane)
             pins[RCV_OUT[i]] = lanes_out[i]
         b.add(Part(ref_u, 'LVDS_RCV', 'DS90LV048A', pins, lcsc='C87137',
                    mfr='DS90LV048ATMTCX/NOPB',
@@ -1981,8 +2000,7 @@ PAIR_PREFIXES = ('O1_', 'O2_', 'I_', 'I1_', 'I2_', 'O_')
 def is_pair_net(name):
     if not name.startswith(PAIR_PREFIXES):
         return False
-    return (name.endswith('_P') or name.endswith('_N')
-            or name.endswith('_PR') or name.endswith('_NR'))
+    return name.endswith('_P') or name.endswith('_N')
 
 
 def write_pro(outdir, board):
