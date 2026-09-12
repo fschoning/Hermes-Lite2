@@ -33,7 +33,11 @@ Updated 2026-09-12 ~13:50. Resume from this file.
   hunting; now allowed <= 2 and printed); (c) "console lines >= 3" with the now much shorter
   7 ms run (>= 2 now). Rerun with the fixed testbench started at the end of the session:
   read `gowin/sim/build/tb_link_6.log`.
-- `tb_link` LANES=3: first run started with the previous testbench (`gowin/sim/build/tb_link_3.log`); rerun with `./run_sim.sh link 3`.
+- `tb_link` LANES=3 (fallback, 3 forward lanes at 153.6 MHz DDR): same result as LANES=6 —
+  forward link locks at 1.7 ms (taps 0x80, eye 255), reverse locks, PRBS/injection/reset/
+  command/live-ramp/counter/fast-serial/arbiter checks all pass; the same three testbench
+  artefacts failed (fixed in the testbench). Rerun started at the end of the session:
+  `gowin/sim/build/tb_link_3.log`, or `./run_sim.sh link 3`.
 
 ## Synthesis state
 - Gowin (gw_sh 1.9.11.03 Education): synthesis of `gl_top` (6 lanes) passes. The `.cst`
