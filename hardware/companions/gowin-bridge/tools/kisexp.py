@@ -539,8 +539,10 @@ def _emit_fp_pad(w, item, net_of_pad, fp_rot, mx=False):
         w.line('at', fmt(px), fmt(py))
     w.line('size', fmt(float(size[0])), fmt(float(size[1])))
     if drill is not None:
-        da = atoms(drill)
+        da = [x for x in atoms(drill) if x != 'oval']
         if 'oval' in [x for x in drill[1:] if isinstance(x, str)]:
+            # (drill oval <w> <h>): atoms() also yields the 'oval' keyword,
+            # so it has to be stripped before the numbers are read.
             w.line('drill', 'oval', fmt(float(da[0])), fmt(float(da[1])))
         else:
             w.line('drill', fmt(float(da[0])))
@@ -570,6 +572,16 @@ def footprint_extent(node, layer='F.CrtYd'):
         if head(item) not in ('fp_line', 'fp_rect', 'fp_poly', 'fp_circle', 'fp_arc'):
             continue
         if _lay(item)[0] != layer:
+            continue
+        if head(item) == 'fp_circle':
+            # a circle's (end) is a point ON the circle, not a bounding
+            # corner: taking it literally makes a courtyard circle look
+            # zero-height, which silently collapsed the autoplacer's shelves.
+            c = _xy(kid(item, 'center'))
+            e = _xy(kid(item, 'end'))
+            r = ((e[0] - c[0]) ** 2 + (e[1] - c[1]) ** 2) ** 0.5
+            xs += [c[0] - r, c[0] + r]
+            ys += [c[1] - r, c[1] + r]
             continue
         for key in ('start', 'end', 'center', 'mid'):
             k = kid(item, key)
