@@ -87,12 +87,14 @@ cd /g/proj/worktrees/Hermes-Lite2-gowin-link/gowin/sim
 ./run_sim.sh link 3      # never run yet
 ```
 
-State at the pause: `uart` and `rev` PASS. `link 6` had passed every check except forward
-training, which failed because Gowin's IODELAY simulation model needs a VALUE pulse to load
-the tap; the fix is in `gowin/rtl/gl_lane_rx.v` under `ifdef SIM`, and a correctly compiled
-re-run was started at 13:45 (result in `gowin/sim/build/tb_link_6.log`). If forward training
-still fails: the delay sweep is in `gl_train.v` and `gl_lane_rx.v`, the cable model with
-per-lane skew in `tb_cable.v`, and the sweep/eye logic is described in `LINK_SPEC.md` 6.2.
+State at the pause: `uart`, `rev` and the new fast forward-only test `fwd` PASS
+(`./run_sim.sh fwd`, seconds). The forward-training failure seen earlier had a real cause:
+Gowin's IDDR model delivers the falling-edge bit as the newer one, the opposite of what the
+data plane assumed; the bit order is swapped in `gl_lane_rx.v` (commit e0b20c4) and `tb_fwd`
+now aligns with 0 mismatches at every tap. A full `link 6` run with that fix was started at
+the very end of the session; its result is in `gowin/sim/build/tb_link_6.log`. One follow-up
+before trusting hardware: the trainer's automatic pair-swap retry did not fire in the failed
+run and should be understood (`gl_train.v`, LINK_SPEC.md 6.4).
 Waveforms: add `$dumpfile/$dumpvars` in `tb_link.v` and open the `.vcd` with `gtkwave`.
 
 ### Step 2. Gowin build to a bitstream with clean timing (half a day)
