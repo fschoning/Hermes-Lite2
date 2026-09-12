@@ -62,16 +62,27 @@ FEES = dict(
 SHIP_DHL = 21.55                # EUR 18.58, 2-4 days
 SHIP_CHEAP = 6.92               # EUR 5.97, Global Standard Direct Line, 9-13 d
 
-# Bare PCB, 4 layer, 1.6 mm, lead-free HASL, green, 1 oz, 5 pieces.
-# *** THIS IS THE LINE THAT DECIDES THE ANSWER. ***
-PCB_PANEL_5 = 52.42     # 94 x 100 mm, "different designs in this file" = 2
-PCB_A_5 = 7.00          # 48 x 66 mm, 1 design - a PROMOTIONAL tier, not list
-PCB_B_5 = 7.00          # 90 x 46 mm, 1 design - ditto
-PCB_NOTE = ('The $7.00 figures were recorded as "a live JLCPCB promotional '
-            'tier, not list price". The $52.42 was quoted with 2 designs '
-            'declared. Whether the gap is area, the promotional tier\'s size '
-            'cap, or the multi-design declaration is the single most '
-            'valuable thing left to check.')
+# Bare PCB, 4 layer, 1.6 mm, LEAD-FREE HASL, green, 1 oz, 5 pieces.
+# *** THIS IS THE LINE THAT DECIDES THE ANSWER, AND IT IS NOW SETTLED. ***
+# All four read off JLCPCB's live quote form, US store, 12 Sep 2026.
+PCB_PANEL_5 = 52.42       # 94 x 100 mm, "different designs in this file" = 2
+PCB_PANEL_5_1DES = 12.20  # the SAME board declared as 1 design
+PCB_A_5 = 12.10           # 48 x 66 mm, 1 design
+PCB_B_5 = 12.10           # 90 x 46 mm, 1 design
+PCB_REVB_PUBLISHED = 14.00  # what rev B booked: 2 x $7.00, no HASL surcharge
+PCB_NOTE = (
+    "SETTLED. 94 x 100 mm, 4 layer, 5 pcs, lead-free HASL costs $12.20 "
+    "declared as ONE design and $52.42 declared as TWO. Of that $40.22 "
+    "difference, $16.42 is a PCB-side 'Panel' charge for holding two "
+    "designs and $23.80 is the loss of the flat promotional tier, because "
+    "a multi-design file cannot use JLCPCB's 'Single PCB' delivery mode. "
+    "IT IS NOT A SIZE EFFECT: the flat tier survives while both dimensions "
+    "stay under 100 mm and 94 x 100 qualifies, so the panel is already on "
+    "the right side of the cap and SHRINKING IT WOULD SAVE NOTHING "
+    "(100 x 100 costs $36.40, 100 x 150 costs $39.50). The underlying "
+    "$7.00 promotional price is real and reproducible; $12.10 and $12.20 "
+    "are $7.00 plus the lead-free HASL surcharge of about $5.10-5.20, "
+    "which rev B's $7.00 figure had omitted.")
 
 # LCSC unit prices, at the lowest tier covering quantity 10, read 12 Sep 2026.
 PRICES = {
@@ -79,7 +90,8 @@ PRICES = {
     'C87137': 1.4348,                       # quad LVDS receiver
     'C465742': 0.9296, 'C53535': 0.9296,    # 8-bit translator (same slot)
     'C81461': 0.3096,                       # 4-bit translator / gated buffer
-    'C7827': 0.0865,                        # single-gate inverter
+    'C20917': 0.0800,                       # AO3400A N-MOSFET, Basic
+    'C7827': 0.0865,                        # the logic inverter it replaced
     'C138714': 0.0874,                      # quad ESD array
     'C194395': 0.0561,                      # 2.5 V LDO
     'C6186': 0.2198,                        # AMS1117-3.3
@@ -111,8 +123,9 @@ SOCKET_2x10 = 0.99      # Phoenix Enterprises HWS16492
 EXTENDED = set('''C138714 C194395 C206491 C201946 C2682170 C427307 C465742
 C53535 C5124634 C50982 C52016390 C52016391 C7827 C81461 C87137 C2337
 C42431860 C5361769 C124413'''.split())
-BASIC = set('''C1525 C15850 C17168 C17477 C25076 C25092 C25104 C25741 C25744
-C52923 C6186 C15525 C21190 C25117 C25746 C1555 C25900 C25867'''.split())
+BASIC = set('''C1525 C15850 C17168 C17477 C20917 C25076 C25092 C25104
+C25741 C25744 C52923 C6186 C15525 C21190 C25117 C25746 C1555 C25900
+C25867'''.split())
 
 
 def count_design(bom, pcb):
@@ -198,7 +211,7 @@ def build(sets):
     c_batch = sum(v for _, v in BATCH_REVC)
 
     lines = [
-        ('bare PCB, 5 pcs', PCB_A_5 + PCB_B_5, PCB_A_5 + PCB_B_5,
+        ('bare PCB, 5 pcs', PCB_REVB_PUBLISHED, PCB_A_5 + PCB_B_5,
          PCB_PANEL_5),
         ('assembly setup', 2 * F['setup_economic'], 2 * F['setup_economic'],
          F['setup_economic']),
@@ -291,6 +304,16 @@ def panel_vs_two_orders(d, sets):
     print('%-42s %14s %14s %10s'
           % ('TOTAL', '$%.2f' % (t1 + common), '$%.2f' % (t2 + common),
              '$%+.2f' % (t1 - t2)))
+    print()
+    print('  For scale only, NOT AN OPTION: the same panel declared as ONE')
+    print('  design would cost $%.2f rather than $%.2f for the bare boards,'
+          % (PCB_PANEL_5_1DES, PCB_PANEL_5))
+    print('  making the panel route $%.2f. The panel really does hold two'
+          % (t1 + common - PCB_PANEL_5 + PCB_PANEL_5_1DES))
+    print('  different designs, so declaring one would be a false')
+    print('  declaration. It is quoted only to show that $%.2f of the'
+          % (PCB_PANEL_5 - PCB_PANEL_5_1DES))
+    print('  bare-PCB line is the two-design charge and nothing else.')
     verdict = 'SAVES' if t1 < t2 else 'COSTS'
     print()
     print('  VERDICT: panelising %s $%.2f at %d sets.'
@@ -315,7 +338,7 @@ def aux_attribution(d):
            ('1 more quad LVDS receiver (board A gains the AUX receiver)', 1,
             1.4348),
            ('2 more 4-bit gated buffers (1 per board)', 2, 0.3096),
-           ('2 single-gate inverters (1 per board)', 2, 0.0865),
+           ('2 N-MOSFET strap inverters (1 per board)', 2, 0.0800),
            ('1 more quad ESD array (board A, 8 -> 9)', 1, 0.0874)]
     tot = 0.0
     print('per SET, parts:')
@@ -325,8 +348,8 @@ def aux_attribution(d):
     print('  %-58s %19s' % ('parts attributable to the third cable, per set',
                             '$%.2f' % tot))
     print()
-    print('  one extra unique Extended part (the inverter) '
-          '= $%.2f, once' % FEES['load_extended_economic'])
+    print('  extra unique EXTENDED parts = 0. The strap inverter is a')
+    print('  Basic-tier MOSFET, and Basic loading is free on Economic.')
     print('  extra board area                              = 0 mm2 '
           '(both boards are the same size as in rev B)')
     print('  extra joints: SMT %+d, through-hole %+d per set'
@@ -334,7 +357,7 @@ def aux_attribution(d):
              d['c_tht'] - (d['bA']['tht'] + d['bB']['tht'])))
     for s in (2, 3, 5):
         print('  THIRD CABLE, TOTAL AT %d SETS               = $%.2f'
-              % (s, s * tot + FEES['load_extended_economic']))
+              % (s, s * tot))
     return tot
 
 

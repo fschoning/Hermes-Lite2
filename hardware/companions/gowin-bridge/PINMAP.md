@@ -161,16 +161,25 @@ kilobits, so 76.8 Mbit/s is already four orders of magnitude more than the job r
 
 ### 2.4 What the strap does, and why a wrongly set strap is harmless
 
-**One 1x3 pin header (`ROLE`) with a single shunt, plus one single-gate
-inverter** produces two guaranteed-complementary 3.3 V levels, `ROLE` and
+**One 1x3 pin header (`ROLE`) with a single shunt, plus one inverting
+device** produces two guaranteed-complementary 3.3 V levels, `ROLE` and
 `ROLE_N`:
 
 ```
    J9 ROLE      1 +3V3 --- 2 ROLE --- 3 GND
                 shunt on 1-2  =>  ROLE A        shunt on 2-3  =>  ROLE B
 
-   U11 74LVC1G04:  ROLE_N = NOT ROLE      10 k pull-up on ROLE_N
+   U11 AO3400A:  ROLE_N = NOT ROLE, one N-MOSFET - gate on ROLE, source to
+                 GND, drain on ROLE_N, loaded by the 10 k pull-up on ROLE_N
 ```
+
+The inverting device is **one N-channel MOSFET** (AO3400A, LCSC C20917,
+SOT-23, JLCPCB Basic tier). A single-gate logic inverter would have done the
+same job, and was dropped only because no single-gate logic part of any family
+is a Basic part in JLCPCB's library, so it would have carried a $3.07
+per-unique-part assembly fee. Nothing in the argument below depends on which
+it is: `DESIGN_NOTES.md` 2.1 works through what the MOSFET gives up, and the
+fail-safe direction is identical.
 
 **Why an inverter rather than a second link or a double-pole jumper.** The
 scheme needs a complementary *pair*, and the two halves must never disagree.
@@ -184,10 +193,12 @@ is exactly the failure this design must not have. A single shunt plus one
 inverter gate makes the complement a property of the circuit rather than of the
 user's attention, at a cost of one SOT-23-5 part and a few cents.
 
-The 10 k **pull-up** on `ROLE_N` sets the safe failure direction: if the
-inverter is missing, unpowered or dead, `ROLE_N` reads high, which *disables*
-the G2 translator port. The auxiliary link then does not work, and nothing is
-stressed. A pull-down would have done the opposite.
+The 10 k **pull-up** on `ROLE_N` does two jobs, and both are load-bearing.
+It is the MOSFET's drain load - without it the drain has no high state at all
+- and it sets the safe failure direction: if the inverting device is missing,
+unpowered or dead, `ROLE_N` reads high, which *disables* the G2 translator
+port. The auxiliary link then does not work, and nothing is stressed. A
+pull-down would have done the opposite.
 
 `ROLE` / `ROLE_N` drive four things:
 

@@ -209,7 +209,7 @@ HL2-to-Gowin case needs no change. The only time you touch it is case 2c, two
 radios with an auxiliary cable, where one of the two board As must be moved
 to 2-3.
 
-A single-gate inverter next to the header produces the complement, so the two
+One N-channel MOSFET next to the header produces the complement, so the two
 levels can never disagree. **Nothing you can do with this shunt damages
 anything.** Get it wrong on both boards and the auxiliary link does not come
 up; the two fixed-direction cables are unaffected. `DESIGN_NOTES.md` has the
@@ -328,14 +328,14 @@ numbers imply.
 | Quad LVDS receiver DS90LV048A | C87137 | 4 | $1.4348 | $5.74 |
 | 8-bit translator SN74AVC8T245PWR | C465742 | 1 | $0.9296 | $0.93 |
 | 4-bit translator SN74AVC4T245PWR | C81461 | 3 | $0.3096 | $0.93 |
-| Single-gate inverter SN74LVC1G04DBVR | C7827 | 2 | $0.0865 | $0.17 |
+| N-MOSFET strap inverter AO3400A | C20917 | 2 | ~$0.0800 | $0.16 |
 | Quad ESD array TPD4E05U06DQAR | C138714 | 18 | $0.0874 | $1.57 |
 | 2.5 V LDO ME6211C25M5G | C194395 | 1 | $0.0561 | $0.06 |
 | AMS1117-3.3 | C6186 | 1 fitted (+1 not fitted) | $0.2198 | $0.22 |
 | Mini HDMI Type C, XKB A71-05H4-111N1 | C2682170 | 3 | $0.4593 | $1.38 |
 | Full-size HDMI Type A, Amphenol 10029449-111RLF | C427307 | 3 | $0.5081 | $1.52 |
 | 2x20 vertical female header, for the Tang dock's J14 | C5124634 | 1 | $0.3305 | $0.33 |
-| **Silicon and connectors, per panel** | | | | **$23.89** |
+| **Silicon and connectors, per panel** | | | | **$23.88** |
 
 **Minimum-order batches are the surprise in this costing.** Sixteen line items
 are reel-only with a minimum order far above what one or two panels use, so
@@ -351,15 +351,16 @@ they cost the same whether you build one panel or five:
 | **Total, once per order** | | **$8.73** |
 
 **Unique parts, which is what drives the assembly fee: 23 distinct LCSC numbers
-are placed, 12 Extended and 11 Basic.** (The jumper shunts are pushed on by
+are placed, 11 Extended and 12 Basic.** (The jumper shunts are pushed on by
 hand and are not a placed part.) Economic assembly charges **$3.07 per
 unique Extended part** and nothing for a Basic one; Standard charges **$1.53
-for every part**, Basic or Extended. Two of the twelve Extended parts are the
+for every part**, Basic or Extended. Two of the eleven Extended parts are the
 pin headers, and that is unavoidable: **no Basic 2.54 mm through-hole 1x2 or
-1x3 vertical header exists in JLCPCB's library at all**, and neither does a
-Basic 74LVC1G04 in SOT-23-5, from any manufacturer they list.
+1x3 vertical header exists in JLCPCB's library at all.** The strap inverter
+used to be a third: no Basic single-gate logic part exists either, so it is
+now one Basic-tier N-MOSFET instead, which saves $3.11.
 
-### 8b. Two panels assembled — about $200
+### 8b. Two panels assembled — $196.58
 
 Five bare boards, two of them populated, **Economic** assembly.
 
@@ -369,18 +370,18 @@ Five bare boards, two of them populated, **Economic** assembly.
 | Assembly setup | $8.18 |
 | Panel fee, because the file holds 2 designs | $8.21 |
 | Stencil | $1.53 |
-| 12 unique Extended parts x $3.07 | $36.84 |
+| 11 unique Extended parts x $3.07 | $33.77 |
 | Hand-soldering base fee | $3.58 |
-| SMT joints, 789 per panel x 2 x $0.0016 | $2.52 |
+| SMT joints, 781 per panel x 2 x $0.0016 | $2.50 |
 | Through-hole joints, 89 per panel x 2 x $0.0164 | $2.92 |
-| Silicon and connectors, 2 x $23.89 | $47.78 |
+| Silicon and connectors, 2 x $23.88 | $47.75 |
 | Minimum-order batches, once | $8.73 |
 | Shipping to Germany, DHL Express (EUR 18.58) | $21.55 |
 | Vertical 2x3 socket you solder yourself, 2 off (EUR 1.49 each) | $3.46 |
 | Long-tail 2x10 socket you solder yourself, 2 off ($0.99 each) | $1.98 |
-| **Total** | **$199.70** |
+| **Total** | **$196.58** |
 
-### 8c. Three panels assembled — about $251
+### 8c. Three panels assembled — $251.37
 
 Five bare boards, three populated. **Standard** assembly, because Economic will
 not sell you three.
@@ -393,43 +394,53 @@ not sell you three.
 | Stencil | $8.21 |
 | 23 unique parts x $1.53 — Standard charges for Basic parts too | $35.19 |
 | Hand-soldering base fee | $3.58 |
-| SMT joints, 789 per panel x 3 x $0.0016 | $3.79 |
+| SMT joints, 781 per panel x 3 x $0.0016 | $3.75 |
 | Through-hole joints, 89 per panel x 3 x $0.0164 | $4.38 |
-| Silicon and connectors, 3 x $23.89 | $71.67 |
+| Silicon and connectors, 3 x $23.88 | $71.63 |
 | Minimum-order batches, once | $8.73 |
 | Shipping to Germany, DHL Express | $21.55 |
 | Vertical 2x3 socket, 3 off | $5.19 |
 | Long-tail 2x10 socket, 3 off | $2.97 |
-| **Total** | **$251.45** |
+| **Total** | **$251.37** |
 
 ### 8d. What that means
 
-* **Two panels: $199.70. Three panels: $251.45.** The third panel costs
-  **$51.75**, of which only about **$29** is the panel's own parts, joints and
+* **Two panels: $196.58. Three panels: $251.37.** The third panel costs
+  **$54.79**, of which only about **$29** is the panel's own parts, joints and
   sockets — the rest is the service-tier jump that asking for exactly three
   forces.
 * **If you want more than two, order five, not three.** Five populated stays on
-  Economic and pays exactly the same fixed fees as two: **$287.70 for five,
-  which is $58 each, against $100 each for two.** Almost all of the money is
+  Economic and pays exactly the same fixed fees as two: **$284.50 for five,
+  which is $57 each, against $98 each for two.** Almost all of the money is
   setup.
-* **Cheaper shipping saves about $15.** Global Standard Direct Line was
-  EUR 5.97 against DHL Express's EUR 18.58, at 9 to 13 days instead of 2 to 4.
-* **ENIG instead of lead-free HASL costs $12.30 more** at quantity 5, and the
-  mini HDMI's 0.23 mm pads solder more reliably on flat gold.
+* **Do not tick "impedance control" without reading `COST.md` first.** It adds
+  **$33.88** — $32.84 plus a mandatory $1.04 file check — which is a 65 %
+  surcharge on the bare boards, and it is the single largest optional line in
+  the order. Section 7 above still recommends it; that recommendation was
+  written before the price was known and `COST.md` section 5 sets out both
+  sides.
+* **Cheaper shipping saves $14.63.** Global Standard Direct Line was EUR 5.97
+  against DHL Express's EUR 18.58, at 9 to 13 days instead of 2 to 4.
+* **Hand-fitting the seven pin headers saves $8.04**, and the Tang dock's 2x20
+  socket another **$5.04** — both because each is a distinct part JLCPCB
+  charges $3.07 to load. Together with the cheaper shipping that is
+  **$168.87 for two sets**, with no change to the schematic.
+* **ENIG instead of lead-free HASL costs $12.30 more**, and leaded HASL instead
+  of lead-free saves **$5.20**.
 * **The one figure here that is not a quote** is the solder-joint fee. JLCPCB
   will not compute it without a login and an uploaded position file, so the
   $0.0016 and $0.0164 per-joint rates come from their published fee schedule,
-  and the 789 surface-mount and 89 through-hole joints per panel were counted
-  from the board files in this directory. It is about $5 out of $200, so it
+  and the 781 surface-mount and 89 through-hole joints per panel were counted
+  from the board files in this directory. It is about $5 out of $197, so it
   does not change the picture.
 * **Nothing here includes shipping from Mouser or Phoenix Enterprises** for the
   two hand-soldered sockets. That is unverified.
-* **`COST.md` takes this apart line by line** against rev B, says whether
-  panelising actually saves money, separates what the third cable cost from
-  what came from elsewhere, and lists what could be cut with numbers. The
-  short version: **the bare-PCB line is larger than the entire increase**, and
-  a cheaper shipping choice plus hand-fitting the through-hole headers takes
-  two sets to **$171.99** without touching the schematic.
+* **`COST.md` takes all of this apart line by line** against rev B, settles
+  whether panelising saves money (it saves $16.83), separates what the third
+  cable cost ($15.64 at two sets) from what came from elsewhere, and ranks
+  every candidate cut with its number. The short version: **rev C costs only
+  $7.07 more than rev B once rev B's own figure is corrected for the three
+  charge categories it never counted.**
 
 ---
 

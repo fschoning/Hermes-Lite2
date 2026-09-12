@@ -133,13 +133,65 @@ pin 1 = +3V3 --- pin 2 = ROLE --- pin 3 = GND
 shunt on 1-2 => ROLE A          shunt on 2-3 => ROLE B
 ```
 
-One single-gate inverter (TI SN74LVC1G04DBVR, SOT-23-5, LCSC **C7827**,
-150,495 in stock, and in JLCPCB's assembly library as an **Extended** part -
-there is **no Basic-tier 74LVC1G04 in SOT-23-5** from any of the ten
-manufacturers JLCPCB lists, so the roughly $3 per-unique-Extended-part fee is
-unavoidable for this one chip) produces `ROLE_N` = NOT `ROLE`. A **10 k
-pull-up on `ROLE_N`** and a **100 k pull-down on `ROLE`** give both nets a
-defined level even with no shunt fitted at all.
+**One N-channel MOSFET** produces `ROLE_N` = NOT `ROLE`: gate on `ROLE`,
+source to ground, drain on `ROLE_N`, loaded by the **10 k pull-up that is
+fitted anyway**. A **10 k pull-up on `ROLE_N`** and a **100 k pull-down on
+`ROLE`** give both nets a defined level even with no shunt fitted at all.
+
+The part is **Alpha & Omega AO3400A, LCSC C20917**, SOT-23, **Basic** tier in
+JLCPCB's assembly library, about 890,000 in stock, about $0.08, pin 1 gate /
+pin 2 source / pin 3 drain. Its gate threshold is **1.45 V maximum**, so a
+3.3 V strap drives it with **1.85 V of margin**. **Do not substitute the
+cheaper 2N7002:** its threshold is specified up to 2.5 V, too close to a 3.3 V
+drive.
+
+**Why a MOSFET and not a logic gate.** A single-gate inverter was the first
+choice. It was dropped on cost alone: **no 74x1G04, 1G00, 1G02, 1G14 or 1G07
+of any brand, family or package is a Basic part in JLCPCB's library**, checked
+across all ten manufacturers they list, so one gate would have cost the $3.07
+per-unique-Extended-part fee on the Economic assembly tier this board is
+ordered on. `COST.md` 5a has the money.
+
+**What the MOSFET gives up, examined point by point:**
+
+* **`ROLE_N`'s high state is now passive**, supplied by the 10 k pull-up
+  rather than actively driven. **Acceptable**: `ROLE_N` drives only CMOS
+  enable inputs - one LVDS driver `EN` and one translator `OE` per board -
+  whose input leakage is nanoamps to a few microamps. At a worst case of
+  20 uA the pull-up drops 0.2 V, giving 3.1 V against enable thresholds
+  around 2.0 V.
+* **The pull-up's rise time is slow.** **Irrelevant**: `ROLE_N` is a static
+  level set once by a jumper and never switched in operation. Nothing on
+  either board ever sees an edge on it.
+* **The low state is better, not worse.** The MOSFET's on-resistance is tens
+  of milliohms, so with the 0.33 mA that flows through the 10 k load the drain
+  sits within microvolts of ground - cleaner than a logic gate's specified
+  output low. The standing current is unchanged, because a logic inverter
+  pulling the same node down through the same pull-up drew the same 0.33 mA.
+* **No hysteresis regression.** The part it replaces, SN74LVC1G04, is a
+  **plain** inverter with no Schmitt input either, so nothing is lost. And
+  `ROLE` is never in transition: it is hard 3.3 V or hard 0 V through a shunt,
+  or 0 V through the 100 k pull-down when no shunt is fitted, so the input
+  never dwells in the threshold region where a soft transfer characteristic
+  would matter.
+* **The fail-safe direction is unchanged**, which is the point that matters
+  most. A missing, dead or unpowered device leaves `ROLE_N` pulled **high** by
+  the 10 k resistor, which **disables** the host-facing auxiliary port. That
+  is the auxiliary-disabled state: the link fails to work and nothing is
+  stressed. It can never enable a port.
+* **Power-up is also safe, and this is new with the MOSFET.** It stays off
+  until its gate passes about 1.45 V, so during the supply ramp `ROLE_N` is
+  held high by the pull-up - again the auxiliary-disabled state.
+* **What is genuinely weaker:** the input threshold is a device parameter with
+  a manufacturing spread, rather than a specified fraction of the supply rail
+  as a logic gate guarantees. For a jumper level that is either 0 V or 3.3 V,
+  with 1.85 V of margin to the worst-case threshold, this does not matter.
+
+**The 10 k pull-up is now doing two jobs**, and both are load-bearing: it is
+the MOSFET's drain load - without it the drain has no high state at all - and
+it is the fail-safe. `tools/check_netlist.py` asserts it is a pull-UP and that
+there is no pull-down, and also that the source is grounded, because a MOSFET
+inverter only inverts with its source at ground.
 
 ### 2.2 Why an inverter, and not a second link or a double-pole jumper
 
@@ -589,7 +641,7 @@ and then measuring (section 11).
 | U1 SN74AVC8T245, eight channels switching into 5 pF at up to 76.8 MHz (`C x V x f` = 5p x 3.3 x 76.8M = 1.27 mA each) plus quiescent | 12 mA |
 | U9 ME6211C25 LDO, output ~6 mA plus quiescent (feeds U1's A side and U7/U8's B side) | 7 mA |
 | U7, U8 SN74AVC4T245, A side (rev B figure for 1 package; rev C has 2 - **not yet recomputed**) | 1 mA (stale) |
-| U11 74LVC1G04 inverter | **not in rev B's table at all - new load, not yet estimated** |
+| U11 AO3400A, the `ROLE_N` inverter | **0.33 mA when `ROLE_N` is low, 0 when it is high** - and that current is the 10 k pull-up's, not the MOSFET's, so it was already in the budget before the inverter existed. The device itself draws gate leakage only, in nanoamps. This is the one new part whose consumption needs no estimate. |
 | Receiver outputs sinking the HL2's three LED pull-ups (1.4 mA each, average ~50 % duty) | 2 mA |
 | Pull-ups, pull-downs, HPD dividers | 5 mA |
 | **rev B total (stale, carried forward)** | **~112 mA** |
@@ -885,7 +937,7 @@ parts: 0R, 22R, 100R, 330R, 4k7, 10k, 100k, 22pF, 100nF, 1uF and 10uF 25V
 | DS90LV048ATMTCX/NOPB, quad LVDS receiver, TSSOP-16 | C87137 | |
 | SN74AVC8T245PWR, 8-bit translator | C465742 | Board A only, one per board |
 | SN74AVC4T245PWR, 4-bit translator/buffer | C81461 | Board A: two, for the 2.5 V shift. Board B: one, as a gating buffer only (section 2.7) |
-| SN74LVC1G04DBVR, single-gate inverter, SOT-23-5 | C7827 | 150,495 in stock, JLCPCB **Extended** - no Basic-tier 74LVC1G04 in SOT-23-5 exists from any manufacturer JLCPCB lists, so this one part's roughly $3 fee is unavoidable. One per board. |
+| AO3400A N-channel MOSFET, SOT-23, the `ROLE_N` inverter | C20917 | ~890,000 in stock, JLCPCB **Basic**, ~$0.08, Vgs(th) 1.45 V max. One per board. Replaced C7827 (SN74LVC1G04DBVR), which is Extended: no single-gate logic part of any family is Basic in JLCPCB's library, so a gate would have cost the $3.07 loading fee. Section 2.1 and `COST.md` 5a. **Do not substitute the 2N7002** - 2.5 V threshold. |
 | ME6211C25M5G-N, 2.5 V LDO | C194395 | Board A only |
 | AMS1117-3.3, 3.3 V LDO | C6186 | Both boards |
 | 2.54 mm pin header strip (ROLE, option headers) | C2337 | |

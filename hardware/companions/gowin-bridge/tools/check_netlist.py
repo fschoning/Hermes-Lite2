@@ -277,7 +277,10 @@ def check_cable(label, na, a_ref, a_pfx, a_kind, nb, b_ref, b_pfx, b_kind):
 # ----------------------------------------------------------------------------
 #
 # Pad numbers, from the same datasheets the generator uses.
-INV_A, INV_Y, INV_GND, INV_VCC = '2', '4', '3', '5'   # SN74LVC1G04DBVR (DBV)
+# The ROLE_N inverter is one N-channel MOSFET (AO3400A in SOT-23), not a
+# logic gate: gate on ROLE, source to ground, drain on ROLE_N loaded by the
+# 10 k pull-up.  Pin 1 gate / 2 source / 3 drain.
+INV_G, INV_S, INV_D = '1', '2', '3'
 DRV_EN, DRV_ENB = '1', '8'                            # DS90LV047A
 DRV_P = {'ch1': '15', 'ch2': '14', 'ch3': '11', 'ch4': '10'}
 RCV_P = {'ch1': '2', 'ch2': '3', 'ch3': '6', 'ch4': '7'}
@@ -287,7 +290,7 @@ RCV_OUT = {'ch1': '15', 'ch2': '14', 'ch3': '11', 'ch4': '10'}
 X4_PORTS = {1: (('4', '5'), ('13', '12'), '15'),
             2: (('6', '7'), ('11', '10'), '14')}
 
-INV_VALUE = '74LVC1G04'
+INV_VALUE = 'AO3400A'
 DRV_VALUE = 'DS90LV047A'
 RCV_VALUE = 'DS90LV048A'
 X4_VALUE = 'SN74AVC4T245PW'
@@ -314,23 +317,24 @@ def check_strap(nets, vals, label, aux_pfx, v3, gnd='GND'):
 
     invs = [r for r, v in vals.items() if v == INV_VALUE]
     if len(invs) != 1:
-        prob.append('%s: expected exactly ONE single-gate inverter, found %d '
+        prob.append('%s: expected exactly ONE inverting device, found %d '
                     '%s. The whole safety argument rests on the complement '
-                    'being produced by one gate from one net.'
+                    'being produced by one device from one net.'
                     % (label, len(invs), sorted(invs)))
         return prob
     inv = invs[0]
-    R_ = nets.get((inv, INV_A), '<open>')
-    RN = nets.get((inv, INV_Y), '<open>')
-    if nets.get((inv, INV_VCC)) != v3 or nets.get((inv, INV_GND)) != gnd:
-        prob.append('%s: inverter %s is not powered from %s / %s'
-                    % (label, inv, v3, gnd))
+    R_ = nets.get((inv, INV_G), '<open>')
+    RN = nets.get((inv, INV_D), '<open>')
+    if nets.get((inv, INV_S)) != gnd:
+        prob.append('%s: inverter %s source is on %s, not %s. A MOSFET '
+                    'inverter only inverts with its source grounded.'
+                    % (label, inv, nets.get((inv, INV_S)), gnd))
     if R_ == '<open>' or RN == '<open>' or R_ == RN:
-        prob.append('%s: inverter %s input/output nets are %s / %s'
+        prob.append('%s: inverter %s gate/drain nets are %s / %s'
                     % (label, inv, R_, RN))
         return prob
-    print('  inverter %s: %s -> %s (NOT), powered %s / %s'
-          % (inv, R_, RN, v3, gnd))
+    print('  inverter %s (one N-MOSFET): gate %s -> drain %s (NOT), '
+          'source on %s' % (inv, R_, RN, gnd))
 
     # (a) the strap net must come from ONE three-pin header spanning the rails
     strap_hdrs = set()
@@ -372,8 +376,11 @@ def check_strap(nets, vals, label, aux_pfx, v3, gnd='GND'):
                     'host instead of enabling it.'
                     % (label, RN, up, v3, down, gnd))
     else:
-        print('  %s pulled UP to %s (%d resistor(s)), no pull-down - a dead '
-              'inverter disables a port, it cannot enable one' % (RN, v3, up))
+        print('  %s pulled UP to %s (%d resistor(s)), no pull-down. That '
+              'resistor is BOTH the load the MOSFET needs - without it the '
+              'drain has no high state at all - and the fail-safe: a '
+              'dead or missing device leaves %s high, which DISABLES a '
+              'host-facing port and can never enable one.' % (RN, v3, up, RN))
 
     # (c) classify every LVDS driver by its enable net
     by_en = {}

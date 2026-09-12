@@ -286,22 +286,35 @@ TYPES = {
                  'Connector_PinHeader_2.54mm', 'PinHeader_1x03_P2.54mm_Vertical'),
     'MH':       ('Mechanical', 'MountingHole_Pad', 'MountingHole',
                  'MountingHole_3.2mm_M3_Pad'),
-    # Single-gate inverter making ROLE_N = NOT ROLE.  TI SN74LVC1G04DBVR in
-    # DBV (SOT-23-5); LCSC C7827, 150,495 in stock and in JLCPCB's assembly
-    # library as an Extended part (checked 12 Sep 2026 - no Basic-tier
-    # 74LVC1G04 exists in SOT-23-5 at all, from any of the ten
-    # manufacturers JLCPCB lists, so the per-unique-Extended-part fee is
-    # unavoidable for this one chip).  Pinout 1 NC / 2 A / 3 GND / 4 Y /
-    # 5 VCC, taken from the KiCad 74xGxx symbol, which is drawn from the TI
-    # DBV datasheet.  NOTE Nexperia's 74LVC1G04GW is a DIFFERENT pinout
-    # (1 A / 2 GND / 3 Y / 5 VCC) - do not substitute it without changing
-    # INV_PINS below.
-    'INV':      ('74xGxx', '74LVC1G04', 'Package_TO_SOT_SMD', 'SOT-23-5'),
+    # The ROLE_N inverter.  ONE N-CHANNEL MOSFET, not a logic gate.
+    #
+    # A single-gate logic inverter was the obvious choice and it was priced:
+    # NO 74x1G04, 1G00, 1G02, 1G14 or 1G07 of any brand, family or package
+    # is a Basic part in JLCPCB's assembly library (checked 12 Sep 2026,
+    # across all ten manufacturers they list), so it would cost the $3.07
+    # per-unique-Extended-part fee on the Economic tier for one gate.
+    #
+    # A MOSFET does the job for nothing extra.  Gate on ROLE, source to
+    # ground, drain on ROLE_N, using the 10 k pull-up that is ALREADY
+    # fitted as its load.  DESIGN_NOTES.md 2.1 records why nothing is given
+    # up: ROLE_N is a static level set once by a jumper, it drives only CMOS
+    # enable inputs drawing nanoamps, and the fail-safe direction is
+    # unchanged, because a missing or dead device leaves ROLE_N pulled high,
+    # which is the auxiliary-disabled state.
+    #
+    # Alpha & Omega AO3400A, LCSC C20917: SOT-23, BASIC, ~890,000 in stock,
+    # Vgs(th) 1.45 V MAXIMUM, so a 3.3 V strap drives it with 1.85 V of
+    # margin.  DO NOT substitute the cheaper 2N7002: its threshold is
+    # specified up to 2.5 V, which is too close to a 3.3 V drive.
+    # KiCad Transistor_FET:Q_NMOS_GSD is pin 1 gate / 2 source / 3 drain,
+    # which is the AO3400A's own SOT-23 pinout.
+    'INV':      ('Transistor_FET', 'Q_NMOS_GSD', 'Package_TO_SOT_SMD',
+                 'SOT-23'),
     'FIDUCIAL': ('Mechanical', 'Fiducial', 'Fiducial', 'Fiducial_1mm_Mask2mm'),
 }
 
-# SN74LVC1G04DBVR pad numbers, so the netlist reads by function.
-INV_A, INV_Y, INV_GND, INV_VCC, INV_NC = '2', '4', '3', '5', '1'
+# AO3400A pad numbers, so the netlist reads by function.
+INV_G, INV_S, INV_D = '1', '2', '3'
 
 CUSTOM_SYMS = ('DS90LV047A', 'DS90LV048A')
 
@@ -558,7 +571,8 @@ LC_DRV = 'C206491'        # DS90LV047ATMX/NOPB, quad LVDS driver, SOIC-16
 LC_RCV = 'C87137'         # DS90LV048ATMTCX/NOPB, quad LVDS receiver, TSSOP-16
 LC_X8 = 'C465742'         # SN74AVC8T245PWR (rev B's C53535 does not exist)
 LC_X4 = 'C81461'          # SN74AVC4T245PWR
-LC_INV = 'C7827'          # SN74LVC1G04DBVR, SOT-23-5, Extended
+LC_INV = 'C20917'        # AO3400A N-MOSFET, SOT-23, BASIC (replaces
+                          # C7827, SN74LVC1G04DBVR, which is Extended)
 LC_LDO25 = 'C194395'      # ME6211C25M5G-N
 LC_LDO33 = 'C6186'         # AMS1117-3.3, Basic
 # Pin headers need DISCRETE part numbers, not a strip: C2337 is a 1x40
@@ -1050,18 +1064,21 @@ def board_a():
         note='Fit ONE shunt (LCSC C5305). Board A ships 1-2 = ROLE A. With '
              'no shunt at all the 100k pull-down makes it ROLE B, which is '
              'a safe state, not a floating one.'))
-    b.add(Part('U11', 'INV', '74LVC1G04', {
-        INV_A: 'ROLE', INV_Y: 'ROLE_N', INV_GND: 'GND', INV_VCC: '+3V3',
-        INV_NC: None,
-    }, lcsc=LC_INV, mfr='SN74LVC1G04DBVR',
-        desc='Single-gate inverter: ROLE_N = NOT ROLE. This one part is what '
-             'makes the complement a property of the circuit instead of a '
-             'property of the user remembering to move two shunts the same '
-             'way',
+    b.add(Part('U11', 'INV', 'AO3400A', {
+        INV_G: 'ROLE', INV_D: 'ROLE_N', INV_S: 'GND',
+    }, lcsc=LC_INV, mfr='AO3400A',
+        desc='The ROLE_N inverter, built from one N-channel MOSFET: gate on '
+             'ROLE, source to ground, drain on ROLE_N, loaded by the 10 k '
+             'pull-up that is already fitted. This one part is what makes '
+             'the complement a property of the circuit instead of a property '
+             'of the user remembering to move two shunts the same way',
         at=(38.0, 13.5), rot=0,
-        note='SOT-23-5, TI DBV pinout (1 NC, 2 A, 3 GND, 4 Y, 5 VCC). '
-             "Nexperia's 74LVC1G04GW has a DIFFERENT pinout - do not "
-             'substitute it.'))
+        note='SOT-23, pin 1 gate / 2 source / 3 drain. Vgs(th) 1.45 V MAX, '
+             'so a 3.3 V strap drives it with 1.85 V of margin. DO NOT '
+             'substitute the cheaper 2N7002: its threshold is specified up '
+             'to 2.5 V. A logic inverter was rejected on cost alone - no '
+             'single-gate logic part of any family is a Basic part in '
+             "JLCPCB's library. DESIGN_NOTES.md 2.1."))
 
     # ------------------------------------------------- 2.5 V -> 3.3 V shift
     # Every HL2 output that feeds an LVDS driver input goes through ONE
@@ -1435,7 +1452,6 @@ def board_a():
         ('100nF', '+2V5', 'U7 VCCB', LC['c100n'], False),
         ('100nF', '+3V3', 'U8 VCCA', LC['c100n'], False),
         ('100nF', '+2V5', 'U8 VCCB', LC['c100n'], False),
-        ('100nF', '+3V3', 'U11 VCC (the inverter)', LC['c100n'], False),
         ('10uF', '+3V3', '+3V3 bulk', LC['c10u'], True),
         ('100nF', '+3V3', '+3V3 bulk HF', LC['c100n'], False),
         ('1uF', '+2V5', 'U9 output', LC['c1u'], False),
@@ -1598,16 +1614,16 @@ def board_b():
         at=(70.0, 4.0), rot=0,
         note='Fit ONE shunt (LCSC C5305). Board B ships 2-3 = ROLE B, so '
              'the Gowin reads link_role LOW on J14 pin 34.'))
-    b.add(Part('U8', 'INV', '74LVC1G04', {
-        INV_A: 'ROLE', INV_Y: 'ROLE_N', INV_GND: 'GND', INV_VCC: '+3V3',
-        INV_NC: None,
-    }, lcsc=LC_INV, mfr='SN74LVC1G04DBVR',
-        desc='Single-gate inverter: ROLE_N = NOT ROLE. Makes the complement '
-             'a property of the circuit rather than of the user',
+    b.add(Part('U8', 'INV', 'AO3400A', {
+        INV_G: 'ROLE', INV_D: 'ROLE_N', INV_S: 'GND',
+    }, lcsc=LC_INV, mfr='AO3400A',
+        desc='The ROLE_N inverter, built from one N-channel MOSFET: gate on '
+             'ROLE, source to ground, drain on ROLE_N, loaded by the 10 k '
+             'pull-up that is already fitted. Makes the complement a '
+             'property of the circuit rather than of the user',
         at=(78.0, 5.0), rot=0,
-        note='SOT-23-5, TI DBV pinout (1 NC, 2 A, 3 GND, 4 Y, 5 VCC). '
-             "Nexperia's 74LVC1G04GW has a DIFFERENT pinout - do not "
-             'substitute it.'))
+        note='SOT-23, pin 1 gate / 2 source / 3 drain. Vgs(th) 1.45 V MAX. '
+             'DO NOT substitute the cheaper 2N7002. DESIGN_NOTES.md 2.1.'))
 
     # ------------------------------------------------------- receivers
     # U1 = IN, gated by the IN cable detect.  U2 = AUX, always on and sitting
@@ -1878,7 +1894,6 @@ def board_b():
         ('100nF', '+3V3', 'U5 VCC', LC['c100n'], False),
         ('100nF', '+3V3', 'U6 VCCA', LC['c100n'], False),
         ('100nF', '+3V3', 'U6 VCCB', LC['c100n'], False),
-        ('100nF', '+3V3', 'U8 VCC (the inverter)', LC['c100n'], False),
         ('10uF', '+3V3', '+3V3 bulk', LC['c10u'], True),
         ('100nF', '+3V3', '+3V3 bulk HF', LC['c100n'], False),
         ('10uF', 'P5V_J14', '5 V input bulk', LC['c10u'], True),

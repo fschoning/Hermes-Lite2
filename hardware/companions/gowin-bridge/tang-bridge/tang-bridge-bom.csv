@@ -16,13 +16,12 @@ C14,100nF,C_0402_1005Metric,C1525,,yes,U4 VCC,
 C15,100nF,C_0402_1005Metric,C1525,,yes,U5 VCC,
 C16,100nF,C_0402_1005Metric,C1525,,yes,U6 VCCA,
 C17,100nF,C_0402_1005Metric,C1525,,yes,U6 VCCB,
-C18,100nF,C_0402_1005Metric,C1525,,yes,U8 VCC (the inverter),
-C19,10uF,C_0805_2012Metric,C15850,,yes,+3V3 bulk,
-C20,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
-C21,10uF,C_0805_2012Metric,C15850,,yes,5 V input bulk,
-C22,100nF,C_0402_1005Metric,C1525,,yes,5 V input HF,
-C23,10uF,C_0805_2012Metric,C15850,,yes,U7 output bulk,
-C24,100nF,C_0402_1005Metric,C1525,,yes,extra +3V3,
+C18,10uF,C_0805_2012Metric,C15850,,yes,+3V3 bulk,
+C19,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
+C20,10uF,C_0805_2012Metric,C15850,,yes,5 V input bulk,
+C21,100nF,C_0402_1005Metric,C1525,,yes,5 V input HF,
+C22,10uF,C_0805_2012Metric,C15850,,yes,U7 output bulk,
+C23,100nF,C_0402_1005Metric,C1525,,yes,extra +3V3,
 D1,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D2,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D3,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
@@ -154,4 +153,4 @@ U4,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVD
 U5,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. AUX group G2 (data 1 pair + data 2 pair). Two channels used, two spare. EN = ROLE_N, so G2 is driven only in ROLE B","EN = ROLE_N. Enabled in ROLE B, which is how board B ships. Channels 3 and 4 unused."
 U6,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"Strap-gated buffer, VCCA = VCCB = 3.3 V, used as two independent 2-channel 3-state buffers: port 1 = AUX G1 toward the Gowin (enabled in ROLE B), port 2 = AUX G2 toward the Gowin (enabled in ROLE A). No level shift - this part exists only to tri-state","1OE* = ROLE: the G1 port drives J14 pins 32 and 18 only in ROLE B. 2OE* = ROLE_N: the G2 port drives J14 pins 17 and 31 only in ROLE A. ROLE_N carries a 10k pull-UP, so a missing or dead inverter disables the G2 port rather than enabling it. A 74LVC125A quad buffer with four independent enables would also do this job in one smaller package; the AVC4T245 was chosen because board A already carries two of them, so the panel has one fewer unique part."
 U7,AMS1117-3.3,SOT-223-3_TabPin2,C6186,AMS1117-3.3,yes,3.3 V board supply from J14 pin 11 (5V_Peripheral). Dissipates (5.0 - 3.3) x 0.15 = 0.26 W: flood the SOT-223 tab to the power plane with at least six thermal vias,
-U8,74LVC1G04,SOT-23-5,C7827,SN74LVC1G04DBVR,yes,Single-gate inverter: ROLE_N = NOT ROLE. Makes the complement a property of the circuit rather than of the user,"SOT-23-5, TI DBV pinout (1 NC, 2 A, 3 GND, 4 Y, 5 VCC). Nexperia's 74LVC1G04GW has a DIFFERENT pinout - do not substitute it."
+U8,AO3400A,SOT-23,C20917,AO3400A,yes,"The ROLE_N inverter, built from one N-channel MOSFET: gate on ROLE, source to ground, drain on ROLE_N, loaded by the 10 k pull-up that is already fitted. Makes the complement a property of the circuit rather than of the user","SOT-23, pin 1 gate / 2 source / 3 drain. Vgs(th) 1.45 V MAX. DO NOT substitute the cheaper 2N7002. DESIGN_NOTES.md 2.1."

@@ -19,14 +19,13 @@ C117,100nF,C_0402_1005Metric,C1525,,yes,U7 VCCA,
 C118,100nF,C_0402_1005Metric,C1525,,yes,U7 VCCB,
 C119,100nF,C_0402_1005Metric,C1525,,yes,U8 VCCA,
 C120,100nF,C_0402_1005Metric,C1525,,yes,U8 VCCB,
-C121,100nF,C_0402_1005Metric,C1525,,yes,U11 VCC (the inverter),
-C122,10uF,C_0805_2012Metric,C15850,,yes,+3V3 bulk,
-C123,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
-C124,1uF,C_0402_1005Metric,C52923,,yes,U9 output,
-C125,100nF,C_0402_1005Metric,C1525,,yes,U9 input,
-C126,100nF,C_0402_1005Metric,C1525,,yes,DB1 +3V3 entry,
-C127,10uF,C_0805_2012Metric,C15850,,yes,U10 input bulk (option),
-C128,10uF,C_0805_2012Metric,C15850,,yes,U10 output bulk (option),
+C121,10uF,C_0805_2012Metric,C15850,,yes,+3V3 bulk,
+C122,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
+C123,1uF,C_0402_1005Metric,C52923,,yes,U9 output,
+C124,100nF,C_0402_1005Metric,C1525,,yes,U9 input,
+C125,100nF,C_0402_1005Metric,C1525,,yes,DB1 +3V3 entry,
+C126,10uF,C_0805_2012Metric,C15850,,yes,U10 input bulk (option),
+C127,10uF,C_0805_2012Metric,C15850,,yes,U10 output bulk (option),
 C201,22pF,C_0402_1005Metric,C1555,,DNP,Optional ringing damper on LINK_SLOW_IN,NOT FITTED. 22 pF into 100 R is 2.2 ns. Fit if the unterminated cable wire rings enough to double-clock the receiver.
 C202,100nF,C_0402_1005Metric,C1525,,DNP,"AC-coupling option, I CLK P leg",NOT FITTED. Fit only together with the VBIAS network and remove the parallel 0 R link. Needs DC-balanced data; the gateware does not guarantee that.
 C203,100nF,C_0402_1005Metric,C1525,,DNP,"AC-coupling option, I CLK N leg",NOT FITTED. Fit only together with the VBIAS network and remove the parallel 0 R link. Needs DC-balanced data; the gateware does not guarantee that.
@@ -44,13 +43,12 @@ C214,100nF,C_0402_1005Metric,C1525,,yes,U4 VCC,
 C215,100nF,C_0402_1005Metric,C1525,,yes,U5 VCC,
 C216,100nF,C_0402_1005Metric,C1525,,yes,U6 VCCA,
 C217,100nF,C_0402_1005Metric,C1525,,yes,U6 VCCB,
-C218,100nF,C_0402_1005Metric,C1525,,yes,U8 VCC (the inverter),
-C219,10uF,C_0805_2012Metric,C15850,,yes,+3V3 bulk,
-C220,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
-C221,10uF,C_0805_2012Metric,C15850,,yes,5 V input bulk,
-C222,100nF,C_0402_1005Metric,C1525,,yes,5 V input HF,
-C223,10uF,C_0805_2012Metric,C15850,,yes,U7 output bulk,
-C224,100nF,C_0402_1005Metric,C1525,,yes,extra +3V3,
+C218,10uF,C_0805_2012Metric,C15850,,yes,+3V3 bulk,
+C219,100nF,C_0402_1005Metric,C1525,,yes,+3V3 bulk HF,
+C220,10uF,C_0805_2012Metric,C15850,,yes,5 V input bulk,
+C221,100nF,C_0402_1005Metric,C1525,,yes,5 V input HF,
+C222,10uF,C_0805_2012Metric,C15850,,yes,U7 output bulk,
+C223,100nF,C_0402_1005Metric,C1525,,yes,extra +3V3,
 D101,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D102,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
 D103,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","Place within 5 mm of the HDMI connector pins, on the connector side of everything else."
@@ -315,7 +313,7 @@ U107,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit d
 U108,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply level translator, VCCA 3.3 V / VCCB 2.5 V. Port 1 = AUX group G1 toward the HL2, enabled only in ROLE B. Port 2 is unused","1OE* = ROLE: the G1 port drives PIN_85 and PIN_87 only in ROLE B, which is exactly when the gateware has those two pins as inputs. Port 2 is disabled (2OE* to +3V3) with its inputs grounded and its outputs on test pads."
 U109,ME6211C25M5G,SOT-23-5,C194395,ME6211C25M5G-N,yes,2.5 V 400 mA LDO. Supplies only the 2.5 V sides of the three translators,
 U110,AMS1117-3.3,SOT-223-3_TabPin2,C6186,AMS1117-3.3,DNP,Optional 3.3 V from the IN socket's +5 V pin. NOT the default supply: see DESIGN_NOTES.md 5,NOT FITTED by default. Board A normally runs from HL2 DB1 pins 19/20. In the two-radio configuration there is no 5 V source at all.
-U111,74LVC1G04,SOT-23-5,C7827,SN74LVC1G04DBVR,yes,Single-gate inverter: ROLE_N = NOT ROLE. This one part is what makes the complement a property of the circuit instead of a property of the user remembering to move two shunts the same way,"SOT-23-5, TI DBV pinout (1 NC, 2 A, 3 GND, 4 Y, 5 VCC). Nexperia's 74LVC1G04GW has a DIFFERENT pinout - do not substitute it."
+U111,AO3400A,SOT-23,C20917,AO3400A,yes,"The ROLE_N inverter, built from one N-channel MOSFET: gate on ROLE, source to ground, drain on ROLE_N, loaded by the 10 k pull-up that is already fitted. This one part is what makes the complement a property of the circuit instead of a property of the user remembering to move two shunts the same way","SOT-23, pin 1 gate / 2 source / 3 drain. Vgs(th) 1.45 V MAX, so a 3.3 V strap drives it with 1.85 V of margin. DO NOT substitute the cheaper 2N7002: its threshold is specified up to 2.5 V. A logic inverter was rejected on cost alone - no single-gate logic part of any family is a Basic part in JLCPCB's library. DESIGN_NOTES.md 2.1."
 U201,DS90LV048A,TSSOP-16_4.4x5mm_P0.65mm,C87137,DS90LV048ATMTCX/NOPB,yes,"Quad LVDS receiver, 400 Mbps, TSSOP-16. Receives socket IN: the link clock and lanes 0,1,2. All four channels used","EN* = RXEN_N, gated by the IN cable detect through J5."
 U202,DS90LV048A,TSSOP-16_4.4x5mm_P0.65mm,C87137,DS90LV048ATMTCX/NOPB,yes,"Quad LVDS receiver, 400 Mbps, TSSOP-16. Sits across ALL FOUR AUX pairs in both roles","EN tied high, EN* tied low: always enabled. Safe, because a receiver input is high impedance; it is this receiver's OUTPUTS that must not reach a Gowin pin the gateware is driving, and U6 is what stops them."
 U203,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. OUT: the reverse cable. All four channels used, none spare",EN tied to +3V3 and EN* to GND: permanently enabled.
@@ -323,4 +321,4 @@ U204,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad L
 U205,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. AUX group G2 (data 1 pair + data 2 pair). Two channels used, two spare. EN = ROLE_N, so G2 is driven only in ROLE B","EN = ROLE_N. Enabled in ROLE B, which is how board B ships. Channels 3 and 4 unused."
 U206,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"Strap-gated buffer, VCCA = VCCB = 3.3 V, used as two independent 2-channel 3-state buffers: port 1 = AUX G1 toward the Gowin (enabled in ROLE B), port 2 = AUX G2 toward the Gowin (enabled in ROLE A). No level shift - this part exists only to tri-state","1OE* = ROLE: the G1 port drives J14 pins 32 and 18 only in ROLE B. 2OE* = ROLE_N: the G2 port drives J14 pins 17 and 31 only in ROLE A. ROLE_N carries a 10k pull-UP, so a missing or dead inverter disables the G2 port rather than enabling it. A 74LVC125A quad buffer with four independent enables would also do this job in one smaller package; the AVC4T245 was chosen because board A already carries two of them, so the panel has one fewer unique part."
 U207,AMS1117-3.3,SOT-223-3_TabPin2,C6186,AMS1117-3.3,yes,3.3 V board supply from J14 pin 11 (5V_Peripheral). Dissipates (5.0 - 3.3) x 0.15 = 0.26 W: flood the SOT-223 tab to the power plane with at least six thermal vias,
-U208,74LVC1G04,SOT-23-5,C7827,SN74LVC1G04DBVR,yes,Single-gate inverter: ROLE_N = NOT ROLE. Makes the complement a property of the circuit rather than of the user,"SOT-23-5, TI DBV pinout (1 NC, 2 A, 3 GND, 4 Y, 5 VCC). Nexperia's 74LVC1G04GW has a DIFFERENT pinout - do not substitute it."
+U208,AO3400A,SOT-23,C20917,AO3400A,yes,"The ROLE_N inverter, built from one N-channel MOSFET: gate on ROLE, source to ground, drain on ROLE_N, loaded by the 10 k pull-up that is already fitted. Makes the complement a property of the circuit rather than of the user","SOT-23, pin 1 gate / 2 source / 3 drain. Vgs(th) 1.45 V MAX. DO NOT substitute the cheaper 2N7002. DESIGN_NOTES.md 2.1."
