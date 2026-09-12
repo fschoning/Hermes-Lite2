@@ -46,9 +46,13 @@ Updated 2026-09-12 ~13:50. Resume from this file.
   Open question for the next session: the trainer's automatic pair_swap retry (gl_train
   S_PICK, "all lanes zero eye -> swap and re-sweep") did not fire in the failed run
   (console showed swap=0); check why before relying on it.
-  A full tb_link LANES=6 run with the fix was started at the end of the session:
-  read `gowin/sim/build/tb_link_6.log` (last line PASS/FAIL, one "ok:/FAIL:" line per
-  check), or rerun `cd gowin/sim && ./run_sim.sh link 6` (about 10 minutes).
+  CAUTION: two "reruns" of tb_link after fixes silently executed a STALE .vvp because
+  run_sim.sh's iverilog step failed on the simlib include path (`-I: No such file`) and
+  vvp then ran the old binary; the script now derives the directory with
+  `${GOWIN_SIMLIB%/*}`. Always check that `gowin/sim/build/tb_link_6.vvp` is newer than
+  the RTL before trusting a log. A run from a freshly compiled binary (14:07) was started at
+  the end of the session: read `gowin/sim/build/tb_link_6.log` (last line PASS/FAIL, one
+  "ok:/FAIL:" line per check), or rerun `cd gowin/sim && ./run_sim.sh link 6` (~10 min).
 - `tb_link` LANES=3 never run: `./run_sim.sh link 3`.
 
 ## Synthesis state

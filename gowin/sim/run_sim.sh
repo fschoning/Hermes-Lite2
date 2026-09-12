@@ -11,7 +11,7 @@ IVERILOG=${IVERILOG:-/c/tools/oss-cad-suite/bin/iverilog.exe}
 VVP=${VVP:-/c/tools/oss-cad-suite/bin/vvp.exe}
 GOWIN_SIMLIB=${GOWIN_SIMLIB:-/c/Gowin/Gowin_V1.9.11.03_Education/Gowin_V1.9.11.03_Education_x64/IDE/simlib/gw5a/prim_sim.v}
 export PATH="$(dirname "$IVERILOG")":"$(dirname "$IVERILOG")/../lib":$PATH
-SIMLIB_DIR=$(dirname "$GOWIN_SIMLIB")
+SIMLIB_DIR="${GOWIN_SIMLIB%/*}"
 BUILD="$HERE/build"
 mkdir -p "$BUILD"
 
