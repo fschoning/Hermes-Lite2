@@ -8,6 +8,7 @@
 //  simulates with Gowin's simlib/gw5a/prim_sim.v (IODELAY delays DI by
 //  0.0125 ns * (DLYSTEP + 1) as a transport delay).
 //
+`timescale 1ns/1ps
 module gl_lane_rx (
   input        pad,
   input        clk,
@@ -18,6 +19,17 @@ module gl_lane_rx (
 
 wire ibuf_o;
 wire dly_o;
+
+// Simulation only: Gowin's IODELAY model latches DLYSTEP only on an SDTAP/VALUE event, so
+// pulse VALUE whenever the tap changes (VALUE has no effect while SDTAP = 0).
+`ifdef SIM
+  reg value_sim = 1'b0;
+  initial begin #1 value_sim = 1'b1; #0.05 value_sim = 1'b0; end
+  always @(tap) begin value_sim = 1'b1; #0.05 value_sim = 1'b0; end
+  wire value_w = value_sim;
+`else
+  wire value_w = 1'b0;
+`endif
 
 IBUF ibuf_i (
   .O (ibuf_o),
@@ -34,7 +46,7 @@ IODELAY #(
   .DI      (ibuf_o),
   .DLYSTEP (tap),
   .SDTAP   (1'b0),
-  .VALUE   (1'b0)
+  .VALUE   (value_w)
 );
 
 IDDR #(

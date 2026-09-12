@@ -1,10 +1,9 @@
 // gowinlink.cst — pin constraints for the Tang Mega 138K (GW5AST-LV138PG484AC1/I0)
 // side of the HL2 <-> Gowin link. THE ONLY FILE WITH PIN LOCATIONS ON THE GOWIN SIDE.
 //
-// STATUS: PROVISIONAL. The adapter PCBs (LVDS driver/receiver boards joined by DVI
-// cables) are being designed; the PCB worker will publish the final J14 assignment in
-//   hardware/companions/gowin-bridge/PINMAP.md
-// (worktree G:\proj\worktrees\Hermes-Lite2-gowin-bridge-pcb). Update this file to match.
+// STATUS: matches hardware/companions/gowin-bridge/PINMAP.md rev A (2026-09-12, worktree
+// G:\proj\worktrees\Hermes-Lite2-gowin-bridge-pcb) for every used pin. Not yet used from that
+// map: LINK_PRESENT (T20, cable-1 detect, low = plugged in).
 //
 // Physical: J14, the (soldered) 2x20 2.54 mm header at the top edge, FPGA Bank 4 (bottom
 // bank, VCCIO 3.3 V, on-die 100 ohm differential termination available). Even pins are
@@ -44,9 +43,9 @@ IO_PORT "link_d[2]" IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.3
 IO_PORT "link_d[3]" IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.3;
 IO_PORT "link_d[4]" IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.3;
 IO_PORT "link_d[5]" IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.3;
-IO_LOC  "status_rxd" W17;       // J14 pin 9,  IOB106B  (status UART from HL2 PIN_86)
+IO_LOC  "status_rxd" V20;       // J14 pin 19, IOB120B  (status UART from HL2 PIN_86, PINMAP rev A)
 IO_PORT "status_rxd" IO_TYPE=LVTTL33 PULL_MODE=UP HYSTERESIS=OFF BANK_VCCIO=3.3;
-IO_LOC  "aux_in"     W22;       // J14 pin 13, IOB124B  (reserved, HL2 PIN_87)
+IO_LOC  "aux_in"     N15;       // J14 pin 34, IOB146A  (reserved, HL2 PIN_87)
 IO_PORT "aux_in"     IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.3;
 
 // (B) true LVDS into Bank 4 — uncomment and comment out block (A)
@@ -72,12 +71,12 @@ IO_PORT "aux_in"     IO_TYPE=LVTTL33 PULL_MODE=NONE HYSTERESIS=OFF BANK_VCCIO=3.
 // ---------------------------------------------------------------- cable 2: Gowin -> HL2
 // 3.3 V CMOS outputs into the adapter's LVDS drivers. rev_clk_out is placed on the A leg
 // of a differential-capable pair so the adapter can route it to the TMDS clock pair.
-IO_LOC  "rev_clk_out" P15;      // J14 pin 38, IOB140A  -> HL2 PIN_88 (153.6 MHz)
-IO_LOC  "gl_rev[0]"   P14;      // J14 pin 40, IOB133A  -> HL2 PIN_99
-IO_LOC  "gl_rev[1]"   R14;      // J14 pin 39, IOB133B  -> HL2 PIN_100
-IO_LOC  "gl_rev[2]"   R16;      // J14 pin 37, IOB140B  -> HL2 PIN_101
-IO_LOC  "fs_txd"      T20;      // J14 pin 33, IOB102B  -> HL2 PIN_89 (fast serial, commands)
-IO_LOC  "cmd_txd"     N15;      // J14 pin 34, IOB146A  -> HL2 PIN_89 in the CMD_UART variant
+IO_LOC  "rev_clk_out" U18;      // J14 pin 35, IOB112B  -> HL2 PIN_88 (153.6 MHz)
+IO_LOC  "gl_rev[0]"   W17;      // J14 pin 9,  IOB106B  -> HL2 PIN_99
+IO_LOC  "gl_rev[1]"   W22;      // J14 pin 13, IOB124B  -> HL2 PIN_100
+IO_LOC  "gl_rev[2]"   P17;      // J14 pin 15, IOB135B  -> HL2 PIN_101
+IO_LOC  "fs_txd"      Y19;      // J14 pin 31, IOB116B  -> HL2 PIN_89 (fast serial, commands)
+IO_LOC  "cmd_txd"     N14;      // J14 pin 17, IOB142B  -> HL2 PIN_89 in the CMD_UART variant (cable-2 DDC SDA)
 IO_PORT "rev_clk_out" IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
 IO_PORT "gl_rev[0]"   IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;
 IO_PORT "gl_rev[1]"   IO_TYPE=LVCMOS33 DRIVE=8 PULL_MODE=NONE BANK_VCCIO=3.3;

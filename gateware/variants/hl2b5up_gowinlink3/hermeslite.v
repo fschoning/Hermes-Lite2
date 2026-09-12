@@ -55,8 +55,6 @@ module hermeslite (
   output       rffe_rfsw_sel        ,
   output       rffe_ad9866_mode     ,
   output       rffe_ad9866_pga5     ,
-  // IO
-  output       io_led_d2            ,
   //
   input        io_cn8               ,
   input        io_cn9               ,
@@ -141,7 +139,7 @@ localparam GL_LANES = 3;
     .rffe_rfsw_sel             (rffe_rfsw_sel        ),
     .rffe_ad9866_mode          (rffe_ad9866_mode     ),
     .rffe_ad9866_pga5          (rffe_ad9866_pga5     ),
-    .io_led_run                (io_led_d2            ),
+    .io_led_run                (                     ),
     .io_led_tx                 (                     ),
     .io_led_adc75              (                     ),
     .io_led_adc100             (                     ),

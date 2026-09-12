@@ -9,8 +9,8 @@
 //  Pins taken by the link (see gowinlink_pins.tcl): DB1 pins 1-6 (io_db1_1..6: TX envelope
 //  PWM, amplifier UART, fan PWM and the ATU are therefore not available in this variant),
 //  DB12 pins 1/2/5/6 (the two-HL2 link, HL2LINK, is kept in the core with its pins
-//  unconnected), and LED D3/D4/D5 pins (which become reverse-link inputs; D2 stays the
-//  run LED).
+//  unconnected), and all four LED pins (D2 carries the forward clock, D3/D4/D5 become
+//  reverse-link inputs; no status LEDs in this variant).
 //
 //  GL_LANES here must match GL_LANES in hermeslite.qsf (pin file). Default 6.
 //
@@ -55,8 +55,6 @@ module hermeslite (
   output       rffe_rfsw_sel        ,
   output       rffe_ad9866_mode     ,
   output       rffe_ad9866_pga5     ,
-  // IO
-  output       io_led_d2            ,
   //
   input        io_cn8               ,
   input        io_cn9               ,
@@ -141,7 +139,7 @@ localparam GL_LANES = 6;
     .rffe_rfsw_sel             (rffe_rfsw_sel        ),
     .rffe_ad9866_mode          (rffe_ad9866_mode     ),
     .rffe_ad9866_pga5          (rffe_ad9866_pga5     ),
-    .io_led_run                (io_led_d2            ),
+    .io_led_run                (                     ),
     .io_led_tx                 (                     ),
     .io_led_adc75              (                     ),
     .io_led_adc100             (                     ),
