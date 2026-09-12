@@ -1,44 +1,12 @@
 ** Drc report for tang-bridge.kicad_pcb **
-** Created on 2026-09-12T13:33:22 **
+** Created on 2026-09-12T13:40:36 **
 ** Report includes: Errors **
 
-** Found 195 DRC violations **
-[shorting_items]: Items shorting two nets (nets DRVI_SP0 and C1_HPD)
-    Local override; error
-    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
-    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
-[shorting_items]: Items shorting two nets (nets DRVI_SP0 and C1_HPD)
-    Local override; error
-    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
-    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
-[shorting_items]: Items shorting two nets (nets DRVI_SP0 and C1_HPD)
-    Local override; error
-    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
-    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
-[shorting_items]: Items shorting two nets (nets DRVI_SP0 and C1_HPD)
-    Local override; error
-    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
-    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
-[clearance]: Clearance violation (netclass 'Default' clearance 0.1500 mm; actual 0.0931 mm)
-    Rule: netclass 'Default'; error
-    @(70.1300 mm, 54.3500 mm): PTH pad 5 [<no net>] of J1
-    @(71.3100 mm, 54.8000 mm): Pad 2 [DRVI_R1] of R42 on F.Cu
-[clearance]: Clearance violation (netclass 'Default' clearance 0.1500 mm; actual 0.0000 mm)
-    Rule: netclass 'Default'; error
-    @(70.1300 mm, 54.3500 mm): PTH pad 5 [<no net>] of J1
-    @(70.2900 mm, 54.8000 mm): Pad 1 [LINK_R1] of R42 on F.Cu
+** Found 69 DRC violations **
 [shorting_items]: Items shorting two nets (nets DRVI_R1 and +3V3)
     Local override; error
     @(97.5250 mm, 71.9050 mm): Pad 6 [DRVI_R1] of U3 on F.Cu
     @(97.5250 mm, 71.5550 mm): Pad 1 [+3V3] of U4 on F.Cu
-[clearance]: Clearance violation (netclass 'Default' clearance 0.1500 mm; actual 0.0000 mm)
-    Rule: netclass 'Default'; error
-    @(67.5900 mm, 54.3500 mm): PTH pad 6 [<no net>] of J1
-    @(67.0900 mm, 54.8000 mm): Pad 1 [LINK_R0] of R41 on F.Cu
-[clearance]: Clearance violation (netclass 'Default' clearance 0.1500 mm; actual 0.0000 mm)
-    Rule: netclass 'Default'; error
-    @(67.5900 mm, 54.3500 mm): PTH pad 6 [<no net>] of J1
-    @(68.1100 mm, 54.8000 mm): Pad 2 [DRVI_R0] of R41 on F.Cu
 [shorting_items]: Items shorting two nets (nets C2_D2_N and C2_D4_P)
     Local override; error
     @(102.4750 mm, 74.4450 mm): Pad 9 [C2_D2_N] of U3 on F.Cu
@@ -47,18 +15,10 @@
     Local override; error
     @(102.4750 mm, 73.1750 mm): Pad 10 [C2_D2_P] of U3 on F.Cu
     @(102.4750 mm, 72.8250 mm): Pad 15 [C2_D3_P] of U4 on F.Cu
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 56.8900 mm): PTH pad 7 [<no net>] of J1
-    @(70.2900 mm, 58.0000 mm): Pad 1 [C1_D0_P] of R71 on F.Cu
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0094 mm)
-    Rule: netclass 'LVDS100'; error
-    @(67.5900 mm, 56.8900 mm): PTH pad 8 [<no net>] of J1
-    @(67.0900 mm, 58.0000 mm): Pad 1 [C1_CLK_P] of R70 on F.Cu
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0169 mm)
-    Rule: netclass 'LVDS100'; error
-    @(67.5900 mm, 56.8900 mm): PTH pad 8 [<no net>] of J1
-    @(68.1100 mm, 58.0000 mm): Pad 2 [C1_CLK_N] of R70 on F.Cu
+[shorting_items]: Items shorting two nets (nets C2_D1_P and C2_D3_N)
+    Local override; error
+    @(102.4750 mm, 71.9050 mm): Pad 11 [C2_D1_P] of U3 on F.Cu
+    @(102.4750 mm, 71.5550 mm): Pad 16 [C2_D3_N] of U4 on F.Cu
 [shorting_items]: Items shorting two nets (nets DRVI_FSER and DRVI_R2)
     Local override; error
     @(97.5250 mm, 72.8250 mm): Pad 2 [DRVI_FSER] of U4 on F.Cu
@@ -67,190 +27,22 @@
     Local override; error
     @(97.5250 mm, 74.0950 mm): Pad 3 [DRVI_SP0] of U4 on F.Cu
     @(97.5250 mm, 74.4450 mm): Pad 8 [GND] of U3 on F.Cu
-[shorting_items]: Items shorting two nets (nets P5V_J14 and +3V3)
+[shorting_items]: Items shorting two nets (nets C1_HPD and DRVI_SP0)
     Local override; error
-    @(70.1300 mm, 61.9700 mm): PTH pad 11 [P5V_J14] of J1
-    @(70.3200 mm, 61.2000 mm): Pad 1 [+3V3] of C10 on F.Cu
-[clearance]: Clearance violation (netclass 'Power' clearance 0.2000 mm; actual 0.1848 mm)
-    Rule: netclass 'Power'; error
-    @(70.1300 mm, 61.9700 mm): PTH pad 11 [P5V_J14] of J1
-    @(71.2800 mm, 61.2000 mm): Pad 2 [GND] of C10 on F.Cu
-[shorting_items]: Items shorting two nets (nets GND and +3V3)
+    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
+    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
+[shorting_items]: Items shorting two nets (nets C1_HPD and DRVI_SP0)
     Local override; error
-    @(67.5900 mm, 61.9700 mm): PTH pad 12 [GND] of J1
-    @(66.6500 mm, 61.2000 mm): Pad 1 [+3V3] of C9 on F.Cu
-[shorting_items]: Items shorting two nets (nets LINK_R1 and LINK_R0)
+    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
+    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
+[shorting_items]: Items shorting two nets (nets C1_HPD and DRVI_SP0)
     Local override; error
-    @(70.1300 mm, 64.5100 mm): PTH pad 13 [LINK_R1] of J1
-    @(70.8000 mm, 64.4000 mm): Pad 1 [LINK_R0] of TP13 on F.Cu
-[shorting_items]: Items shorting two nets (nets LINK_R2 and C2_5V_NC)
+    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
+    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
+[shorting_items]: Items shorting two nets (nets C1_HPD and DRVI_SP0)
     Local override; error
-    @(70.1300 mm, 67.0500 mm): PTH pad 15 [LINK_R2] of J1
-    @(70.8000 mm, 67.6000 mm): Pad 1 [C2_5V_NC] of TP21 on F.Cu
-[shorting_items]: Items shorting two nets (nets C2_D1_P and C2_D3_N)
-    Local override; error
-    @(102.4750 mm, 71.9050 mm): Pad 11 [C2_D1_P] of U3 on F.Cu
-    @(102.4750 mm, 71.5550 mm): Pad 16 [C2_D3_N] of U4 on F.Cu
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(69.6200 mm, 84.0000 mm): PTH pad 5 [C1_D4_P] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-[clearance]: Clearance violation (netclass 'Default' clearance 0.1500 mm; actual 0.1232 mm)
-    Rule: netclass 'Default'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(71.5250 mm, 84.0000 mm): PTH pad 6 [C1_SCL] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(69.6200 mm, 84.0000 mm): PTH pad 5 [C1_D4_P] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-[clearance]: Clearance violation (netclass 'Default' clearance 0.1500 mm; actual 0.1232 mm)
-    Rule: netclass 'Default'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(71.5250 mm, 84.0000 mm): PTH pad 6 [C1_SCL] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(69.6200 mm, 84.0000 mm): PTH pad 5 [C1_D4_P] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-[clearance]: Clearance violation (netclass 'Default' clearance 0.1500 mm; actual 0.1232 mm)
-    Rule: netclass 'Default'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(71.5250 mm, 84.0000 mm): PTH pad 6 [C1_SCL] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(69.6200 mm, 84.0000 mm): PTH pad 5 [C1_D4_P] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-[clearance]: Clearance violation (netclass 'Default' clearance 0.1500 mm; actual 0.1232 mm)
-    Rule: netclass 'Default'; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(71.5250 mm, 84.0000 mm): PTH pad 6 [C1_SCL] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 84.0000 mm): PTH pad 4 [C1_D4_N] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 84.0000 mm): PTH pad 4 [C1_D4_N] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 84.0000 mm): PTH pad 4 [C1_D4_N] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 84.0000 mm): PTH pad 4 [C1_D4_N] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0000 mm)
-    Rule: netclass 'LVDS100'; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0512 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-[shorting_items]: Items shorting two nets (nets LINK_FSER and C1_D5_P)
-    Local override; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(69.6200 mm, 87.8100 mm): PTH pad 21 [C1_D5_P] of J2
-[shorting_items]: Items shorting two nets (nets LINK_FSER and GND)
-    Local override; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(71.5250 mm, 87.8100 mm): PTH pad 22 [GND] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0512 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-[shorting_items]: Items shorting two nets (nets LINK_FSER and C1_D5_P)
-    Local override; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(69.6200 mm, 87.8100 mm): PTH pad 21 [C1_D5_P] of J2
-[shorting_items]: Items shorting two nets (nets LINK_FSER and GND)
-    Local override; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(71.5250 mm, 87.8100 mm): PTH pad 22 [GND] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0512 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-[shorting_items]: Items shorting two nets (nets LINK_FSER and C1_D5_P)
-    Local override; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(69.6200 mm, 87.8100 mm): PTH pad 21 [C1_D5_P] of J2
-[shorting_items]: Items shorting two nets (nets LINK_FSER and GND)
-    Local override; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(71.5250 mm, 87.8100 mm): PTH pad 22 [GND] of J2
-[clearance]: Clearance violation (netclass 'LVDS100' clearance 0.2000 mm; actual 0.0512 mm)
-    Rule: netclass 'LVDS100'; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-[shorting_items]: Items shorting two nets (nets LINK_FSER and C1_D5_P)
-    Local override; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(69.6200 mm, 87.8100 mm): PTH pad 21 [C1_D5_P] of J2
-[shorting_items]: Items shorting two nets (nets LINK_FSER and GND)
-    Local override; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(71.5250 mm, 87.8100 mm): PTH pad 22 [GND] of J2
-[shorting_items]: Items shorting two nets (nets LINK_D4 and C1_D3_N)
-    Local override; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[shorting_items]: Items shorting two nets (nets LINK_D4 and C1_D5_N)
-    Local override; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(67.7150 mm, 87.8100 mm): PTH pad 20 [C1_D5_N] of J2
-[shorting_items]: Items shorting two nets (nets LINK_D4 and C1_D3_N)
-    Local override; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[shorting_items]: Items shorting two nets (nets LINK_D4 and C1_D5_N)
-    Local override; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(67.7150 mm, 87.8100 mm): PTH pad 20 [C1_D5_N] of J2
-[shorting_items]: Items shorting two nets (nets LINK_D4 and C1_D3_N)
-    Local override; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[shorting_items]: Items shorting two nets (nets LINK_D4 and C1_D5_N)
-    Local override; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(67.7150 mm, 87.8100 mm): PTH pad 20 [C1_D5_N] of J2
-[shorting_items]: Items shorting two nets (nets LINK_D4 and C1_D3_N)
-    Local override; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[shorting_items]: Items shorting two nets (nets LINK_D4 and C1_D5_N)
-    Local override; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(67.7150 mm, 87.8100 mm): PTH pad 20 [C1_D5_N] of J2
+    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
+    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; error
     @(126.0000 mm, 80.0000 mm): Footprint TP102
@@ -261,128 +53,8 @@
     @(127.0000 mm, 83.0000 mm): Footprint H2
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; error
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(70.1300 mm, 82.2900 mm): PTH pad 27 [<no net>] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.5900 mm, 82.2900 mm): PTH pad 28 [<no net>] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(70.1300 mm, 89.9100 mm): PTH pad 33 [LINK_PRESENT] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.5900 mm, 89.9100 mm): PTH pad 34 [LINK_AUX] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(70.1300 mm, 92.4500 mm): PTH pad 35 [LINK_REVCLK] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.5900 mm, 92.4500 mm): PTH pad 36 [LINK_D5] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(70.1300 mm, 94.9900 mm): PTH pad 37 [<no net>] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.5900 mm, 94.9900 mm): PTH pad 38 [<no net>] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(70.1300 mm, 97.5300 mm): PTH pad 39 [SPARE1_J14] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.5900 mm, 97.5300 mm): PTH pad 40 [SPARE0_J14] of J1
-    @(62.0000 mm, 84.0000 mm): Footprint J2
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(65.8100 mm, 84.0000 mm): PTH pad 3 [GND] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.7150 mm, 84.0000 mm): PTH pad 4 [C1_D4_N] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(69.6200 mm, 84.0000 mm): PTH pad 5 [C1_D4_P] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(71.5250 mm, 84.0000 mm): PTH pad 6 [C1_SCL] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(65.8100 mm, 85.9050 mm): PTH pad 11 [GND] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(71.5250 mm, 85.9050 mm): PTH pad 14 [C1_5V_NC] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(65.8100 mm, 87.8100 mm): PTH pad 19 [GND] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.7150 mm, 87.8100 mm): PTH pad 20 [C1_D5_N] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(69.6200 mm, 87.8100 mm): PTH pad 21 [C1_D5_P] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(71.5250 mm, 87.8100 mm): PTH pad 22 [GND] of J2
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[courtyards_overlap]: Courtyards overlap
-    Rule: board setup constraints courtyard; error
-    @(70.8000 mm, 67.6000 mm): Footprint TP21
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(70.1300 mm, 67.0500 mm): PTH pad 15 [LINK_R2] of J1
-    @(70.8000 mm, 67.6000 mm): Footprint TP21
-[courtyards_overlap]: Courtyards overlap
-    Rule: board setup constraints courtyard; error
     @(100.0000 mm, 70.0000 mm): Footprint U3
     @(100.0000 mm, 76.0000 mm): Footprint U4
-[courtyards_overlap]: Courtyards overlap
-    Rule: board setup constraints courtyard; error
-    @(67.6000 mm, 58.0000 mm): Footprint R70
-    @(70.1300 mm, 49.2700 mm): Footprint J1
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; error
     @(90.0000 mm, 60.0000 mm): Footprint J5
@@ -395,18 +67,6 @@
     Local override; error
     @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
     @(84.0000 mm, 60.0000 mm): Footprint J4
-[courtyards_overlap]: Courtyards overlap
-    Rule: board setup constraints courtyard; error
-    @(67.6000 mm, 61.2000 mm): Footprint C9
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.5900 mm, 61.9700 mm): PTH pad 12 [GND] of J1
-    @(67.6000 mm, 61.2000 mm): Footprint C9
-[courtyards_overlap]: Courtyards overlap
-    Rule: board setup constraints courtyard; error
-    @(70.8000 mm, 58.0000 mm): Footprint R71
-    @(70.1300 mm, 49.2700 mm): Footprint J1
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; error
     @(104.0000 mm, 84.0000 mm): Footprint J3
@@ -419,38 +79,6 @@
     Rule: board setup constraints courtyard; error
     @(115.6000 mm, 58.0000 mm): Footprint R83
     @(112.4000 mm, 58.0000 mm): Footprint R82
-[courtyards_overlap]: Courtyards overlap
-    Rule: board setup constraints courtyard; error
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-    @(70.8000 mm, 54.8000 mm): Footprint R42
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(70.1300 mm, 54.3500 mm): PTH pad 5 [<no net>] of J1
-    @(70.8000 mm, 54.8000 mm): Footprint R42
-[courtyards_overlap]: Courtyards overlap
-    Rule: board setup constraints courtyard; error
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-    @(67.6000 mm, 54.8000 mm): Footprint R41
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(67.5900 mm, 54.3500 mm): PTH pad 6 [<no net>] of J1
-    @(67.6000 mm, 54.8000 mm): Footprint R41
-[courtyards_overlap]: Courtyards overlap
-    Rule: board setup constraints courtyard; error
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-    @(70.8000 mm, 61.2000 mm): Footprint C10
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(70.1300 mm, 61.9700 mm): PTH pad 11 [P5V_J14] of J1
-    @(70.8000 mm, 61.2000 mm): Footprint C10
-[courtyards_overlap]: Courtyards overlap
-    Rule: board setup constraints courtyard; error
-    @(70.1300 mm, 49.2700 mm): Footprint J1
-    @(70.8000 mm, 64.4000 mm): Footprint TP13
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(70.1300 mm, 64.5100 mm): PTH pad 13 [LINK_R1] of J1
-    @(70.8000 mm, 64.4000 mm): Footprint TP13
 [copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.3000 mm; actual 0.0000 mm)
     Rule: board setup constraints edge; error
     @(130.0000 mm, 86.0000 mm): Segment on Edge.Cuts
@@ -543,18 +171,6 @@
     Rule: board setup constraints edge; error
     @(130.0000 mm, 40.0000 mm): Segment on Edge.Cuts
     @(127.0000 mm, 83.0000 mm): PTH pad 1 [GND] of H2
-[starved_thermal]: Thermal relief connection to zone incomplete (layer In1.Cu; zone min spoke count 2; actual 1)
-    Local override; error
-    @(40.0000 mm, 40.0000 mm): Zone 'GND plane (layer 2)' [GND] on In1.Cu, priority 0
-    @(65.8100 mm, 85.9050 mm): PTH pad 11 [GND] of J2
-[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
-    Local override; error
-    @(40.0000 mm, 40.0000 mm): Zone 'top ground fill' [GND] on F.Cu, priority 0
-    @(65.8100 mm, 85.9050 mm): PTH pad 11 [GND] of J2
-[starved_thermal]: Thermal relief connection to zone incomplete (layer B.Cu; zone min spoke count 2; actual 1)
-    Local override; error
-    @(40.0000 mm, 40.0000 mm): Zone 'bottom ground fill' [GND] on B.Cu, priority 0
-    @(65.8100 mm, 85.9050 mm): PTH pad 11 [GND] of J2
 [starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
     Local override; error
     @(40.0000 mm, 40.0000 mm): Zone 'top ground fill' [GND] on F.Cu, priority 0
@@ -631,34 +247,22 @@
     Local override; error
     @(40.0000 mm, 40.0000 mm): Zone 'top ground fill' [GND] on F.Cu, priority 0
     @(77.5850 mm, 42.0000 mm): Pad 8 [GND] of D9 on F.Cu
-[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
-    Local override; error
-    @(40.0000 mm, 40.0000 mm): Zone 'top ground fill' [GND] on F.Cu, priority 0
-    @(68.5500 mm, 61.2000 mm): Pad 2 [GND] of C9 on F.Cu
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(97.5250 mm, 71.9050 mm): Pad 6 [DRVI_R1] of U3 on F.Cu
-    @(97.5250 mm, 71.5550 mm): Pad 1 [+3V3] of U4 on F.Cu
-[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
 [solder_mask_bridge]: Front solder mask aperture bridges items with different nets
     Rule: board setup solder mask min width; error
     @(102.4750 mm, 71.5550 mm): Pad 16 [C2_D3_N] of U4 on F.Cu
     @(102.4750 mm, 71.9050 mm): Pad 11 [C2_D1_P] of U3 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(97.5250 mm, 71.9050 mm): Pad 6 [DRVI_R1] of U3 on F.Cu
+    @(97.5250 mm, 71.5550 mm): Pad 1 [+3V3] of U4 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
+    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
 [solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
     Rule: board setup solder mask min width; error
-    @(69.6200 mm, 85.9050 mm): PTH pad 13 [C1_D3_P] of J2
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
+    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
+    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
 [solder_mask_bridge]: Front solder mask aperture bridges items with different nets
     Rule: board setup solder mask min width; error
     @(97.5250 mm, 73.1750 mm): Pad 7 [DRVI_R2] of U3 on F.Cu
@@ -673,122 +277,14 @@
     @(102.4750 mm, 74.0950 mm): Pad 14 [C2_D4_P] of U4 on F.Cu
 [solder_mask_bridge]: Front solder mask aperture bridges items with different nets
     Rule: board setup solder mask min width; error
-    @(70.8000 mm, 64.4000 mm): Pad 1 [LINK_R0] of TP13 on F.Cu
-    @(70.1300 mm, 64.5100 mm): PTH pad 13 [LINK_R1] of J1
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.7150 mm, 87.8100 mm): PTH pad 20 [C1_D5_N] of J2
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
     @(102.4750 mm, 73.1750 mm): Pad 10 [C2_D2_P] of U3 on F.Cu
     @(102.4750 mm, 72.8250 mm): Pad 15 [C2_D3_P] of U4 on F.Cu
-[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.7150 mm, 87.8100 mm): PTH pad 20 [C1_D5_N] of J2
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(70.1300 mm, 54.3500 mm): PTH pad 5 [<no net>] of J1
-    @(70.2900 mm, 54.8000 mm): Pad 1 [LINK_R1] of R42 on F.Cu
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(69.6200 mm, 87.8100 mm): PTH pad 21 [C1_D5_P] of J2
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(70.1300 mm, 54.3500 mm): PTH pad 5 [<no net>] of J1
-    @(71.3100 mm, 54.8000 mm): Pad 2 [DRVI_R1] of R42 on F.Cu
-[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(69.6200 mm, 87.8100 mm): PTH pad 21 [C1_D5_P] of J2
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(71.5250 mm, 87.8100 mm): PTH pad 22 [GND] of J2
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(71.5250 mm, 87.8100 mm): PTH pad 22 [GND] of J2
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.5900 mm, 54.3500 mm): PTH pad 6 [<no net>] of J1
-    @(67.0900 mm, 54.8000 mm): Pad 1 [LINK_R0] of R41 on F.Cu
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.5900 mm, 54.3500 mm): PTH pad 6 [<no net>] of J1
-    @(68.1100 mm, 54.8000 mm): Pad 2 [DRVI_R0] of R41 on F.Cu
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(70.1300 mm, 56.8900 mm): PTH pad 7 [<no net>] of J1
-    @(70.2900 mm, 58.0000 mm): Pad 1 [C1_D0_P] of R71 on F.Cu
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(69.6200 mm, 84.0000 mm): PTH pad 5 [C1_D4_P] of J2
-[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(70.1300 mm, 84.8300 mm): PTH pad 29 [<no net>] of J1
-    @(69.6200 mm, 84.0000 mm): PTH pad 5 [C1_D4_P] of J2
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 84.0000 mm): PTH pad 4 [C1_D4_N] of J2
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 84.0000 mm): PTH pad 4 [C1_D4_N] of J2
-[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.5900 mm, 84.8300 mm): PTH pad 30 [<no net>] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.5900 mm, 56.8900 mm): PTH pad 8 [<no net>] of J1
-    @(68.1100 mm, 58.0000 mm): Pad 2 [C1_CLK_N] of R70 on F.Cu
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(70.8000 mm, 67.6000 mm): Pad 1 [C2_5V_NC] of TP21 on F.Cu
-    @(70.1300 mm, 67.0500 mm): PTH pad 15 [LINK_R2] of J1
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(67.7150 mm, 85.9050 mm): PTH pad 12 [C1_D3_N] of J2
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.0900 mm, 58.0000 mm): Pad 1 [C1_CLK_P] of R70 on F.Cu
-    @(67.5900 mm, 56.8900 mm): PTH pad 8 [<no net>] of J1
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(70.1300 mm, 61.9700 mm): PTH pad 11 [P5V_J14] of J1
-    @(70.3200 mm, 61.2000 mm): Pad 1 [+3V3] of C10 on F.Cu
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(67.5900 mm, 61.9700 mm): PTH pad 12 [GND] of J1
-    @(66.6500 mm, 61.2000 mm): Pad 1 [+3V3] of C9 on F.Cu
-[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
-    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
-[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
-    Rule: board setup solder mask min width; error
-    @(89.0800 mm, 60.0000 mm): PTH pad 3 [C1_HPD] of J4
-    @(90.0000 mm, 60.0000 mm): PTH pad 1 [DRVI_SP0] of J5
 
 ** Found 220 unconnected pads **
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(65.8100 mm, 85.9050 mm): PTH pad 11 [GND] of J2
     @(65.8100 mm, 87.8100 mm): PTH pad 19 [GND] of J2
+    @(65.8100 mm, 85.9050 mm): PTH pad 11 [GND] of J2
 [unconnected_items]: Missing connection between items
     Local override; error
     @(65.8100 mm, 87.8100 mm): PTH pad 19 [GND] of J2
@@ -811,8 +307,8 @@
     @(113.5250 mm, 87.8100 mm): PTH pad 22 [GND] of J3
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(115.4300 mm, 85.9050 mm): PTH pad 15 [GND] of J3
     @(113.5250 mm, 87.8100 mm): PTH pad 22 [GND] of J3
-    @(40.0000 mm, 40.0000 mm): Zone 'bottom ground fill' [GND] on B.Cu, priority 0
 [unconnected_items]: Missing connection between items
     Local override; error
     @(128.0000 mm, 46.0000 mm): PTH pad 1 [GND] of J6
@@ -1395,20 +891,20 @@
     @(102.4750 mm, 79.1750 mm): Pad 10 [DRV_SP_P] of U4 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(86.6400 mm, 50.5400 mm): PTH pad 34 [LINK_AUX] of J1
     @(52.1100 mm, 58.0000 mm): Pad 2 [LINK_AUX] of R63 on F.Cu
-    @(67.5900 mm, 89.9100 mm): PTH pad 34 [LINK_AUX] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(67.5900 mm, 89.9100 mm): PTH pad 34 [LINK_AUX] of J1
     @(115.6000 mm, 61.2000 mm): Pad 1 [LINK_AUX] of TP9 on F.Cu
+    @(86.6400 mm, 50.5400 mm): PTH pad 34 [LINK_AUX] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(68.8600 mm, 50.5400 mm): PTH pad 20 [LINK_CLK] of J1
     @(74.0000 mm, 61.2000 mm): Pad 1 [LINK_CLK] of TP1 on F.Cu
-    @(67.5900 mm, 72.1300 mm): PTH pad 20 [LINK_CLK] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(80.9100 mm, 42.0000 mm): Pad 2 [LINK_CLK] of R1 on F.Cu
-    @(74.0000 mm, 61.2000 mm): Pad 1 [LINK_CLK] of TP1 on F.Cu
+    @(68.8600 mm, 50.5400 mm): PTH pad 20 [LINK_CLK] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(103.3100 mm, 42.0000 mm): Pad 2 [LINK_CLK] of R10 on F.Cu
@@ -1420,14 +916,14 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(63.8900 mm, 58.0000 mm): Pad 1 [LINK_CMD] of R67 on F.Cu
+    @(66.3200 mm, 48.0000 mm): PTH pad 17 [LINK_CMD] of J1
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(63.8900 mm, 58.0000 mm): Pad 1 [LINK_CMD] of R67 on F.Cu
     @(48.9100 mm, 54.8000 mm): Pad 2 [LINK_CMD] of R19 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(70.1300 mm, 69.5900 mm): PTH pad 17 [LINK_CMD] of J1
-    @(63.8900 mm, 58.0000 mm): Pad 1 [LINK_CMD] of R67 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(67.5900 mm, 59.4300 mm): PTH pad 10 [LINK_D0] of J1
+    @(56.1600 mm, 50.5400 mm): PTH pad 10 [LINK_D0] of J1
     @(77.2000 mm, 61.2000 mm): Pad 1 [LINK_D0] of TP2 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
@@ -1439,124 +935,120 @@
     @(84.1100 mm, 42.0000 mm): Pad 2 [LINK_D0] of R2 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(67.5900 mm, 64.5100 mm): PTH pad 14 [LINK_D1] of J1
+    @(87.3100 mm, 42.0000 mm): Pad 2 [LINK_D1] of R3 on F.Cu
     @(96.4000 mm, 61.2000 mm): Pad 1 [LINK_D1] of TP3 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(87.3100 mm, 42.0000 mm): Pad 2 [LINK_D1] of R3 on F.Cu
-    @(96.4000 mm, 61.2000 mm): Pad 1 [LINK_D1] of TP3 on F.Cu
+    @(61.2400 mm, 50.5400 mm): PTH pad 14 [LINK_D1] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(96.4000 mm, 61.2000 mm): Pad 1 [LINK_D1] of TP3 on F.Cu
     @(116.1100 mm, 42.0000 mm): Pad 2 [LINK_D1] of R14 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(67.5900 mm, 67.0500 mm): PTH pad 16 [LINK_D2] of J1
+    @(90.5100 mm, 42.0000 mm): Pad 2 [LINK_D2] of R4 on F.Cu
     @(99.6000 mm, 61.2000 mm): Pad 1 [LINK_D2] of TP4 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(90.5100 mm, 42.0000 mm): Pad 2 [LINK_D2] of R4 on F.Cu
-    @(99.6000 mm, 61.2000 mm): Pad 1 [LINK_D2] of TP4 on F.Cu
+    @(63.7800 mm, 50.5400 mm): PTH pad 16 [LINK_D2] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(99.6000 mm, 61.2000 mm): Pad 1 [LINK_D2] of TP4 on F.Cu
     @(122.5100 mm, 42.0000 mm): Pad 2 [LINK_D2] of R16 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(66.3200 mm, 50.5400 mm): PTH pad 18 [LINK_D3] of J1
     @(45.7100 mm, 54.8000 mm): Pad 2 [LINK_D3] of R18 on F.Cu
-    @(67.5900 mm, 69.5900 mm): PTH pad 18 [LINK_D3] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(67.5900 mm, 69.5900 mm): PTH pad 18 [LINK_D3] of J1
-    @(102.8000 mm, 61.2000 mm): Pad 1 [LINK_D3] of TP5 on F.Cu
+    @(93.7100 mm, 42.0000 mm): Pad 2 [LINK_D3] of R5 on F.Cu
+    @(66.3200 mm, 50.5400 mm): PTH pad 18 [LINK_D3] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(102.8000 mm, 61.2000 mm): Pad 1 [LINK_D3] of TP5 on F.Cu
     @(93.7100 mm, 42.0000 mm): Pad 2 [LINK_D3] of R5 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(84.1000 mm, 50.5400 mm): PTH pad 32 [LINK_D4] of J1
     @(52.1100 mm, 54.8000 mm): Pad 2 [LINK_D4] of R20 on F.Cu
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(67.5900 mm, 87.3700 mm): PTH pad 32 [LINK_D4] of J1
-    @(106.0000 mm, 61.2000 mm): Pad 1 [LINK_D4] of TP6 on F.Cu
+    @(96.9100 mm, 42.0000 mm): Pad 2 [LINK_D4] of R6 on F.Cu
+    @(84.1000 mm, 50.5400 mm): PTH pad 32 [LINK_D4] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(106.0000 mm, 61.2000 mm): Pad 1 [LINK_D4] of TP6 on F.Cu
     @(96.9100 mm, 42.0000 mm): Pad 2 [LINK_D4] of R6 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(89.1800 mm, 50.5400 mm): PTH pad 36 [LINK_D5] of J1
     @(58.5100 mm, 54.8000 mm): Pad 2 [LINK_D5] of R22 on F.Cu
-    @(67.5900 mm, 92.4500 mm): PTH pad 36 [LINK_D5] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(100.1100 mm, 42.0000 mm): Pad 2 [LINK_D5] of R7 on F.Cu
-    @(58.5100 mm, 54.8000 mm): Pad 2 [LINK_D5] of R22 on F.Cu
+    @(89.1800 mm, 50.5400 mm): PTH pad 36 [LINK_D5] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(109.2000 mm, 61.2000 mm): Pad 1 [LINK_D5] of TP7 on F.Cu
     @(100.1100 mm, 42.0000 mm): Pad 2 [LINK_D5] of R7 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(70.1300 mm, 87.3700 mm): PTH pad 31 [LINK_FSER] of J1
+    @(55.3100 mm, 54.8000 mm): Pad 2 [LINK_FSER] of R21 on F.Cu
     @(76.6900 mm, 54.8000 mm): Pad 1 [LINK_FSER] of R44 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(84.1000 mm, 48.0000 mm): PTH pad 31 [LINK_FSER] of J1
     @(76.6900 mm, 54.8000 mm): Pad 1 [LINK_FSER] of R44 on F.Cu
-    @(55.3100 mm, 54.8000 mm): Pad 2 [LINK_FSER] of R21 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(112.4000 mm, 64.4000 mm): Pad 1 [LINK_FSER] of TP16 on F.Cu
-    @(76.6900 mm, 54.8000 mm): Pad 1 [LINK_FSER] of R44 on F.Cu
+    @(84.1000 mm, 48.0000 mm): PTH pad 31 [LINK_FSER] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(55.3100 mm, 58.0000 mm): Pad 2 [LINK_PRESENT] of R64 on F.Cu
     @(42.0000 mm, 64.4000 mm): Pad 1 [LINK_PRESENT] of TP10 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(70.1300 mm, 89.9100 mm): PTH pad 33 [LINK_PRESENT] of J1
+    @(86.6400 mm, 48.0000 mm): PTH pad 33 [LINK_PRESENT] of J1
     @(55.3100 mm, 58.0000 mm): Pad 2 [LINK_PRESENT] of R64 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(70.1300 mm, 59.4300 mm): PTH pad 9 [LINK_R0] of J1
     @(67.0900 mm, 54.8000 mm): Pad 1 [LINK_R0] of R41 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(70.1300 mm, 59.4300 mm): PTH pad 9 [LINK_R0] of J1
-    @(112.9100 mm, 42.0000 mm): Pad 2 [LINK_R0] of R13 on F.Cu
+    @(56.1600 mm, 48.0000 mm): PTH pad 9 [LINK_R0] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(70.8000 mm, 64.4000 mm): Pad 1 [LINK_R0] of TP13 on F.Cu
-    @(70.1300 mm, 59.4300 mm): PTH pad 9 [LINK_R0] of J1
+    @(67.0900 mm, 54.8000 mm): Pad 1 [LINK_R0] of R41 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(70.1300 mm, 64.5100 mm): PTH pad 13 [LINK_R1] of J1
-    @(74.0000 mm, 64.4000 mm): Pad 1 [LINK_R1] of TP14 on F.Cu
+    @(112.9100 mm, 42.0000 mm): Pad 2 [LINK_R0] of R13 on F.Cu
+    @(67.0900 mm, 54.8000 mm): Pad 1 [LINK_R0] of R41 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(70.2900 mm, 54.8000 mm): Pad 1 [LINK_R1] of R42 on F.Cu
-    @(70.1300 mm, 64.5100 mm): PTH pad 13 [LINK_R1] of J1
+    @(61.2400 mm, 48.0000 mm): PTH pad 13 [LINK_R1] of J1
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(74.0000 mm, 64.4000 mm): Pad 1 [LINK_R1] of TP14 on F.Cu
+    @(70.2900 mm, 54.8000 mm): Pad 1 [LINK_R1] of R42 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
     @(74.0000 mm, 64.4000 mm): Pad 1 [LINK_R1] of TP14 on F.Cu
     @(119.3100 mm, 42.0000 mm): Pad 2 [LINK_R1] of R15 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(63.7800 mm, 48.0000 mm): PTH pad 15 [LINK_R2] of J1
     @(42.5100 mm, 54.8000 mm): Pad 2 [LINK_R2] of R17 on F.Cu
-    @(70.1300 mm, 67.0500 mm): PTH pad 15 [LINK_R2] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(70.1300 mm, 67.0500 mm): PTH pad 15 [LINK_R2] of J1
-    @(77.2000 mm, 64.4000 mm): Pad 1 [LINK_R2] of TP15 on F.Cu
+    @(73.4900 mm, 54.8000 mm): Pad 1 [LINK_R2] of R43 on F.Cu
+    @(63.7800 mm, 48.0000 mm): PTH pad 15 [LINK_R2] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(77.2000 mm, 64.4000 mm): Pad 1 [LINK_R2] of TP15 on F.Cu
     @(73.4900 mm, 54.8000 mm): Pad 1 [LINK_R2] of R43 on F.Cu
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(48.4000 mm, 64.4000 mm): Pad 1 [LINK_REVCLK] of TP12 on F.Cu
-    @(70.1300 mm, 92.4500 mm): PTH pad 35 [LINK_REVCLK] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(61.7100 mm, 54.8000 mm): Pad 2 [LINK_REVCLK] of R23 on F.Cu
@@ -1567,28 +1059,32 @@
     @(61.7100 mm, 54.8000 mm): Pad 2 [LINK_REVCLK] of R23 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(48.9100 mm, 58.0000 mm): Pad 2 [LINK_STAT] of R62 on F.Cu
-    @(70.1300 mm, 72.1300 mm): PTH pad 19 [LINK_STAT] of J1
+    @(89.1800 mm, 48.0000 mm): PTH pad 35 [LINK_REVCLK] of J1
+    @(63.8900 mm, 54.8000 mm): Pad 1 [LINK_REVCLK] of R40 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(70.1300 mm, 72.1300 mm): PTH pad 19 [LINK_STAT] of J1
-    @(112.4000 mm, 61.2000 mm): Pad 1 [LINK_STAT] of TP8 on F.Cu
+    @(68.8600 mm, 48.0000 mm): PTH pad 19 [LINK_STAT] of J1
+    @(48.9100 mm, 58.0000 mm): Pad 2 [LINK_STAT] of R62 on F.Cu
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(106.5100 mm, 42.0000 mm): Pad 2 [LINK_STAT] of R11 on F.Cu
+    @(68.8600 mm, 48.0000 mm): PTH pad 19 [LINK_STAT] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(112.4000 mm, 61.2000 mm): Pad 1 [LINK_STAT] of TP8 on F.Cu
     @(106.5100 mm, 42.0000 mm): Pad 2 [LINK_STAT] of R11 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(63.9200 mm, 61.2000 mm): Pad 1 [P5V_J14] of C8 on F.Cu
+    @(58.7000 mm, 48.0000 mm): PTH pad 11 [P5V_J14] of J1
     @(60.2500 mm, 61.2000 mm): Pad 1 [P5V_J14] of C7 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
-    @(70.1300 mm, 61.9700 mm): PTH pad 11 [P5V_J14] of J1
+    @(60.2500 mm, 61.2000 mm): Pad 1 [P5V_J14] of C7 on F.Cu
     @(63.9200 mm, 61.2000 mm): Pad 1 [P5V_J14] of C8 on F.Cu
 [unconnected_items]: Missing connection between items
     Local override; error
+    @(63.9200 mm, 61.2000 mm): Pad 1 [P5V_J14] of C8 on F.Cu
     @(77.2000 mm, 67.6000 mm): Pad 1 [P5V_J14] of TP23 on F.Cu
-    @(70.1300 mm, 61.9700 mm): PTH pad 11 [P5V_J14] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(77.2000 mm, 67.6000 mm): Pad 1 [P5V_J14] of TP23 on F.Cu
@@ -1660,11 +1156,11 @@
 [unconnected_items]: Missing connection between items
     Local override; error
     @(41.4900 mm, 58.0000 mm): Pad 1 [SPARE0_J14] of R60 on F.Cu
-    @(67.5900 mm, 97.5300 mm): PTH pad 40 [SPARE0_J14] of J1
+    @(94.2600 mm, 50.5400 mm): PTH pad 40 [SPARE0_J14] of J1
 [unconnected_items]: Missing connection between items
     Local override; error
     @(44.6900 mm, 58.0000 mm): Pad 1 [SPARE1_J14] of R61 on F.Cu
-    @(70.1300 mm, 97.5300 mm): PTH pad 39 [SPARE1_J14] of J1
+    @(94.2600 mm, 48.0000 mm): PTH pad 39 [SPARE1_J14] of J1
 
 ** Found 0 Footprint errors **
 

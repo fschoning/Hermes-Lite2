@@ -10,6 +10,7 @@ Last updated 2026-09-12. Worktree `G:\proj\worktrees\Hermes-Lite2-gowin-bridge-p
 | `hl2-bridge` schematic | **Complete. Loads in KiCad, ERC 0 errors.** 118 parts, 86 nets. Every part carries `LCSC`, `MFR`, `Note` and `Description` properties. |
 | `tang-bridge` schematic | **Complete. Loads in KiCad, ERC 0 errors.** 118 parts, 79 nets. |
 | Both `.kicad_pcb` | Board outline, 4-layer stackup (signal / GND / power / signal), net list, all footprints placed, ground and power zones. **Schematic/PCB parity: 0 issues on both boards.** No tracks: routing is left to the user. |
+| Board A socket geometry | **Verified against the Excellon drill export.** DB1 holes land at board-local x 3.54 / 6.08, y 3.96 to 26.82 in 2.54 mm steps; DB12 at x 13.00 / 15.54, y 13.46 / 16.00 / 18.54 - exactly the HL2's own DB1/DB12 grid. KiCad does **not** mirror pad coordinates for a B.Cu footprint, so both bottom-side sockets are mirrored in x by the generator; this was proved with the drill file, not assumed. |
 | Project-local libraries | `gowin-bridge.kicad_sym` and `gowin-bridge.pretty/` in each project folder, so neither project depends on the user's KiCad library version. |
 | BOM | `<board>-bom.csv` per board, one line per part, with LCSC numbers, populate/DNP flag, function and note. |
 | Generator | `tools/gen_gowin_bridge.py` + `tools/kisexp.py`. One netlist description produces schematic, PCB and BOM, so they cannot drift. Re-run with `python tools/gen_gowin_bridge.py`. |

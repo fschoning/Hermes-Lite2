@@ -198,7 +198,8 @@ def build_custom_symbol(w, name, pins, footprint, datasheet, desc):
 
 class Part:
     def __init__(self, ref, ptype, value, pins, lcsc='', mfr='', desc='',
-                 dnp=False, note='', at=None, rot=0, layer='F.Cu', exclude_bom=False):
+                 dnp=False, note='', at=None, rot=0, layer='F.Cu',
+                 exclude_bom=False, mirror=False):
         self.ref = ref
         self.ptype = ptype
         self.value = value
@@ -212,6 +213,11 @@ class Part:
         self.rot = rot
         self.layer = layer
         self.exclude_bom = exclude_bom
+        # Bottom-side sockets: KiCad does NOT mirror pad coordinates for a
+        # B.Cu footprint (verified against the Excellon drill export), so a
+        # socket that must mate a male header seen from above has to be
+        # mirrored in x here.
+        self.mirror = mirror
 
 
 class Board:
@@ -360,7 +366,7 @@ def board_a():
     }, lcsc='C5361769', mfr='2.54mm 2x10P stack-through female header, H>=8.5mm',
         desc='Mates HL2 DB1; long tails pass DB1 pins 7,8,10,12,13,14,16,18,19,20 '
              'up to a stacked companion board',
-        at=(4.81, 15.39), rot=90, layer='B.Cu',
+        at=(3.54, 3.96), rot=0, layer='B.Cu', mirror=True,
         note='Bottom side. Clip the tails of positions 1-6, 9, 11, 15, 17 '
              '(used by the link) before stacking anything above.'))
 
@@ -368,7 +374,8 @@ def board_a():
         '1': 'HL2_STAT', '2': 'HL2_AUX', '3': 'GND', '4': 'GND',
         '5': 'HL2_REVCLK', '6': 'HL2_FSER',
     }, lcsc='C124413', mfr='2.54mm 2x3P female header',
-        desc='Mates HL2 DB12', at=(14.27, 16.54), rot=0, layer='B.Cu',
+        desc='Mates HL2 DB12', at=(13.00, 13.46), rot=0, layer='B.Cu',
+        mirror=True,
         note='Bottom side.'))
 
     # ---- DVI sockets ----
@@ -664,7 +671,7 @@ def board_b():
                lcsc='C50982', mfr='2.54mm 2x20P female header',
                desc='Mates the 2x20 male header the user solders into the Tang '
                     'dock J14 holes (Bank 4)',
-               at=(6.0 + 19 * 2.54 / 2.0, 9.27), rot=0, layer='B.Cu',
+               at=(6.0, 8.0), rot=90, layer='B.Cu',
                note='Bottom side. Every J14 pin not in PINMAP.md is left open '
                     'so PMOD0, PMOD1 and the DVP camera stay usable.'))
 
@@ -1348,7 +1355,7 @@ def write_pcb(outdir, board, fps):
         w.raw(effects(1.0))
         w.close_inline()
         K._emit_fp_body(w, node, with_text=False, net_of_pad=net_of,
-                        fp_rot_for_pads=rot)
+                        fp_rot_for_pads=rot, mirror_x=p.mirror)
         w.close_inline()
 
     # board outline

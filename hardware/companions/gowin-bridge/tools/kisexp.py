@@ -417,7 +417,7 @@ def emit_footprint_lib(path, fpname, node):
 
 
 def _emit_fp_body(w, node, with_text=False, refdes=None, value=None,
-                  net_of_pad=None, rot=0, fp_rot_for_pads=0):
+                  net_of_pad=None, rot=0, fp_rot_for_pads=0, mirror_x=False):
     if with_text:
         w.open('fp_text', 'reference', q(refdes or 'REF**'))
         w.line('at', '0', '-3', '0')
@@ -434,11 +434,11 @@ def _emit_fp_body(w, node, with_text=False, refdes=None, value=None,
             continue
         h = head(item)
         if h in ('fp_line', 'fp_rect', 'fp_circle', 'fp_arc'):
-            _emit_fp_graphic(w, item)
+            _emit_fp_graphic(w, item, mirror_x)
         elif h == 'fp_poly':
-            _emit_fp_poly(w, item)
+            _emit_fp_poly(w, item, mirror_x)
         elif h == 'pad':
-            _emit_fp_pad(w, item, net_of_pad, fp_rot_for_pads)
+            _emit_fp_pad(w, item, net_of_pad, fp_rot_for_pads, mirror_x)
 
 
 def _lay(item):
@@ -461,7 +461,7 @@ def _fp_stroke(item):
     return 0.12
 
 
-def _emit_fp_graphic(w, item):
+def _emit_fp_graphic(w, item, mx=False):
     h = head(item)
     width = _fp_stroke(item)
     layer = _lay(item)[0]
@@ -472,24 +472,25 @@ def _emit_fp_graphic(w, item):
         ft = kid(fl, 'type')
         v = (atoms(ft)[0] if ft is not None else (a[0] if a else 'none'))
         filled = v in ('solid', 'yes')
+    sx = -1.0 if mx else 1.0
     w.open(h)
     if h == 'fp_circle':
         c = _xy(kid(item, 'center'))
         e = _xy(kid(item, 'end'))
-        w.line('center', fmt(c[0]), fmt(c[1]))
-        w.line('end', fmt(e[0]), fmt(e[1]))
+        w.line('center', fmt(sx * c[0]), fmt(c[1]))
+        w.line('end', fmt(sx * e[0]), fmt(e[1]))
     elif h == 'fp_arc':
         s = _xy(kid(item, 'start'))
         m = _xy(kid(item, 'mid'))
         e = _xy(kid(item, 'end'))
-        w.line('start', fmt(s[0]), fmt(s[1]))
-        w.line('mid', fmt(m[0]), fmt(m[1]))
-        w.line('end', fmt(e[0]), fmt(e[1]))
+        w.line('start', fmt(sx * s[0]), fmt(s[1]))
+        w.line('mid', fmt(sx * m[0]), fmt(m[1]))
+        w.line('end', fmt(sx * e[0]), fmt(e[1]))
     else:
         s = _xy(kid(item, 'start'))
         e = _xy(kid(item, 'end'))
-        w.line('start', fmt(s[0]), fmt(s[1]))
-        w.line('end', fmt(e[0]), fmt(e[1]))
+        w.line('start', fmt(sx * s[0]), fmt(s[1]))
+        w.line('end', fmt(sx * e[0]), fmt(e[1]))
     w.line('stroke', '(width %s)' % fmt(width), '(type solid)')
     if h in ('fp_rect', 'fp_circle'):
         w.line('fill', 'solid' if filled else 'none')
@@ -497,15 +498,16 @@ def _emit_fp_graphic(w, item):
     w.close_inline()
 
 
-def _emit_fp_poly(w, item):
+def _emit_fp_poly(w, item, mx=False):
     width = _fp_stroke(item)
     layer = _lay(item)[0]
     pts = kid(item, 'pts')
+    sx = -1.0 if mx else 1.0
     w.open('fp_poly')
     w.open('pts')
     for p in kids(pts, 'xy'):
         x, y = _xy(p)
-        w.line('xy', fmt(x), fmt(y))
+        w.line('xy', fmt(sx * x), fmt(y))
     w.close_inline()
     w.line('stroke', '(width %s)' % fmt(width), '(type solid)')
     w.line('fill', 'solid')
@@ -513,7 +515,7 @@ def _emit_fp_poly(w, item):
     w.close_inline()
 
 
-def _emit_fp_pad(w, item, net_of_pad, fp_rot):
+def _emit_fp_pad(w, item, net_of_pad, fp_rot, mx=False):
     a = [x for x in item[1:] if isinstance(x, (str, tuple))]
     num = a[0][1] if isinstance(a[0], tuple) else a[0]
     ptype = a[1] if isinstance(a[1], str) else a[1][1]
@@ -526,6 +528,9 @@ def _emit_fp_pad(w, item, net_of_pad, fp_rot):
     layers = atoms(kid(item, 'layers'))
     rr = kid(item, 'roundrect_rratio')
 
+    if mx:
+        px = -px
+        plocal = -plocal
     w.open('pad', q(num), ptype, pshape)
     pad_rot = (plocal + fp_rot) % 360
     if abs(pad_rot) > 1e-9:
