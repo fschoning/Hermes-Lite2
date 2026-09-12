@@ -1440,6 +1440,14 @@ def write_libs(outdir, board):
 
     pretty = os.path.join(outdir, LOCAL_FP + '.pretty')
     os.makedirs(pretty, exist_ok=True)
+    # Prune footprints this board no longer uses, so a part dropped from the
+    # netlist does not leave a stale land pattern behind in the library.
+    wanted = {TYPES[t2][3] + '.kicad_mod' for t2 in used if TYPES[t2][3]}
+    for f in os.listdir(pretty):
+        if f.endswith('.kicad_mod') and f not in wanted:
+            os.remove(os.path.join(pretty, f))
+            print('   pruned stale footprint %s from %s'
+                  % (f, os.path.basename(outdir)))
     fps = {}
     for t in used:
         symlib, symname, fplib, fpname = TYPES[t]
