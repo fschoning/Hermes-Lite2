@@ -26,7 +26,7 @@ link to each other with the same board. The rev A design is in git history.
 | 2.5 V threshold | **Resolved and justified**: one SN74AVC8T245 in front of all eight LVDS driver inputs gives 370 mV of guaranteed margin instead of 0 mV, with forward clock A brought into the same package through a 150 R / 470 R divider so clock and data share one propagation delay. The unguaranteed direct-connection argument is documented with its numbers and eight bypass links are fitted for it. `DESIGN_NOTES.md` 3. |
 | AC-coupling option | Present on all 12 received pairs, selectable by 0 R links, **defaulting to DC-coupled**. Values sized and the assumptions stated. `DESIGN_NOTES.md` 4. |
 | 1:1 print templates | **Done** (rev A did not have these). `templates/` has a top and a mirrored-bottom PDF per board, each with a 50 mm calibration rule on `Dwgs.User` so a scaled print is detectable. |
-| Generator and checker | `tools/gen_gowin_bridge.py` produces schematic, PCB, libraries and BOM for both boards from one netlist description, so they cannot drift. `tools/check_geometry.py` is new and verifies the result. Two latent bugs in `tools/kisexp.py` fixed along the way: oval drills emitted the word "oval" where a number belonged, and a courtyard circle measured as zero-height, which silently collapsed the placer. |
+| Generator and checkers | `tools/gen_gowin_bridge.py` produces schematic, PCB, libraries and BOM for both boards from one netlist description, so they cannot drift. Two checkers are new: `tools/check_geometry.py` verifies placement and the HL2 hole grid, and `tools/check_netlist.py` asserts the header pin maps against `PINMAP.md` and **proves the OUT-to-IN symmetry** by walking all three cables signal by signal. Both pass. Two latent bugs in `tools/kisexp.py` fixed along the way: oval drills emitted the word "oval" where a number belonged, and a courtyard circle measured as zero-height, which silently collapsed the placer. |
 | KiCad toolchain | KiCad **10.0.6** at `C:\Users\franz\AppData\Local\Programs\KiCad\10.0`. `kicad-cli.exe` was used for every ERC, DRC, drill and PDF result quoted here. Files are written in KiCad 8 format. |
 
 ---
@@ -52,8 +52,9 @@ section that discusses each.
 ## Exact next steps to resume
 
 1. `cd G:\proj\worktrees\Hermes-Lite2-gowin-bridge-pcb\hardware\companions\gowin-bridge`
-2. `python tools/gen_gowin_bridge.py && python tools/check_geometry.py` — both
-   boards must print `OK`. Nothing below should start until they do.
+2. `python tools/gen_gowin_bridge.py`, then `python tools/check_geometry.py`
+   and `python tools/check_netlist.py`. Both checkers must print `OK`. Nothing
+   below should start until they do.
 3. **Print both `templates/*-1to1-TOP-fit-check.pdf` at 100 %**, measure the
    50 mm rule, and offer them up to the HL2 and to the Tang dock. Fix anything
    that does not line up in the generator, not in the KiCad files.

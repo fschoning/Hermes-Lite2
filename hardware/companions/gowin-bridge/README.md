@@ -233,14 +233,26 @@ the KiCad files** — change `tools/gen_gowin_bridge.py`, re-run it, and update
 ```
 cd hardware/companions/gowin-bridge
 python tools/gen_gowin_bridge.py     # writes both projects
-python tools/check_geometry.py       # must print OK for both boards
+python tools/check_geometry.py       # placement and the HL2 hole grid
+python tools/check_netlist.py        # the pin maps and the OUT-to-IN symmetry
 ```
 
-`check_geometry.py` reads the generated PCBs back and verifies that every pad
-and courtyard is on the board, that nothing overlaps, and that **board A's DB1
-and DB12 socket holes land on the Hermes Lite 2's own hole grid**, recomputed
-independently from `hardware/hl/hermeslite.kicad_pcb` rather than copied from
-the generator. Run it after any change.
+**`check_geometry.py`** reads the generated PCBs back and verifies that every
+pad and courtyard is on the board, that nothing overlaps, and that **board A's
+DB1 and DB12 socket holes land on the Hermes Lite 2's own hole grid**,
+recomputed independently from `hardware/hl/hermeslite.kicad_pcb` rather than
+copied from the generator.
+
+**`check_netlist.py`** exports both netlists and verifies the two things ERC
+cannot see: that the HL2 DB1/DB12 and Tang J14 header pins carry exactly the
+nets `PINMAP.md` says (and that every other J14 pin is electrically open, so
+the dock's PMOD sockets and camera FPC stay usable), and that **all six
+sockets share one signal-to-role mapping**, by walking each of the three
+cables signal by signal and confirming every one lands on its counterpart.
+Its HDMI pin tables are retyped from the specification rather than imported
+from the generator, so the two can disagree and be caught.
+
+Run both after any change.
 
 UUIDs are derived from reference designators, so regenerating produces no
 spurious diff. **Once you start routing in KiCad or EasyEDA Pro, stop
