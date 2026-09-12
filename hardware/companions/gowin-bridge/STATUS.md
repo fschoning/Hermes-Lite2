@@ -111,6 +111,7 @@ set KC=C:\Users\franz\AppData\Local\Programs\KiCad\10.0\bin\kicad-cli.exe
 
 python tools/gen_gowin_bridge.py
 python tools/check_geometry.py
+python tools/check_netlist.py
 
 %KC% sch erc --severity-error -o hl2-bridge/hl2-bridge-erc.rpt hl2-bridge/hl2-bridge.kicad_sch
 %KC% pcb drc --severity-error --schematic-parity --refill-zones ^
