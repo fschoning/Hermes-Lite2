@@ -91,15 +91,17 @@ upright-fin transitions and panel V-scores do not exist any more.
 | **The three sockets are on the BOTTOM** (J2 on DB1, J3 on DB12, J4 on CN1) and their hole positions are fixed by the radio. Do not move them by so much as 0.01 mm — `check_geometry.py` recomputes all 36 holes from `hermeslite.kicad_pcb` and fails if they move |
 | **The connector is at local (10.40, 46.00)** and its position is load-bearing: `DESIGN_NOTES.md` §6.2 shows it cannot go anywhere else. Do not "tidy" it toward the middle of the front edge |
 | **The M3 anchor is a U-notch** at local x 1.30…4.70, from y 61.95 to the top edge. Keep copper 0.3 mm clear of it |
-| **The cut-outs**: a notch over the radio's FPGA (local x 24.00…50.20, top edge to y 25.10) and one cut-out over the AD9866, T2 and jumper DB6 (local x 34.09…57.00, y 30.00…56.25). Nothing within 1 mm; pairs 2 mm off. `DESIGN_NOTES.md` §13 |
-| **J5, the JTAG pass-through, must stay reachable with the board fitted** — it is on the top at local (56.00, 24.50) and a USB Blaster's 10-way IDC socket needs about 20 × 12 mm of clear space above it and 15 mm of height |
+| **The cut-outs**: a notch over the radio's FPGA (local x 24.00…50.20, top edge to y 25.10) and one cut-out over the AD9866, T2, jumper DB6 and header DB3 (local x 34.09…57.87, y 30.00…56.25, with a step at x 48.00 down to y 34.01). Nothing within 1 mm; pairs 2 mm off; **fast nets 3 mm off, and no track at all within 3 mm of DB3 pins 3 and 4**, the AD9866 input. `DESIGN_NOTES.md` §13, §14.4, §14.5 |
+| **The noise rules at the radio end** — no track on the bottom layer (it is a solid ground pour facing the radio); fast nets 3 mm from every edge (`bridge/bridge.kicad_dru` checks it); the 48 pre-placed ground vias round the cut-outs stay. `DESIGN_NOTES.md` §14.4 |
+| **J5, the JTAG pass-through, must stay reachable with the board fitted** — since 13 Sep 2026 it is horizontal on the top, pin 1 at local (51.40, 30.80), rotation 90, just below J4; a USB Blaster's 10-way IDC socket needs about 20 × 12 mm of clear space above it and 15 mm of height |
 | **The 1.1 mm unplated hole at local (4.04, 2.12)** is the optional locating peg into HL2 MH6 |
 
 ## 6. Fault-finding, in the order to try it
 
 | Symptom | First suspect |
 |---|---|
-| **Nothing at all, both directions** | Read test point `SB_PRSNT_IN`. If `R_DRVEN_PRSNT` was fitted instead of `R_DRVEN_ON` and the cable has no sidebands, the drivers are disabled and the board looks dead |
+| **Nothing at all, both directions** | Read test point `SB_PRSNT_IN`. `R_DRVEN_PRSNT` is fitted, so with a no-sideband cable, or a Gowin whose gateware does not drive presence, the drivers are disabled and the board looks dead |
+| **Forward link trains, but nothing reaches the radio** | Read test point `LINK_ALIVE`: about 2.2 V with the forward clock running and a far end present. Near 0 V means the receivers, JTAG and AUXIO buffers are all tri-stated: check the clock at `HL2_FWD_CLK` and presence at `SB_PRSNT_IN` |
 | **The forward link does not train** | Scope R1's DB1-side pad (the raw clock), then test point `HL2_FWD_CLK` (after the divider — expect 2.50 V high), then U1 pin 13 (the translator output into the driver). If the divider level is low, pin 98 is not set to 8 mA drive |
 | **Forward clock fine, data garbled** | Skew. The forward group must be length-matched. Check that all four went through U1 and U4 and that nothing was split across packages |
 | **The forward link works but every bit is inverted** | The connector's A1 end is at the other physical end than the footprint assumes. Harmless and recoverable — invert the lane in gateware. `PINMAP.md` §1.1 |
@@ -109,15 +111,21 @@ upright-fin transitions and panel V-scores do not exist any more.
 | **The radio's auxiliary clock input sees the reverse clock too** | HL2 **R17** is fitted. It must not be — it shorts the DB12 pin 5 and pin 6 nets through 100 Ω |
 | **JTAG over the cable does nothing** | Read test point `JTAG_EN_N`: HIGH means disabled, which is the power-up state and the correct state until the gateware asserts it. If the gateware cannot run, fit `R_JTAG_FORCE` |
 | **A locally plugged USB Blaster misbehaves** | Test point `JTAG_EN_N` should read HIGH while a Blaster is plugged in. If it reads LOW, the remote path is driving CN1 at the same time |
-| **The radio's CW/PTT or I2C behaves oddly** | Read test point `AUXIO_OE_N`. HIGH is read-only and is the power-up state; it can only go LOW while `TP_AUXIO_EN_N` is LOW **and** a powered far end holds `TP_SB_PRSNT_IN` high. If it is LOW, the far end is driving four of the radio's pins |
+| **The radio's CW/PTT or I2C behaves oddly** | Read test point `AUXIO_OE_N`. HIGH is read-only and is the power-up state; it can only go LOW while `AUXIO_EN_N` is LOW **and** `LINK_ALIVE` is HIGH **and** a powered far end holds `SB_PRSNT_IN` high. If it is LOW, the far end is driving four of the radio's pins |
 | **The radio browns out or resets when the board is fitted** | Was the board plugged in with the radio powered? That is a 22 A microsecond event. Otherwise measure the radio's 3.3 V rail: the board should draw about 350 mA |
 
 ## 7. The bring-up sequence, and the safety check comes first
 
-1. **With no gateware loaded and no cable plugged in**, power the radio with
-   the board fitted and read test points `JTAG_EN_N` and `AUXIO_EN_N`. **Both must
-   read HIGH.** That is the whole unprogrammed-board safety property and it is
-   the first thing to confirm, before anything is driven.
+0. **On the bench, before any radio:** power the board from 3.3 V on DB1 pins
+   19/20, hold `SB_PRSNT_IN` HIGH through 1 kΩ, and put a 153.6 MHz square wave
+   on DB1 pin 9. Test point `LINK_ALIVE` must read about 2.2 V; with the
+   signal off, under 0.1 V.
+1. **With stock gateware, then with no gateware, and no cable plugged in**,
+   power the radio with the board fitted and read test points `LINK_ALIVE`,
+   `JTAG_EN_N` and `AUXIO_OE_N`. **`LINK_ALIVE` must read near 0 V and the other
+   two HIGH**, even though stock gateware drives `AUXIO_EN_N` LOW. That is the
+   whole safety property and it is the first thing to confirm, before anything
+   is driven.
 2. Check test points `+3V3` and `+2V5`, and measure the radio's 3.3 V rail current
    with and without the board.
 3. Read test point `SB_PRSNT_IN` with the cable out (expect 0 V) and in, with the far
@@ -129,3 +137,4 @@ upright-fin transitions and panel V-scores do not exist any more.
    into J5.
 7. Leave the AUXIO drive path disabled unless you specifically want it. It can
    reach the radio's master-clock generator.
+8. Run the noise test plan in `DESIGN_NOTES.md` §14.6.

@@ -537,10 +537,11 @@ pair still needs its ESD array and its length match.
    c. Assign net `+3V3` to the remaining L3 copper at the radio end.
 4. Rebuild the plane (right-click the copper → rebuild, or Shift+B to
    rebuild all copper).
-5. Route the `DB1_3V3` → FB1 → `+3V3` trunk as an explicit 0.6 mm track
-   (§3.2) from the DB1 header pads to FB1, and FB1 to the point where it
-   lands on the L3 `+3V3` pour — this short run is the one place power
-   needs an explicit trace rather than riding the plane.
+5. Route the `DB1_3V3` → FB1 → `P3V3_FB` → L1 → `+3V3` trunk as an explicit
+   0.6 mm track (§3.2) from the DB1 header pads through FB1 and the 4.7 µH
+   inductor L1 to the point where it lands on the L3 `+3V3` pour, with the
+   100 µF tantalum C29 at L1's `+3V3` end (§7.1) — this short run is the one
+   place power needs an explicit trace rather than riding the plane.
 6. Place the two 10 µF bulk capacitors: one on the DB1 side of FB1, one on
    the `+3V3` (pour) side, per `ROUTING.md` §4.
 
@@ -581,8 +582,8 @@ generated from the HL2's own geometry and re-checked by
 | The three HL2 sockets (J2/DB1, J3/DB12, J4/CN1) | Bottom side, fixed hole positions. Do not move |
 | SlimSAS connector J1 | Local (10.40, 46.00) at the radio end — load-bearing, do not move toward the middle of the edge |
 | **M3 U-notch** | Local x 1.30–4.70, y 61.95 to the top edge. **Keep copper 0.3 mm clear of it** |
-| **Cut-outs over the radio** | The FPGA notch, local x 24.00–50.20 from the top edge to y 25.10, and the cut-out over the AD9866, T2 and jumper DB6, local x 34.09–57.00, y 30.00–56.25. **Nothing within 1 mm of either; pair tracks 2 mm off** |
-| **J5, the JTAG pass-through** | Top side, local (56.00, 24.50). Keep ~20 × 12 mm clear above it and 15 mm of height for a USB Blaster's 10-way IDC socket |
+| **Cut-outs over the radio** | The FPGA notch, local x 24.00–50.20 from the top edge to y 25.10, and the cut-out over the AD9866, T2, jumper DB6 and header DB3, local x 34.09–57.87, y 30.00–56.25 (step at x 48.00 down to y 34.01). **Nothing within 1 mm of either; pair tracks 2 mm off; fast tracks 3 mm off (§7.1)** |
+| **J5, the JTAG pass-through** | Top side, **pin 1 at local (51.40, 30.80), rotation 90** (horizontal, just below J4) since 13 Sep 2026. Keep ~20 × 12 mm clear above it and 15 mm of height for a USB Blaster's 10-way IDC socket |
 | **1.1 mm locating peg** | Local (4.04, 2.12) — optional, into HL2 MH6 |
 | **Gowin-end M3 spacer hole** | Under the connector housing, ~3.2 mm — do not route copper through it; it is a mechanical clearance hole, not electrical |
 
@@ -596,6 +597,44 @@ holes (`DESIGN_NOTES.md` §13.2).
    holes, and no part within 5 mm of a row of holes.
 3. Confirm the pours on L2/L3 respect this too — plane fills are copper.
 4. Confirm every SMD capacitor lies parallel to the slot (0 or 180 degrees).
+
+### 7.1 Noise layout rules at the radio end (approved 13 Sep 2026)
+
+These keep our fast signals away from the radio's receiver. Full reasoning:
+`DESIGN_NOTES.md` §14.4. **Fast nets** are every radio-end pair (`A_*`, `B_*`)
+plus `HL2_FWD_CLK_RAW`, `HL2_FWD_CLK`, `HL2_ADC_D0..2`, `HL2_AUX_CLK_OUT`,
+`HL2_AUX_DAT_OUT`, `HL2_REV_CLK`, `HL2_AUX_CLK_IN`, `HL2_AUX_DAT_IN`,
+`HL2_TX_D0..2`, every `DI_*`, `RX_*` and `X_*25` net, `LA_CLK` and `LA_PUMP`.
+
+1. **Bottom layer (B.Cu) at the radio end: ground pour only.** Pour `GND` over
+   the whole radio end on B.Cu. Route **no track** on B.Cu anywhere at the
+   radio end; pads of the three bottom sockets are the only other copper.
+2. **No fast track over the radio's FPGA, AD9866 or T2.** Keep every fast track
+   3 mm or more from the FPGA notch and from the main cut-out. The only place a
+   track may pass between the FPGA notch and the main cut-out (the 2.9 mm neck
+   at local y 26.1–29.0) is a slow one: JTAG, enables, pull-ups.
+3. **Fast tracks at least 3 mm from any board edge**, outer edge and cut-outs
+   alike. In EasyEDA Pro put the fast nets in their own net class and give
+   that class a 3 mm clearance to the board outline in the design rules (the
+   exact menu name was not checked); otherwise check it by eye and with
+   `check_geometry.py` after export.
+4. **No track within 3 mm of DB3 pins 3 and 4**, at local (54.60, 39.82) and
+   (54.60, 37.28): the AD9866's receive input. Any net, any layer.
+5. **Ground stitching vias every 5 mm or less round each cut-out.** The
+   KiCad file already carries 48 of them on `GND`, 1.6 mm outside the cut
+   edges (largest gap 4.44 mm). Keep them. If the import drops them, place
+   0.6/0.3 mm `GND` vias 1.6 mm outside each cut edge, no more than 4.5 mm
+   apart, and no part within 2.2 mm of a cut edge.
+6. **Place L1 (4.7 µH) and C29 (100 µF tantalum) within 8 mm of DB1 pins
+   19/20**, and return C29 to ground next to DB1 pins 13/14.
+7. **Place U11 within 5 mm of U1**, and C27, D13, D14 within 3 mm of U11: the
+   link-alive detector's clock stub must be short.
+8. **Place C30 within 3 mm of R_SHELL and C101 within 3 mm of R117** (both
+   not fitted).
+
+After routing, `python tools/check_geometry.py <board>` checks rules 1–8 on
+the exported KiCad board, and KiCad DRC with `bridge/bridge.kicad_dru` next
+to the board checks rule 3.
 
 ---
 
@@ -752,7 +791,7 @@ selection is needed either way.
 
 ---
 
-## 9.5 The test points (ten)
+## 9.5 The test points (eleven)
 
 Cut from 73 on 13 Sep 2026. Each one is there for the bring-up sequence or
 the fault-finding table in `ROUTING.md`.
@@ -763,9 +802,10 @@ the fault-finding table in `ROUTING.md`.
 | `+3V3` | radio | the rail after the input bead |
 | `+2V5` | radio | the 2.5 V regulator output, the translators' low side |
 | `SB_PRSNT_IN` | radio | presence detect: is a powered far end there? |
-| `JTAG_EN_N` | radio | JTAG over the cable: must read HIGH at power-up |
-| `AUXIO_EN_N` | radio | the drive enable from the radio's gateware: must read HIGH at power-up |
-| `AUXIO_OE_N` | radio | the drive buffer's real enable after the presence interlock: HIGH unless both of the above allow it |
+| `JTAG_EN_N` | radio | JTAG over the cable, after the link-alive gate: must read HIGH at power-up and with stock gateware |
+| `AUXIO_EN_N` | radio | the drive enable straight from the radio's gateware (LOW under stock gateware, which is why it is gated) |
+| `AUXIO_OE_N` | radio | the drive buffer's real enable after the link-alive and presence gates: HIGH unless the gateware, `LINK_ALIVE` and presence all allow it |
+| `LINK_ALIVE` | radio | the link-alive detector: about 2.2 V only while the forward clock runs and a far end is present |
 | `HL2_FWD_CLK` | radio | forward clock after the divider: expect 2.50 V high |
 | `HL2_REV_CLK` | radio | reverse clock as it enters the radio's FPGA pin 88 |
 | `G_GND` | Gowin | scope ground clip (2 mm through-hole pad) |

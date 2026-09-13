@@ -121,6 +121,7 @@
       { "netclass": "Power", "pattern": "+3V3" },
       { "netclass": "Power", "pattern": "+2V5" },
       { "netclass": "Power", "pattern": "DB1_3V3" },
+      { "netclass": "Power", "pattern": "P3V3_FB" },
       { "netclass": "Power", "pattern": "VLVDS" },
       { "netclass": "Power", "pattern": "VLVDS_F" }
     ]

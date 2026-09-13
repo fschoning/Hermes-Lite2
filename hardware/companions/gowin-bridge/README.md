@@ -20,8 +20,8 @@ pairs and 16 sideband conductors.
 | Cable | 10Gtek **CAB-8654/8654-8i-P**, 8i to 8i, 0.5 m, **$15** |
 | Lane rate | DDR at 153.6 MHz = **307.2 Mbit/s**, three lanes each way |
 | Payload | **921.6 Mbit/s** each way = the complete raw 12-bit 76.8 MSPS ADC stream, plus a full-duplex auxiliary channel at the same rate |
-| Parts | both ends: 161, of which **132 fitted**; 168 nets; **18 placed part numbers**, 12 Basic and 6 Extended; ten test points |
-| Cost | **$154.84** for five assembled boards, both ends, delivered: **$30.97 per complete link** |
+| Parts | both ends: 184, of which **152 fitted**; 176 nets; **24 placed part numbers**, 16 Basic, 7 Extended and 1 Preferred Extended; eleven test points |
+| Cost | **$162.43** for five assembled boards, both ends, delivered: **$32.49 per complete link** |
 | State | schematic generated and validated; **prepared for Quilter**: fixed parts locked, everything else waiting off the board (`QUILTER.md`); **not placed, not routed** |
 
 ---
@@ -73,6 +73,7 @@ python tools/gen_gowin_bridge.py
 python tools/check_geometry.py     # must print OK
 python tools/check_netlist.py      # must print OK
 python tools/cost_model.py         # the order total
+# bridge/bridge.kicad_dru is picked up by DRC: fast nets 3 mm from every edge
 
 set KC=C:\Users\franz\AppData\Local\Programs\KiCad\10.0\bin\kicad-cli.exe
 %KC% sch erc --severity-error -o bridge/bridge-erc.rpt bridge/bridge.kicad_sch
@@ -82,29 +83,20 @@ set KC=C:\Users\franz\AppData\Local\Programs\KiCad\10.0\bin\kicad-cli.exe
 
 ---
 
-## ⚠ The front end panel is at the wrong position for rev D
+## The front end panel
 
-`panel-endcap/` was generated in an earlier pass, before rev D established
-where the connector can actually go. Its opening is at **panel x 88.65–112.65
-= HL2 y 75.65–99.65**, i.e. in front of DB1 — which is the one place a
-right-angle SlimSAS receptacle **cannot** sit, because DB12's six through-holes
-land in the middle of its 0.60 mm pitch pad field. `DESIGN_NOTES.md` §6.2 has
-the arithmetic.
+`panel-endcap/panel-endcap.kicad_pcb` (55 mm case, rev C) has the SlimSAS
+opening at **panel x 120.30–144.30 = HL2 y 107.30–131.30**, centred on the
+connector, 24.00 × 10.40 mm at 12.39–22.79 mm above the HL2's top surface.
+Nine stock vent holes had to go where the opening landed; nine were put back
+above it on 13 Sep 2026, so the vent area is the stock 73.7 mm². Order it
+separately as a bare PCB. `G:/proj/Hermes-Lite2/franz-claude-analysis/HL2_END_PANEL.md`
+has the derivation, clearances and strength check.
 
-**The opening must move +31.65 mm in panel x**, to **panel x 120.30–144.30 =
-HL2 y 107.30–131.30**, centred on HL2 y 119.30. Its **vertical** position and
-its size are already right: 24.00 × 10.40 mm with 1 mm corner fillets at panel
-y 74.91–85.31, which is 12.39 to 22.79 mm above the HL2's top surface — exactly
-0.25 mm of clearance per side on a 23.50 × 9.90 mm shell standing on this
-board's 12.64 mm top surface.
-
-**One thing to resolve when moving it:** the `endcaplib:speakervent` at panel
-(145.50, 81.70) rotated 90° has holes reaching to about panel x 140.5, so it
-overlaps the new opening's x span. Either move the vent or trim it.
-
-That edit was deliberately **not** made here: it is panel layout, and layout is
-a separate session's job. `G:/proj/Hermes-Lite2/franz-claude-analysis/HL2_END_PANEL.md`
-holds the original derivation and its y-position conclusion is superseded.
+**Not compatible:** the repo's DB9 adapter board (`hardware/companions/db9/`)
+cannot be fitted with this board; its wires land on DB1 pins our socket
+covers. Run a Hardrock-50 from the N2ADR HL2 IO board instead
+(`DESIGN_NOTES.md` §14.7).
 
 ## The Gowin end
 

@@ -270,6 +270,14 @@ TYPES = {
     # The AUXIO presence interlock.  AO3400A is a JLCPCB BASIC part, so it
     # adds no $3.07 fee.  Pin 1 gate, pin 2 source, pin 3 drain.
     'NMOS':     ('Transistor_FET', 'AO3400A', 'Package_TO_SOT_SMD', 'SOT-23'),
+    # The link-alive detector's two Schottky diodes.  Device:D_Schottky is
+    # pin 1 = cathode, pin 2 = anode; D_SOD-323 pad 1 is the cathode band.
+    'DSCH':     ('Device', 'D_Schottky', 'Diode_SMD', 'D_SOD-323'),
+    # The 3.3 V input LC filter (13 Sep 2026): a shielded 4.7 uH 4 x 4 mm
+    # inductor and a 100 uF tantalum, EIA 3528 case B.  C_Polarized pin 1 = +.
+    'L4030':    ('Device', 'L', 'Inductor_SMD', 'L_Sunlord_SWPA4030S'),
+    'CTAN3528': ('Device', 'C_Polarized', 'Capacitor_Tantalum_SMD',
+                 'CP_EIA-3528-21_Kemet-B'),
     'SLIMSAS':  (None, 'SLIMSAS_8I', None, SLIMSAS_FP),
     # The Gowin end's copy: identical contacts, plus the M3 spacer hole that
     # the case position puts under the housing.
@@ -569,6 +577,7 @@ class Board:
         self.zones_full = None
         # plain holes: the MH6 locating hole and the mouse-bite drills
         self.npth = []                  # (x, y, drill) plain holes
+        self.vias = []                  # (x, y, size, drill, net): the fence
         # Rule areas.  keepouts: (name, layers, disallowed set, polygon).
         # regions: (name, polygon, [refs]) - F.Cu rule areas with nothing
         # disallowed, which is how Quilter reads a KiCad placement region.
@@ -670,6 +679,13 @@ LC = dict(r0='C17168',        # 0R    0402, Basic
           # 2 A rated, 6,045,800 in stock, and the only Basic 0805 zero-ohm
           # jumper in JLCPCB's library.
           r0_0805='C17477',   # 0R 0805, Basic, MOQ 100
+          # Added 13 Sep 2026 for the link-alive detector and the noise
+          # measures; each read live on LCSC and the JLCPCB library that day.
+          c10p='C32949',      # 10pF C0G 50V 0402, Samsung CL05C100JB5NNNC, Basic
+          c10n='C15195',      # 10nF X7R 50V 0402, CL05B103KB5NNNC, Basic
+          c10n_0805='C1710',  # 10nF X7R 50V 0805, CL21B103KBANNNC, Basic
+          c100u_tan='C16133', # 100uF 6.3V tantalum case B, AVX
+                              # TAJB107K006RNJ, ESR 1.7 ohm, Basic
           esd='C138714')      # TPD4E05U06DQAR, USON-10
 
 # Silicon, connectors and the hand-fitted sockets.  Same rule: every number
@@ -683,6 +699,12 @@ LC_NMOS = 'C20917'        # AO3400A N-MOSFET, SOT-23, JLCPCB BASIC, 461,420
                           # in stock on LCSC, checked live 13 Sep 2026.
                           # The AUXIO drive path's presence interlock
 LC_LDO25 = 'C194395'      # ME6211C25M5G-N
+LC_SCHOTTKY = 'C7502691'  # RB751V-40, SOD-323, 40 V, 370 mV at 1 mA.
+                          # JLCPCB PREFERRED Extended: no feeder fee on
+                          # Economic assembly.  628,950 in stock 13 Sep 2026
+LC_L4R7 = 'C193025'       # Sunlord SWPA4030S4R7NT, 4.7 uH, 2 A, 78 mOhm,
+                          # shielded 4 x 4 mm.  Extended ($3.07 fee); only
+                          # about 2,000 in stock 13 Sep 2026
 LC_LDO33 = 'C6186'         # AMS1117-3.3, Basic
 # Pin headers need DISCRETE part numbers, not a strip: C2337 is a 1x40
 # strip and JLCPCB's BOM matcher will not accept a 40-pin part against a
@@ -914,40 +936,154 @@ def hole_rect(name):
 
 
 # The window over the radio's configuration jumper header DB6 (HL2 x
-# 115.80-120.70, y 117.80-123.80 over its outline).  rev D as first built
-# stopped 0.50 mm short of it; now it clears DB6 by WINDOW_REACH on every
-# side for fingers or tweezers, and keeps its old extent toward DB3.  DB3
-# (x 123.33-125.87, y 109.31-119.47) cannot be fully uncovered: its upper end
-# lies under J5's courtyard, and J5 is locked.
+# 115.80-120.70, y 117.80-123.80 over its outline): it clears DB6 by
+# WINDOW_REACH on every side for fingers or tweezers.
 DB6_HL2 = (115.80, 117.80, 120.70, 123.80)
-DB3_HL2 = (123.33, 109.31, 125.87, 119.47)
 WINDOW_REACH = 2.5
 _d6a, _d6b = _loc(DB6_HL2[0], DB6_HL2[1]), _loc(DB6_HL2[2], DB6_HL2[3])
 WINDOW = (round(min(44.50, _d6a[0] - WINDOW_REACH), 3), 39.50,
           57.00, round(max(50.00, _d6b[1] + WINDOW_REACH), 3))
+# DB3 (13 Sep 2026, approved).  HERMESLITE:4x1 at HL2 (124.60, 118.20) rot 90,
+# an optional, normally not fitted 4-pin header: pin 1 +3V3, 2 GND, 3 and 4
+# the AD9866's receive input pair (U7 pins 51/52 via C49, L4, L7, R50, R64),
+# i.e. an RF daughterboard tap straight into the ADC input.  Pins at HL2 y
+# 118.20 / 115.66 / 113.12 / 110.58, x 124.60, 1.85 mm pads; outline x
+# 123.33-125.87, y 109.31-119.47.  About a third of it used to lie under this
+# board beside J5.  Now it is wholly inside the main cut-out: its outline,
+# plus DB3_SOCKET_ALLOW for a plugged-in 1x4 mating socket body (a socket is
+# up to 0.5 mm wider and longer each side than the header outline), plus the
+# HOLE_MARGIN every other hole has.  An RF board on DB3 needs open space
+# above it, and our fast signals must stay away from an ADC input tap, so it
+# is an open cut-out, not pass-through holes.
+DB3_HL2 = (123.33, 109.31, 125.87, 119.47)
+DB3_PIN_HL2 = {1: (124.60, 118.20), 2: (124.60, 115.66),
+               3: (124.60, 113.12), 4: (124.60, 110.58)}
+DB3_PAD = 1.85
+DB3_SOCKET_ALLOW = 0.5
+DB3_FAST_KEEP = 3.0          # no fast track within 3 mm of pins 3 and 4
+_d3a, _d3b = _loc(DB3_HL2[0], DB3_HL2[1]), _loc(DB3_HL2[2], DB3_HL2[3])
+_d3g = HOLE_MARGIN + DB3_SOCKET_ALLOW
+CUT_DB3 = (round(_d3a[0] - _d3g, 3), round(_d3a[1] - _d3g, 3),
+           round(_d3b[0] + _d3g, 3), round(_d3b[1] + _d3g, 3))
 CUT_FPGA = hole_rect('FPGA')
 CUT_ADC = hole_rect('ADC')
 CUT_T2 = hole_rect('T2')
 
 
 def cut_main():
-    """The AD9866 hole, the T2 hole and the jumper window lie within 2 mm of
-    one another, which leaves webs too thin to carry anything, so they are ONE
-    cut-out: an orthogonal polygon that contains all three rectangles."""
-    a, t, w = CUT_ADC, CUT_T2, WINDOW
-    assert a[2] < w[2] and w[1] < a[3] and t[2] > w[0] and t[1] < w[3] < t[3]
+    """The AD9866 hole, the T2 hole, the jumper window and the DB3 hole lie
+    within 2-4 mm of one another, which leaves webs too thin to carry
+    anything, so they are ONE cut-out: an orthogonal polygon that contains all
+    four rectangles.  The DB3 hole and the AD9866 hole are joined across the
+    top of the window, because the 3.3 mm tongue between them would be
+    board with 1.3 mm of usable width."""
+    a, t, w, d = CUT_ADC, CUT_T2, WINDOW, CUT_DB3
+    assert a[2] < d[0] and d[1] < w[1] and w[3] > d[3]
+    assert t[2] > w[0] and t[1] < w[3] < t[3] and a[1] < d[1]
     x0 = min(a[0], t[0])
-    return [(x0, a[1]), (a[2], a[1]), (a[2], w[1]), (w[2], w[1]),
-            (w[2], w[3]), (t[2], w[3]), (t[2], t[3]), (x0, t[3])]
+    xr = max(w[2], d[2])
+    return [(x0, a[1]), (a[2], a[1]), (a[2], d[1]), (xr, d[1]),
+            (xr, w[3]), (t[2], w[3]), (t[2], t[3]), (x0, t[3])]
 
 
 def cut_rows():
     """cut_main() as the three rectangles it is made of (for keepouts)."""
-    a, t, w = CUT_ADC, CUT_T2, WINDOW
+    a, t, w, d = CUT_ADC, CUT_T2, WINDOW, CUT_DB3
     x0 = min(a[0], t[0])
-    return (('ADC', (x0, a[1], a[2], w[1])),
-            ('MID', (x0, w[1], w[2], w[3])),
+    xr = max(w[2], d[2])
+    return (('ADC', (x0, a[1], a[2], d[1])),
+            ('MID', (x0, d[1], xr, w[3])),
             ('T2', (x0, w[3], t[2], t[3])))
+
+
+# J5, THE USB BLASTER PASS-THROUGH.  The radio does not fix its position; it
+# is locked only so Quilter cannot bury it.  DB3's cut-out took its old place
+# (local (56.00, 24.50), vertical), so since 13 Sep 2026 it lies HORIZONTAL
+# (rotation 90) in the strip between the FPGA notch and the main cut-out,
+# 9.2 mm below CN1's socket J4, so its ten JTAG tracks run straight down from
+# J4.  Pin 1 at local (51.40, 30.80); odd pins along y 30.80, even pins along
+# y 28.26, pins 1-2 to 9-10 from x 51.40 to 61.56.  Courtyard x 49.63-63.33,
+# y 26.48-32.57: 0.63 mm clear of the AD9866 hole keep-back, 0.38 mm of the
+# FPGA notch keep-back and 0.44 mm of the DB3 hole keep-back.
+J5_AT = (51.40, 30.80)
+J5_ROT = 90
+J5_CRTYD = (round(J5_AT[0] - 1.77, 3), round(J5_AT[1] - 4.32, 3),
+            round(J5_AT[0] + 11.93, 3), round(J5_AT[1] + 1.77, 3))
+
+# THE NOISE LAYOUT RULES for the radio end (13 Sep 2026, approved;
+# DESIGN_NOTES.md section 14.4).  "Fast" = every pair net plus these
+# single-ended nets, which switch at 153.6 MHz / 307.2 Mbit/s.
+FAST_SE = ('HL2_FWD_CLK_RAW', 'HL2_FWD_CLK', 'HL2_ADC_D0', 'HL2_ADC_D1',
+           'HL2_ADC_D2', 'HL2_AUX_CLK_OUT', 'HL2_AUX_DAT_OUT', 'HL2_REV_CLK',
+           'HL2_AUX_CLK_IN', 'HL2_AUX_DAT_IN', 'HL2_TX_D0', 'HL2_TX_D1',
+           'HL2_TX_D2', 'DI_FWDCLK', 'DI_ADCD0', 'DI_ADCD1', 'DI_ADCD2',
+           'DI_AUXCLK', 'DI_AUXDAT', 'RX_REVCLK', 'RX_TXD0', 'RX_TXD1',
+           'RX_TXD2', 'RX_DUPCLK', 'RX_AUXCLK', 'RX_AUXDAT', 'X_REVCLK25',
+           'X_DUPCLK25', 'X_AUXCLK25', 'X_AUXDAT25', 'LA_CLK', 'LA_PUMP')
+FAST_EDGE_KEEP = 3.0         # fast tracks at least 3 mm from any edge
+FENCE_OFFSET = 1.6           # stitching via centres this far from a cut edge
+FENCE_PITCH = 4.5            # and at most this far apart along it (limit 5)
+FENCE_VIA = (0.6, 0.3)
+FENCE_KEEP = 2.2             # no footprint within this of a cut edge, so
+                             # nothing Quilter places lands on the fence
+
+
+def rect_diff(r, s):
+    """Rectangle r minus rectangle s -> up to four rectangles."""
+    x0, y0, x1, y1 = r
+    a0, b0, a1, b1 = s
+    if a0 >= x1 or a1 <= x0 or b0 >= y1 or b1 <= y0:
+        return [r]
+    out = []
+    if b0 > y0:
+        out.append((x0, y0, x1, b0))
+    if b1 < y1:
+        out.append((x0, b1, x1, y1))
+    yy0, yy1 = max(y0, b0), min(y1, b1)
+    if a0 > x0:
+        out.append((x0, yy0, a0, yy1))
+    if a1 < x1:
+        out.append((a1, yy0, x1, yy1))
+    return [tuple(round(v, 3) for v in q_) for q_ in out
+            if q_[2] - q_[0] > 0.05 and q_[3] - q_[1] > 0.05]
+
+
+def fence_path(pts, closed=True):
+    """An orthogonal hole outline -> the path FENCE_OFFSET outside it, into
+    the board.  For an orthogonal polygon each offset vertex is the vertex
+    plus the offset times the sum of its two edges' outward normals."""
+    n = len(pts)
+    area = sum(pts[i][0] * pts[(i + 1) % n][1] - pts[(i + 1) % n][0] * pts[i][1]
+               for i in range(n))
+    sgn = -1.0 if area > 0 else 1.0
+
+    def normal(p, q_):
+        dx, dy = q_[0] - p[0], q_[1] - p[1]
+        ln = math.hypot(dx, dy)
+        # away from the hole's interior, into the board
+        return (-sgn * dy / ln, sgn * dx / ln)
+    out = []
+    rng = range(n) if closed else range(1, n - 1)
+    for i in rng:
+        n1 = normal(pts[i - 1], pts[i])
+        n2 = normal(pts[i], pts[(i + 1) % n])
+        out.append((pts[i][0] + FENCE_OFFSET * (n1[0] + n2[0]),
+                    pts[i][1] + FENCE_OFFSET * (n1[1] + n2[1])))
+    return out
+
+
+def fence_points(path, closed=True):
+    pts = []
+    segs = list(zip(path, path[1:] + (path[:1] if closed else [])))
+    for p, q_ in segs:
+        ln = math.hypot(q_[0] - p[0], q_[1] - p[1])
+        k = max(1, int(math.ceil(ln / FENCE_PITCH - 1e-9)))
+        for i in range(k):
+            pts.append((round(p[0] + (q_[0] - p[0]) * i / k, 3),
+                        round(p[1] + (q_[1] - p[1]) * i / k, 3)))
+    if not closed:
+        pts.append((round(path[-1][0], 3), round(path[-1][1], 3)))
+    return pts
 
 
 def fillet(pts, radius_at, closed=True):
@@ -1213,7 +1349,7 @@ def bridge():
                     'USB Blaster still plugs in locally with this board '
                     'fitted. Also the alternative CN1 connection: a flying '
                     '10-way IDC ribbon from CN1 to here replaces J4',
-               at=(56.0, 24.5), locked=True, rot=0,
+               at=J5_AT, locked=True, rot=J5_ROT,
                note='PURELY PASSIVE: socket straight through to header, ten '
                     'nets, no branches other than the four buffered taps. '
                     'Pins 6, 7 and 8 are left open - unconnected on the HL2 '
@@ -1257,7 +1393,7 @@ def bridge():
     b.add(Part('U2', 'XLAT4', 'SN74AVC4T245PW',
                x4(['HL2_AUX_CLK_OUT', 'HL2_AUX_DAT_OUT',
                    'HL2_JTAG_EN', 'HL2_AUXIO_EN'],
-                  ['DI_AUXCLK', 'DI_AUXDAT', 'JTAG_EN_N', 'AUXIO_EN_N'],
+                  ['DI_AUXCLK', 'DI_AUXDAT', 'JTAG_EN_RAW_N', 'AUXIO_EN_N'],
                   '+2V5', '+3V3', '+2V5', '+2V5', 'GND', 'GND'),
                lcsc=LC_X4, mfr='SN74AVC4T245PWR',
                desc='4-bit dual-supply translator, VCCA 2.5 V / VCCB 3.3 V. '
@@ -1267,7 +1403,11 @@ def bridge():
                     'and the AUXIO drive direction, both active LOW, both DC',
                at=None,
                note='Both DIR to VCCA (A->B), both OE* to GND. The two enable '
-                    'channels are static levels, not signals. Each enable is '
+                    'channels are static levels, not signals. Neither reaches '
+                    'its buffer directly any more: JTAG_EN_RAW_N passes Q3 and '
+                    'AUXIO_EN_N passes Q4 and Q1, both gated by LINK_ALIVE, '
+                    'because stock HL2 gateware drives FPGA pins 72 and 80 LOW. '
+                    'Each enable is '
                     'pulled UP at BOTH ends - to +2V5 on the HL2 side and to '
                     '+3V3 on the logic side - so a missing part, an '
                     'unpowered part, an unconfigured FPGA or an open HL2 '
@@ -1281,7 +1421,7 @@ def bridge():
     b.add(Part('U3', 'XLAT4', 'SN74AVC4T245PW',
                x4(['RX_REVCLK', 'RX_DUPCLK', 'RX_AUXCLK', 'RX_AUXDAT'],
                   ['X_REVCLK25', 'X_DUPCLK25', 'X_AUXCLK25', 'X_AUXDAT25'],
-                  '+3V3', '+2V5', '+3V3', '+3V3', 'GND', 'GND'),
+                  '+3V3', '+2V5', '+3V3', '+3V3', 'RX_EN_N', 'RX_EN_N'),
                lcsc=LC_X4, mfr='SN74AVC4T245PWR',
                desc='4-bit dual-supply translator, VCCA 3.3 V / VCCB 2.5 V. '
                     'Port 1 carries the two candidate reverse clocks - the '
@@ -1289,9 +1429,14 @@ def bridge():
                     'the same delay. Port 2 carries the auxiliary receive '
                     'pair, clock and data together',
                at=None,
-               note='Both DIR to VCCA (A->B), both OE* to GND. The duplicate '
-                    'clock output goes nowhere unless R_CLKSEL_B is fitted '
-                    'and R_CLKSEL_A removed; driving an open pad is harmless.'))
+               note='Both DIR to VCCA (A->B). Both OE* = RX_EN_N: its B outputs '
+                    'drive FPGA pins 88, 89 and 87, and pin 87 is an OUTPUT in '
+                    'stock gateware, so they are high-impedance unless the '
+                    'forward clock is running and a far end is present '
+                    '(LINK_ALIVE, Q2). OE* is referenced to VCCA = 3.3 V. The '
+                    'duplicate clock output goes nowhere unless R_CLKSEL_B is '
+                    'fitted and R_CLKSEL_A removed; driving an open pad is '
+                    'harmless.'))
 
     # ==================================================== LVDS drivers
     # Eight driven channels, so two quad packages, and the split is not
@@ -1335,14 +1480,14 @@ def bridge():
                    mfr='DS90LV047ATMX/NOPB',
                    desc='Quad LVDS driver, 400 Mbps, SOIC-16. ' + desc,
                    at=at, rot=0,
-                   note='EN = DRV_EN, EN* = GND. DRV_EN is tied to +3V3 '
-                        'through the fitted link R_DRVEN_ON, so the drivers '
-                        'are always on. Move the link to R_DRVEN_PRSNT to '
-                        'gate them on the far end being present and powered '
-                        'instead, which saves about 60 mA with no cable - but '
-                        'only if your cable actually wires the sidebands, '
-                        'because the no-sideband cable variant exists and '
-                        'would leave the link dead.'))
+                   note='EN = DRV_EN, EN* = GND. DRV_EN is SB_PRSNT_IN '
+                        'through the FITTED link R_DRVEN_PRSNT, so the drivers '
+                        'run only while a powered, configured far end asserts '
+                        'presence: a radio on with the Tang off pushes no LVDS '
+                        'current into the dead Gowin. REQUIRES the sideband '
+                        'cable (CAB-8654/8654-8i-P); the no-sideband variant '
+                        'leaves the link dead. R_DRVEN_ON (not fitted) forces '
+                        'them on for bench tests.'))
 
     # ==================================================== LVDS receivers
     rcv = [
@@ -1360,7 +1505,7 @@ def bridge():
          'whose output is left unconnected'),
     ]
     for ref_u, at, chmap, desc in rcv:
-        pins = {'16': '+3V3', '9': 'GND', '12': 'GND', '13': '+3V3'}
+        pins = {'16': '+3V3', '9': 'RX_EN_N', '12': 'GND', '13': '+3V3'}
         for i, (lane, dst) in enumerate(chmap):
             pins[RCV_P[i]] = 'B_%s_P' % lane
             pins[RCV_N[i]] = 'B_%s_N' % lane
@@ -1369,9 +1514,13 @@ def bridge():
                    mfr='DS90LV048ATMTCX/NOPB',
                    desc='Quad LVDS receiver, 400 Mbps, TSSOP-16. ' + desc,
                    at=at, rot=0,
-                   note='EN tied to +3V3 and EN* to GND: always enabled. A '
-                        'receiver input is high impedance, so there is '
-                        'nothing to gate.'))
+                   note='EN tied to +3V3, EN* = RX_EN_N. TI SNLS045C Table 1: '
+                        'outputs are enabled only for EN HIGH with EN* LOW or '
+                        'open, and TRI-STATE for every other combination '
+                        '(IOZ 10 uA max). RX_EN_N is pulled up to +3V3 and '
+                        'pulled low only by Q2 while LINK_ALIVE is high, so '
+                        'with stock gateware, no gateware, no far end or no '
+                        'cable these outputs cannot fight the radio FPGA.'))
 
     # ============================== the spare HL2 pin group (AUXIO), and why
     # This is the group the brief calls "the four HL2 indicator LED pins".
@@ -1451,17 +1600,21 @@ def bridge():
     b.add(Part('U8', 'XLAT4', 'SN74AVC4T245PW',
                x4([a for a, _ in auxio_rd[:2]] + [a for a, _ in auxio_rd[2:]],
                   [c for _, c in auxio_rd[:2]] + [c for _, c in auxio_rd[2:]],
-                  '+3V3', '+3V3', 'GND', 'GND', 'GND', 'GND'),
+                  '+3V3', '+3V3', '+3V3', '+3V3', 'PRSNT_OE_N', 'PRSNT_OE_N'),
                lcsc=LC_X4, mfr='SN74AVC4T245PWR',
-               desc='AUXIO READ path, all four lines. Both rails 3.3 V, both '
-                    'DIR LOW so the direction is B->A: the HL2 side is a '
-                    'high-impedance input and the cable side is the output. '
-                    'ALWAYS ON, and physically incapable of driving an HL2 '
-                    'pin',
+               desc='AUXIO READ path, all four lines. Both rails 3.3 V. A side = '
+                    'the radio (AUXIOn_T), B side = the cable (SB_AUXIOn_OUT). '
+                    'Both DIR HIGH, so A data to B bus (TI SCES576I Table 7-1): '
+                    'the radio side is a high-impedance input and only the '
+                    'cable side is driven. Enabled only while a powered far '
+                    'end asserts presence (PRSNT_OE_N)',
                at=None,
-               note='DIR = GND on both ports, OE* = GND on both ports. This '
-                    'is the default and only path that is live without '
-                    'gateware.'))
+               note='DIR = +3V3 on both ports, OE* = PRSNT_OE_N on both ports. '
+                    'rev D as first built had both DIR on GND, which is B to '
+                    'A: it drove the radio CW key, PTT and clock-chip I2C '
+                    'pins from floating cable wires, always on. Fixed 13 Sep '
+                    '2026; check_netlist.py derives every channel direction '
+                    'from the truth table.'))
     b.add(Part('U9', 'XLAT4', 'SN74AVC4T245PW',
                x4([a for a, _ in auxio_wr], [c for _, c in auxio_wr],
                   '+3V3', '+3V3', '+3V3', '+3V3', 'AUXIO_OE_N', 'AUXIO_OE_N'),
@@ -1496,12 +1649,13 @@ def bridge():
     # AO3400A Vgs(th) is 1.45 V max and Rds(on) 48 mOhm at 2.5 V, so 3.0 V of
     # presence turns it fully on against a 10 k load.
     b.add(Part(ref('Q'), 'NMOS', 'AO3400A',
-               {'1': 'SB_PRSNT_IN', '2': 'AUXIO_EN_N', '3': 'AUXIO_OE_N'},
+               {'1': 'SB_PRSNT_IN', '2': 'AUXIO_EN_LA_N', '3': 'AUXIO_OE_N'},
                lcsc=LC_NMOS, mfr='AO3400A',
                desc='AUXIO drive presence interlock: the drive buffer can be '
                     'enabled only while the gateware enables AND a powered '
                     'far end asserts presence. N-MOSFET, gate SB_PRSNT_IN, '
-                    'source AUXIO_EN_N, drain AUXIO_OE_N',
+                    'source AUXIO_EN_LA_N (the enable after the link-alive '
+                    'gate Q4), drain AUXIO_OE_N',
                at=None,
                note='JLCPCB Basic. With the cable unplugged or the far end '
                     'unpowered the gate is held at 0 V and the AUXIO drive '
@@ -1548,32 +1702,38 @@ def bridge():
     b.add(Part('U10', 'XLAT4', 'SN74AVC4T245PW',
                x4(['J_TDO_T', 'GND', 'SB_TCK_IN', 'SB_TMS_IN'],
                   ['SB_TDO_OUT', None, 'SB_TCK_IN_B', 'SB_TMS_IN_B'],
-                  '+3V3', '+3V3', 'GND', '+3V3', 'GND', 'JTAG_EN_N'),
+                  '+3V3', '+3V3', '+3V3', '+3V3', 'PRSNT_OE_N', 'JTAG_EN_N'),
                lcsc=LC_X4, mfr='SN74AVC4T245PWR',
-               desc='JTAG buffers, part 1. Port 1 is B->A and ALWAYS ON: it '
-                    'reads TDO out of CN1 and drives it onto the cable. Port '
-                    '2 is A->B and GATED by JTAG_EN_N: TCK and TMS from the '
-                    'cable into CN1',
+               desc='JTAG buffers, part 1. Port 1 is A->B (1A1 = J_TDO_T from '
+                    'CN1, 1B1 = SB_TDO_OUT on the cable): it reads TDO and '
+                    'drives only the cable, enabled while a powered far end '
+                    'is present. Port 2 is A->B and GATED by JTAG_EN_N: TCK '
+                    'and TMS from the cable into CN1',
                at=None,
-               note='Port 1: 1DIR = GND (B->A), 1OE* = GND. Port 2: 2DIR = '
-                    '+3V3 (A->B), 2OE* = JTAG_EN_N. Reading TDO is '
-                    'unconditional and harmless; driving TCK and TMS is not, '
-                    'and is off until the gateware says otherwise.'))
+               note='Port 1: 1DIR = +3V3 (A->B), 1OE* = PRSNT_OE_N. rev D as '
+                    'first built had 1DIR on GND (B->A), which drove the FPGA '
+                    'TDO pin from the cable permanently; fixed 13 Sep 2026. '
+                    'Port 2: 2DIR = +3V3 (A->B), 2OE* = JTAG_EN_N, which is '
+                    'off unless the gateware enables AND the forward clock '
+                    'runs AND a far end is present.'))
     b.add(Part('U11', 'XLAT4', 'SN74AVC4T245PW',
-               x4(['SB_TDI_IN', 'GND', 'GND', 'GND'],
-                  ['SB_TDI_IN_B', None, None, None],
-                  '+3V3', '+3V3', '+3V3', '+3V3', 'JTAG_EN_N', '+3V3'),
+               x4(['SB_TDI_IN', 'GND', 'DI_FWDCLK', 'GND'],
+                  ['SB_TDI_IN_B', None, 'LA_CLK', None],
+                  '+3V3', '+3V3', '+3V3', '+3V3', 'JTAG_EN_N', 'GND'),
                lcsc=LC_X4, mfr='SN74AVC4T245PWR',
-               desc='JTAG buffers, part 2. Port 1 channel 1 is TDI from the '
-                    'cable into CN1, gated by the same JTAG_EN_N. The other '
-                    'three channels are spare',
+               desc='JTAG buffer part 2, and the clock buffer of the '
+                    'link-alive detector. Port 1 channel 1 is TDI from the '
+                    'cable into CN1, gated by JTAG_EN_N. Port 2 channel 1 '
+                    'buffers a copy of the translated forward clock DI_FWDCLK '
+                    'into the detector pump, always on, so the detector loads '
+                    'neither FPGA pin 98 nor its divider. PLACE BESIDE U1',
                at=None,
-               note='Port 1: 2 channels, DIR = +3V3 (A->B), OE* = JTAG_EN_N; '
-                    'only channel 1 is used and channel 2 has its input '
-                    'grounded. Port 2 is disabled (2OE* to +3V3) with both '
-                    'inputs grounded and both outputs unconnected. Three '
-                    'spare gated 3.3 V channels are available here if a '
-                    'future revision needs them.'))
+               note='Port 1: DIR = +3V3 (A->B), OE* = JTAG_EN_N; channel 2 '
+                    'input grounded. Port 2: DIR = +3V3 (A->B), OE* = GND; '
+                    'channel 1 DI_FWDCLK -> LA_CLK, channel 2 input grounded, '
+                    'output unconnected. Adds one CMOS input to the forward '
+                    'clock net, as U5 does, so keep the stub short: within '
+                    '5 mm of U1.'))
 
     # ==================================================== power
     # WHICH RAIL, AND WHY NOT Vlvds.  The board takes 3.3 V from DB1 pins
@@ -1603,7 +1763,7 @@ def bridge():
              "FPGA's own bank supply exactly, fit SL_VLVDS and FB2 and remove "
              'U12 - but read the note on SL_VLVDS first.'))
 
-    b.add(Part('FB1', 'FB', '120R/2A', {'1': 'DB1_3V3', '2': '+3V3'},
+    b.add(Part('FB1', 'FB', '120R/2A', {'1': 'DB1_3V3', '2': 'P3V3_FB'},
                lcsc=LC['fb'], mfr='BLM18PG121SN1D',
                desc='Input filter on the 3.3 V the board takes from DB1 pins '
                     '19/20. 120 ohm at 100 MHz, 2 A, 50 mOhm, so 15 mV of '
@@ -1688,13 +1848,14 @@ def bridge():
                 desc='AUXIO drive buffer OE*, pull-UP. Pulled low only through '
                      'the presence interlock Q1, so with no far end the drive '
                      'path is tri-stated'))
-    rs.append(R(ref('R'), '1k', 'HL2_JTAG_EN', 'GND', lcsc=LC['r1k'],
+    rs.append(R(ref('R'), '1k', 'JTAG_EN_N', 'GND', lcsc=LC['r1k'],
                 dnp=True,
                 desc='JTAG_FORCE: fit to enable JTAG over the cable WITHOUT '
                      'working HL2 gateware, which is the case you most want '
-                     'it in. 1 k beats the 10 k pull-up (0.23 V) and costs '
-                     'the FPGA only 2.5 mA if the gateware drives the pin '
-                     'high anyway',
+                     'it in. On the buffer side of the link-alive gate Q3, '
+                     'because a radio with no link gateware makes no forward '
+                     'clock. 1 k beats the 10 k pull-up (0.30 V); U2 cannot '
+                     'fight it because Q3 is off whenever its source is HIGH',
                 note='NOT FITTED. This is the recovery path for a radio whose '
                      'gateware will not run: without it, remote reflashing '
                      'depends on the gateware you are trying to replace.'))
@@ -1769,16 +1930,20 @@ def bridge():
                          'THE RECEIVER PINS' % (inet, pos, pos + 1)))
     # Driver-enable strapping, and the shield.
     rs.append(R('R_DRVEN_ON', '0R', 'DRV_EN', '+3V3', lcsc=LC['r0'],
-                desc='LVDS drivers always enabled. FITTED by default'))
-    rs.append(R('R_DRVEN_PRSNT', '0R', 'DRV_EN', 'SB_PRSNT_IN',
-                lcsc=LC['r0'], dnp=True,
-                desc='LVDS drivers enabled only while the far end is present '
-                     'and powered',
+                dnp=True,
+                desc='LVDS drivers always enabled. NOT FITTED since 13 Sep '
+                     '2026: bench use only, with no far end to protect',
                 note='NOT FITTED. FIT AT MOST ONE OF R_DRVEN_ON AND '
-                     'R_DRVEN_PRSNT. Saves about 60 mA with no cable, but '
-                     'depends on the cable wiring its sidebands - and 10Gtek '
-                     'sell a no-sideband variant that would leave the link '
-                     'dead with no clue why.'))
+                     'R_DRVEN_PRSNT.'))
+    rs.append(R('R_DRVEN_PRSNT', '0R', 'DRV_EN', 'SB_PRSNT_IN',
+                lcsc=LC['r0'],
+                desc='LVDS drivers enabled only while the far end is present, '
+                     'powered and (at the Gowin end) configured. FITTED since '
+                     '13 Sep 2026 so a powered radio pushes no LVDS current '
+                     'into an unpowered Tang',
+                note='FITTED. FIT AT MOST ONE OF R_DRVEN_ON AND R_DRVEN_PRSNT. '
+                     'Needs the sideband cable CAB-8654/8654-8i-P: the '
+                     'no-sideband variant would leave the link dead.'))
     rs.append(R0805('R_SHELL', '0R', 'SHELL', 'GND', lcsc=LC['r0_0805'],
                     desc='Connector shell and its four through-hole tails to '
                          'board ground. 0805 so the shield can be lifted if a '
@@ -1868,6 +2033,125 @@ def bridge():
             desc='+3V3 bulk on the DB1 side of FB1, so the bead sees a '
                  'capacitor on both sides'))
 
+    # ============================ 13 Sep 2026: the approved risk-review fixes
+    # (DESIGN_NOTES.md section 14.)  Appended after every existing automatic
+    # designator, so no existing part is renumbered.
+    #
+    # ---- 1. THE LINK-ALIVE DETECTOR.  Stock HL2 gateware drives FPGA pins 87,
+    # 99, 100 and 101 as outputs and pins 72 and 80 LOW, so neither the
+    # receivers nor the two enables may trust anything the radio drives.  The
+    # one thing no released gateware makes is a continuous 153.6 MHz clock on
+    # pin 98 (an LED pin blinking at a few hertz in every variant).  So a
+    # voltage doubler turns "the forward clock is running" into a DC level:
+    #   U11 port 2 (always on) buffers DI_FWDCLK -> LA_CLK
+    #   C 10 pF C0G in series -> LA_PUMP; D13 RB751V-40 LA_PUMP to GND (clamp);
+    #   D14 RB751V-40 LA_PUMP -> LINK_ALIVE; 10 nF + 100 k to GND.
+    # Clock running: LA_PUMP swings about 2.75 V (10 pF against the diode's
+    # ~2 pF), LINK_ALIVE about 2.2 V, against the AO3400A's 1.45 V maximum
+    # threshold (AOS datasheet, VGS(th) 0.65 / 1.05 / 1.45 V at 250 uA).
+    # Stock gateware: each LED edge adds 10 pF x 3.3 V / 10 nF = 3.3 mV,
+    # decaying with a 1 ms time constant: under 0.1 V, far below the 0.65 V
+    # minimum threshold.  FPGA reconfiguring: the clock stops and LINK_ALIVE
+    # falls in a few ms, long before stock gateware starts driving.
+    b.add(C(ref('C'), '10pF', 'LA_CLK', 'LA_PUMP', lcsc=LC['c10p'],
+            desc='Link-alive detector pump capacitor, 10 pF C0G. PLACE WITHIN '
+                 '3 mm OF U11'))
+    b.add(Part('D13', 'DSCH', 'RB751V-40', {'1': 'LA_PUMP', '2': 'GND'},
+               lcsc=LC_SCHOTTKY, mfr='RB751V-40',
+               desc='Link-alive detector clamp diode: cathode LA_PUMP, anode '
+                    'GND. PLACE WITHIN 3 mm OF U11'))
+    b.add(Part('D14', 'DSCH', 'RB751V-40', {'1': 'LINK_ALIVE', '2': 'LA_PUMP'},
+               lcsc=LC_SCHOTTKY, mfr='RB751V-40',
+               desc='Link-alive detector rectifier: anode LA_PUMP, cathode '
+                    'LINK_ALIVE. PLACE WITHIN 3 mm OF U11'))
+    b.add(C(ref('C'), '10nF', 'LINK_ALIVE', 'GND', lcsc=LC['c10n'],
+            desc='Link-alive detector hold capacitor, 10 nF'))
+    b.add(R(ref('R'), '100k', 'LINK_ALIVE', 'GND', lcsc=LC['r100k'],
+            desc='Link-alive detector discharge, 100 k: with the 10 nF a 1 ms '
+                 'time constant, so LINK_ALIVE falls within a few ms of the '
+                 'forward clock stopping'))
+    # ---- 2. What LINK_ALIVE gates.  Every gate is an AO3400A (JLCPCB Basic).
+    b.add(Part(ref('Q'), 'NMOS', 'AO3400A',
+               {'1': 'LINK_ALIVE', '2': 'GND', '3': 'RX_EN_N'},
+               lcsc=LC_NMOS, mfr='AO3400A',
+               desc='Receiver output enable: gate LINK_ALIVE, source GND, drain '
+                    'RX_EN_N. RX_EN_N drives EN* of U6 and U7 and OE* of U3; '
+                    'every output that can drive a radio FPGA pin is '
+                    'high-impedance unless this is on'))
+    b.add(Part(ref('Q'), 'NMOS', 'AO3400A',
+               {'1': 'LINK_ALIVE', '2': 'JTAG_EN_RAW_N', '3': 'JTAG_EN_N'},
+               lcsc=LC_NMOS, mfr='AO3400A',
+               desc='JTAG enable gate: gate LINK_ALIVE, source JTAG_EN_RAW_N (U2 '
+                    'output from FPGA pin 80), drain JTAG_EN_N. Stock gateware '
+                    'drives pin 80 LOW, which alone would enable the JTAG '
+                    'buffers'))
+    b.add(Part(ref('Q'), 'NMOS', 'AO3400A',
+               {'1': 'LINK_ALIVE', '2': 'AUXIO_EN_N', '3': 'AUXIO_EN_LA_N'},
+               lcsc=LC_NMOS, mfr='AO3400A',
+               desc='AUXIO enable gate, in series with Q1: gate LINK_ALIVE, '
+                    'source AUXIO_EN_N (U2 output from FPGA pin 72), drain '
+                    'AUXIO_EN_LA_N. Stock gateware drives pin 72 LOW'))
+    # ---- 3. PRESENCE GATING of the cable-facing buffers.  U8 (AUXIO read)
+    # and U10 port 1 (TDO) drive the cable only while a powered far end
+    # asserts presence, so a powered radio pushes nothing into a dead far end.
+    b.add(Part(ref('Q'), 'NMOS', 'AO3400A',
+               {'1': 'SB_PRSNT_IN', '2': 'GND', '3': 'PRSNT_OE_N'},
+               lcsc=LC_NMOS, mfr='AO3400A',
+               desc='Presence output enable: gate SB_PRSNT_IN, source GND, '
+                    'drain PRSNT_OE_N, which drives OE* of U8 (both ports) and '
+                    'U10 port 1. Far end absent or unpowered: gate held at 0 V '
+                    'by 10 k, PRSNT_OE_N pulled HIGH, both buffers off'))
+    # ---- 4. LINK_ALIVE also means "a far end is present".  With the far end
+    # absent or the cable unplugged, PRSNT_OE_N is HIGH and this clamps
+    # LINK_ALIVE to ground, so the receivers, the JTAG buffers and the AUXIO
+    # drive are off in that state too, whatever the gateware does.
+    b.add(Part(ref('Q'), 'NMOS', 'AO3400A',
+               {'1': 'PRSNT_OE_N', '2': 'GND', '3': 'LINK_ALIVE'},
+               lcsc=LC_NMOS, mfr='AO3400A',
+               desc='Link-alive clamp: gate PRSNT_OE_N, source GND, drain '
+                    'LINK_ALIVE. No far end present -> LINK_ALIVE held LOW'))
+    for net, why in (
+            ('RX_EN_N', 'Receiver enable pull-UP: U3, U6 and U7 outputs '
+                        'high-impedance unless Q2 pulls it low'),
+            ('PRSNT_OE_N', 'Presence output-enable pull-UP: U8 and U10 port 1 '
+                           'off unless a powered far end is present'),
+            ('J_TDO_T', 'TDO pull-UP on the buffer input: the FPGA TDO pin '
+                        'floats when not shifting, and a floating CMOS input '
+                        'is not allowed (TI SCES576I, note to 5.3)')):
+        b.add(R(ref('R'), '10k', net, '+3V3', lcsc=LC['r10k'], desc=why))
+    # U3's four A-side inputs come from U6/U7 outputs, which are now
+    # tri-stated whenever the link is not alive: pull them down so they are
+    # never left floating (TI SCES576I: all unused data inputs must be held).
+    for net in ('RX_REVCLK', 'RX_DUPCLK', 'RX_AUXCLK', 'RX_AUXDAT'):
+        b.add(R(ref('R'), '10k', net, 'GND', lcsc=LC['r10k'],
+                desc='Defines %s, a U3 input, while the receivers are '
+                     'tri-stated' % net))
+    # ---- 5. NOISE: the 3.3 V input LC filter.  FB1 -> 4.7 uH -> +3V3, with a
+    # 100 uF tantalum on +3V3.  Corner about 7 kHz; the tantalum's 1.7 ohm ESR
+    # damps the LC peak (characteristic impedance about 0.2 ohm).  Drop at
+    # 300 mA: 23 mV.  An unfitted 0805 0 R across the inductor bypasses it
+    # for the bring-up comparison.  PLACE AT DB1 PINS 19/20.
+    b.add(Part('L1', 'L4030', '4.7uH', {'1': 'P3V3_FB', '2': '+3V3'},
+               lcsc=LC_L4R7, mfr='SWPA4030S4R7NT',
+               desc='3.3 V input filter inductor, 4.7 uH 2 A 78 mOhm shielded '
+                    '4 x 4 mm, after FB1. PLACE WITHIN 8 mm OF J2 PINS 19/20'))
+    b.add(Part(ref('C'), 'CTAN3528', '100uF', {'1': '+3V3', '2': 'GND'},
+               lcsc=LC['c100u_tan'], mfr='TAJB107K006RNJ',
+               desc='3.3 V input filter capacitor, 100 uF 6.3 V tantalum, ESR '
+                    '1.7 ohm, which damps the LC. Return it to ground beside '
+                    'DB1 pins 13/14. PLACE WITHIN 8 mm OF J2 PINS 19/20'))
+    b.add(R0805('R_LBYP', '0R', 'P3V3_FB', '+3V3', lcsc=LC['r0_0805'], dnp=True,
+                desc='Bypass across L1 for the bring-up noise comparison',
+                note='NOT FITTED. Fit only to compare the noise floor with the '
+                     'LC filter bypassed.'))
+    # ---- 6. NOISE: shell RF bond footprint beside R_SHELL (not fitted).
+    b.add(C(ref('C'), '10nF', 'SHELL', 'GND', lcsc=LC['c10n_0805'], big=True,
+            dnp=True,
+            desc='Shell RF bond, 10 nF 0805, beside R_SHELL. PLACE WITHIN 3 mm '
+                 'OF R_SHELL',
+            note='NOT FITTED. Bring-up trial: lift R_SHELL and fit this, so the '
+                 'shell is DC-open but RF-bonded to ground.'))
+
     # ==================================================== test points
     # TEN TEST POINTS ON THE WHOLE BOARD: nine here and one at the Gowin end.
     # rev D as first generated carried 73, one on
@@ -1897,6 +2181,9 @@ def bridge():
                 'AUXIO_OE_N', 'HL2_FWD_CLK', 'HL2_REV_CLK'):
         b.add(TP(ref('TP'), net))
     b.add(TP(ref('TP'), 'GND', t='TPBIG'))
+    # TP10: the link-alive detector output.  Bench check before a radio: a
+    # 153.6 MHz signal on DB1 pin 9 and presence held HIGH -> about 2.2 V.
+    b.add(TP(ref('TP'), 'LINK_ALIVE'))
 
     # ==================================================== mechanical
     # One unplated 1.1 mm hole for the optional locating peg into HL2 MH6 at
@@ -2178,9 +2465,11 @@ def gowin_end():
         R('R102', '10k', 'G_SB_PRSNT_IN', 'G_GND', lcsc=LC['r10k'],
           desc='Presence detect pull-down, as at the radio end: HIGH only '
                'while the radio end is plugged in and powered'),
-        R('R103', '1k', 'G_SB_PRSNT_IN', 'G_PRSNT_RD', lcsc=LC['r1k'],
-          desc='Presence detect into J14 position 29. Limits injection into '
-               'an unpowered FPGA to 0.3 mA'),
+        R('R103', '10k', 'G_SB_PRSNT_IN', 'G_PRSNT_RD', lcsc=LC['r10k'],
+          desc='Presence detect into J14 position 29. 10 k (was 1 k until 13 '
+               'Sep 2026): in series with the FPGA input only, so reading is '
+               'unaffected, and injection from a powered radio into an '
+               'unpowered Tang falls from 1.35 mA to about 0.25 mA'),
         R('R104', '330R', 'G_TCK_DRV', 'G_SB_TCK_OUT', lcsc=LC['r330'],
           desc='JTAG TCK to the radio, from J14 position 34'),
         R('R105', '1k', 'G_TCK_DRV', 'G_GND', lcsc=LC['r1k'],
@@ -2211,6 +2500,12 @@ def gowin_end():
     rs.append(R0805('R117', '0R', 'G_SHELL', 'G_GND', lcsc=LC['r0_0805'],
                     desc='Connector shell to ground, as R_SHELL at the radio '
                          'end'))
+    rs.append(C('C101', '10nF', 'G_SHELL', 'G_GND', lcsc=LC['c10n_0805'],
+                big=True, dnp=True,
+                desc='Shell RF bond, 10 nF 0805, beside R117. PLACE WITHIN '
+                     '3 mm OF R117',
+                note='NOT FITTED. Bring-up trial: lift R117 and fit this, so '
+                     'the shell is DC-open but RF-bonded to ground.'))
     b.add(*rs)
 
     # ---------------------------------------------------- ESD, every line
@@ -2390,12 +2685,17 @@ def radio_rules(b):
     # courtyard at y 33.5; below U2's keep-back it widens to 0.1 mm short of
     # the main cut-out's keep-back.  (rev D as first prepared: x 8.45-36.0,
     # y 5.17-33.0, before the holes and with a score along the top edge.)
-    mx0 = min(CUT_ADC[0], CUT_T2[0]) - k
+    # 13 Sep 2026: its edges toward the FPGA notch and the main cut-out stop
+    # 0.1 mm short of the ground-via fence keep-out (FENCE_KEEP), and it runs
+    # on down to y 43.0 between the ESD strip and that keep-out, which gives
+    # the detector's clock buffer U11 room beside U1.
+    mx0 = min(CUT_ADC[0], CUT_T2[0])
+    hx1 = round(CUT_FPGA[0] - FENCE_KEEP - 0.1, 2)
+    hy1 = round(CUT_FPGA[3] + FENCE_KEEP + 0.1, 2)
+    hx2 = round(mx0 - FENCE_KEEP - 0.1, 2)
     b.regions.append(('REGION_RADIO_HDR', [
-        (8.45, top), (round(fx0 - 0.1, 2), top), (round(fx0 - 0.1, 2),
-                                                  round(fy1 + 0.1, 2)),
-        (round(mx0 - 0.1, 2), round(fy1 + 0.1, 2)), (round(mx0 - 0.1, 2), 33.0),
-        (8.45, 33.0)], 'radio_hdr'))
+        (8.45, top), (hx1, top), (hx1, hy1), (hx2, hy1), (hx2, 43.0),
+        (21.1, 43.0), (21.1, 33.0), (8.45, 33.0)], 'radio_hdr'))
 
     # ---- the cut-outs: nothing within HOLE_KEEP of a hole edge, any layer
     all_cu = ('F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu')
@@ -2409,17 +2709,96 @@ def radio_rules(b):
     # ---- keepouts
     # 1. A USB Blaster's 10-way IDC socket on J5 needs about 20 x 12 mm clear
     #    (ROUTING.md section 5): no footprint in a ring round J5's own
-    #    courtyard.  J5's pins run local x 56.00..58.54, y 24.50..34.66.
-    jx0, jy0, jx1, jy1 = 56.0 - 1.77, 24.5 - 1.77, 56.0 + 4.32, 24.5 + 11.93
-    cx, cy2 = 56.0 + 1.27, 24.5 + 5.08
-    ix0, ix1 = cx - 6.0, min(cx + 6.0, BOARD_W - m)
-    iy0, iy1 = 21.0, min(cy2 + 10.0, WINDOW[1] - 0.1)
+    #    courtyard.  J5 lies horizontal, so the ring is 20 mm along x and
+    #    12 mm along y, centred on the pin field.
+    jx0, jy0, jx1, jy1 = J5_CRTYD
+    cx, cy2 = J5_AT[0] + 5.08, J5_AT[1] - 1.27
+    ix0, ix1 = max(cx - 10.0, m), min(cx + 10.0, BOARD_W - m)
+    iy0, iy1 = cy2 - 6.0, cy2 + 6.0
     for nm, poly in (('L', rect(ix0, iy0, jx0 - 0.1, iy1)),
                      ('R', rect(jx1 + 0.1, iy0, ix1, iy1)),
                      ('T', rect(jx0 - 0.1, iy0, jx1 + 0.1, jy0 - 0.1)),
                      ('B', rect(jx0 - 0.1, jy1 + 0.1, jx1 + 0.1, iy1))):
         b.keepouts.append(('KEEPOUT_J5_IDC_%s' % nm, ('F.Cu',),
                            ('footprints',), poly))
+    # 3. THE NOISE LAYOUT RULES, as far as Quilter can read them (keepouts
+    #    only; a keepout cannot name nets, so these hold ALL tracks back):
+    #  a. the bottom layer facing the radio is a solid ground pour: no track
+    #     on B.Cu anywhere over the radio end (pads and pours allowed);
+    b.keepouts.append(('KEEPOUT_RADIO_BOTTOM_TRACKS', ('B.Cu',), ('tracks',),
+                       rect(0.0, RADIO_TRIM, BOARD_W, BOARD_H)))
+    #  b. no track within 3 mm of each cut-out over the radio's FPGA, AD9866,
+    #     T2 and DB3 (so none over those parts), EXCEPT in the 2.9 mm neck
+    #     between the FPGA notch and the main cut-out, which can never be
+    #     3 mm from both and is left to slow tracks, and J5's own pin field;
+    #     the 3 mm rule for fast nets along every other edge is in
+    #     bridge.kicad_dru and check_geometry.py;
+    fk = FAST_EDGE_KEEP
+    neck = (round(max(CUT_FPGA[0], min(CUT_ADC[0], CUT_T2[0])) - fk, 3),
+            round(CUT_FPGA[3] + k, 3),
+            round(min(CUT_FPGA[2], CUT_ADC[2]) + fk, 3),
+            round(CUT_ADC[1] - k, 3))
+    j5c = (J5_CRTYD[0] - 0.3, J5_CRTYD[1] - 0.3, J5_CRTYD[2] + 0.3,
+           J5_CRTYD[3] + 0.3)
+    bands = [('FPGA', (CUT_FPGA[0] - fk, RADIO_TRIM, CUT_FPGA[2] + fk,
+                       CUT_FPGA[3] + fk))]
+    bands += [(nm, (x0_ - fk, y0_ - fk, x1_ + fk, y1_ + fk))
+              for nm, (x0_, y0_, x1_, y1_) in cut_rows()]
+    for nm, r_ in bands:
+        pieces = [tuple(round(v, 3) for v in r_)]
+        for cut in (neck, j5c):
+            pieces = [q2 for q1 in pieces for q2 in rect_diff(q1, cut)]
+        for i, (x0_, y0_, x1_, y1_) in enumerate(pieces, start=1):
+            b.keepouts.append(('KEEPOUT_FAST_%s_%d' % (nm, i), all_cu,
+                               ('tracks',),
+                               rect(max(x0_, 0.0), max(y0_, RADIO_TRIM),
+                                    min(x1_, BOARD_W), min(y1_, BOARD_H))))
+    #  c. no track within 3 mm of DB3's pins 3 and 4, the ADC input tap.
+    p3, p4 = _loc(*DB3_PIN_HL2[3]), _loc(*DB3_PIN_HL2[4])
+    hp = DB3_PAD / 2.0 + DB3_FAST_KEEP
+    b.keepouts.append(('KEEPOUT_DB3_ADC_INPUT', all_cu, ('tracks',),
+                       rect(round(min(p3[0], p4[0]) - hp, 3),
+                            round(min(p3[1], p4[1]) - hp, 3),
+                            round(max(p3[0], p4[0]) + hp, 3),
+                            round(max(p3[1], p4[1]) + hp, 3))))
+    #  d. ground stitching vias at 5 mm or less round every cut-out,
+    #     pre-placed here on GND, FENCE_OFFSET from the edge.
+    j5pads = [(J5_AT[0] + 2.54 * i, J5_AT[1] - 2.54 * j)
+              for i in range(5) for j in range(2)]
+    paths = [(fence_path(cut_main()), True),
+             (fence_path([(CUT_FPGA[0], RADIO_TRIM - 5.0),
+                          (CUT_FPGA[0], CUT_FPGA[3]),
+                          (CUT_FPGA[2], CUT_FPGA[3]),
+                          (CUT_FPGA[2], RADIO_TRIM - 5.0)], closed=False),
+              False)]
+    for path, closed in paths:
+        if not closed:
+            path = [(path[0][0], RADIO_TRIM + FENCE_OFFSET)] + path + \
+                   [(path[-1][0], RADIO_TRIM + FENCE_OFFSET)]
+        for (vx, vy) in fence_points(path, closed):
+            r0 = FENCE_VIA[0] / 2.0
+            # 0.25 mm copper clearance to J5's 1.7 mm square pads
+            if any(math.hypot(max(0.0, abs(vx - px_) - 0.85),
+                              max(0.0, abs(vy - py_) - 0.85)) < r0 + 0.25
+                   for px_, py_ in j5pads):
+                continue
+            if any(math.hypot(vx - ox_, vy - oy_) < 1.0 for
+                   (ox_, oy_, _s, _d, _n) in b.vias):
+                continue
+            b.vias.append((vx, vy, FENCE_VIA[0], FENCE_VIA[1], 'GND'))
+    # the fence's own keep-out: no footprint within FENCE_KEEP of a cut edge
+    # (top and bottom layers), except J5's locked courtyard
+    fz = [('FPGA', (CUT_FPGA[0] - FENCE_KEEP, RADIO_TRIM,
+                    CUT_FPGA[2] + FENCE_KEEP, CUT_FPGA[3] + FENCE_KEEP))]
+    fz += [(nm, (x0_ - FENCE_KEEP, y0_ - FENCE_KEEP, x1_ + FENCE_KEEP,
+                 y1_ + FENCE_KEEP)) for nm, (x0_, y0_, x1_, y1_) in cut_rows()]
+    for nm, r_ in fz:
+        pieces = rect_diff(tuple(round(v, 3) for v in r_), j5c)
+        for i, (x0_, y0_, x1_, y1_) in enumerate(pieces, start=1):
+            b.keepouts.append(('KEEPOUT_FENCE_%s_%d' % (nm, i),
+                               ('F.Cu', 'B.Cu'), ('footprints',),
+                               rect(max(x0_, 0.0), max(y0_, RADIO_TRIM),
+                                    min(x1_, BOARD_W), min(y1_, BOARD_H))))
     # 2. The underside over the clock SMAs (HL2 x 74.04-78.24, y
     #    103.36-123.60) and the KEY jack (x 70.20-82.10, y 124.00-136.00),
     #    measured on the owner's radio at 4.24 and 5.12 mm (DESIGN_NOTES.md
@@ -2482,7 +2861,7 @@ def gowin_rules(b):
 # capacitors and test points) on a net that touches a DB1 or DB12 socket pin,
 # so each single-ended HL2 net stays short; the chips one hop further on those
 # paths; and the receiver U6's four terminations, so they travel with it.
-HDR_EXTRA = ('R2', 'U3', 'U6', 'U8', 'U9')   # R2: the divider's shunt leg, beside R1
+HDR_EXTRA = ('R2', 'U3', 'U6', 'U8', 'U9', 'U11')   # U11 beside U1   # R2: the divider's shunt leg, beside R1
 HDR_SKIP_NETS = ('GND', 'DB1_3V3', 'VLVDS', '+3V3', '+2V5')
 
 
@@ -2623,6 +3002,9 @@ def panel():
                                   [xform(x, y) for (x, y) in zpoly], zname))
         for poly in board.cut_polys:
             p.cut_polys.append([xform(x, y) for (x, y) in poly])
+        for (vx, vy, vs, vd, vn) in board.vias:
+            ax, ay = xform(vx, vy)
+            p.vias.append((ax, ay, vs, vd, vn))
         for (nm, lays, dis, poly) in board.keepouts:
             p.keepouts.append((nm, lays, dis,
                                [xform(x, y) for (x, y) in poly]))
@@ -3122,7 +3504,12 @@ def write_pcb(outdir, board, fps):
 
         sidefx = 'B' if p.layer == 'B.Cu' else 'F'
         w.open('fp_text', 'reference', q(p.ref))
-        w.line('at', '0', '-3.2', '0')
+        if p.ref == 'J5':
+            # horizontal J5: the reference above its even pin row, clear of
+            # the pads and the fence vias
+            w.line('at', '4.9', '5.08', '0')
+        else:
+            w.line('at', '0', '-3.2', '0')
         w.line('layer', q('%s.SilkS' % sidefx))
         w.line('uuid', q(uuid_for(board.name, 'fpr', p.ref)))
         w.raw(effects(1.0, justify='mirror' if sidefx == 'B' else None))
@@ -3197,6 +3584,16 @@ def write_pcb(outdir, board, fps):
         w.line('drill', fmt(hd))
         w.line('layers', q('F&B.Cu'), q('*.Mask'))
         w.close_inline()
+        w.close_inline()
+
+    for i, (vx, vy, vs, vd, vn) in enumerate(board.vias):
+        w.open('via')
+        w.line('at', fmt(ox + vx), fmt(oy + vy))
+        w.line('size', fmt(vs))
+        w.line('drill', fmt(vd))
+        w.line('layers', q('F.Cu'), q('B.Cu'))
+        w.line('net', str(nets[vn]))
+        w.line('uuid', q(uuid_for(board.name, 'fence', i)))
         w.close_inline()
 
     for (layer, lx0, ly0, lx1, ly1, lw) in board.lines:
@@ -3424,7 +3821,7 @@ def write_pro(outdir, board):
             pats.append('      { "netclass": "%s", "pattern": "%s" }'
                         % (PAIR_CLASS, name))
     allnets = board.nets()
-    for nm in ('+3V3', '+2V5', 'DB1_3V3', 'VLVDS', 'VLVDS_F'):
+    for nm in ('+3V3', '+2V5', 'DB1_3V3', 'P3V3_FB', 'VLVDS', 'VLVDS_F'):
         if nm in allnets:
             pats.append('      { "netclass": "Power", "pattern": "%s" }' % nm)
     txt = PRO_TEMPLATE % {'name': board.name,
@@ -3433,6 +3830,23 @@ def write_pro(outdir, board):
     with open(os.path.join(outdir, board.name + '.kicad_pro'), 'w',
               encoding='utf-8') as f:
         f.write(txt)
+    # KiCad custom DRC rule: fast nets at the radio end 3 mm from every
+    # board edge and cut-out (Quilter cannot read this file; check_geometry.py
+    # asserts the same rule on the returned board).
+    radio_fast = sorted(n for n in board.nets() if is_pair_net(n)
+                        and not n.startswith('G_')) + list(FAST_SE)
+    cond = ' || '.join("A.NetName == '%s'" % n for n in radio_fast
+                       if n in allnets)
+    with open(os.path.join(outdir, board.name + '.kicad_dru'), 'w',
+              encoding='utf-8') as f:
+        f.write('(version 1)\n'
+                '# Generated by tools/gen_gowin_bridge.py. Radio end noise rule, '
+                'DESIGN_NOTES.md section 14.4.\n'
+                '(rule "radio end: fast nets at least 3 mm from every board '
+                'edge and cut-out"\n'
+                '  (condition "A.Type == \'Track\' && (%s)")\n'
+                '  (constraint edge_clearance (min %.1fmm)))\n'
+                % (cond, FAST_EDGE_KEEP))
     with open(os.path.join(outdir, 'sym-lib-table'), 'w', encoding='utf-8') as f:
         f.write('(sym_lib_table\n  (version 7)\n'
                 '  (lib (name "%s")(type "KiCad")(uri "${KIPRJMOD}/%s.kicad_sym")'

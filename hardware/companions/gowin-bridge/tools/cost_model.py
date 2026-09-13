@@ -64,8 +64,20 @@ PRICES = {
     'C25744': 0.0031,      # 10 k 0402
     'C11702': 0.0022,      # 1 k 0402
     'C20917': 0.0853,      # AO3400A, Basic, 5+ (LCSC 13 Sep 2026)
+    # Added 13 Sep 2026 (risk-review fixes); JLCPCB library first price break
+    'C7502691': 0.0148,    # RB751V-40 Schottky, PREFERRED Extended: no fee
+    'C32949': 0.0069,      # 10 pF C0G 0402, Basic
+    'C15195': 0.0035,      # 10 nF X7R 0402, Basic
+    'C25741': 0.0028,      # 100 k 0402, Basic
+    'C193025': 0.0856,     # SWPA4030S4R7NT 4.7 uH, Extended
+    'C16133': 0.2574,      # TAJB107K006RNJ 100 uF tantalum, Basic
+    'C1710': 0.0094,       # 10 nF 0805, Basic (both not fitted)
 }
-EXTENDED = {'C5432262', 'C206491', 'C87137', 'C81461', 'C138714', 'C194395'}
+# Extended parts that carry the $3.07 feeder fee.  C7502691 is Extended but
+# JLCPCB "Preferred", which is exempt from the fee on Economic assembly
+# (jlcpcb.com/help/article/pcb-assembly-faqs), so it is not listed.
+EXTENDED = {'C5432262', 'C206491', 'C87137', 'C81461', 'C138714', 'C194395',
+            'C193025'}
 
 # Hand-fitted, per complete link, outside the JLCPCB order.
 HAND_RADIO = [
@@ -186,8 +198,11 @@ def main():
                               total / n))
     print('  %-54s %10.2f' % ('radio-only order, COST.md rev D',
                               RADIO_ONLY_ORDER))
-    print('  %-54s %10.2f' % ('THE GOWIN HALF: the difference',
+    print('  %-54s %10.2f' % ('difference to that radio-only order',
                               total - RADIO_ONLY_ORDER))
+    gowin_half = (comp['gowin'] + joints['gowin'] * FEES['smt_joint']) * n
+    print('  %-54s %10.2f' % ('THE GOWIN HALF: Gowin-end parts and joints, '
+                              'x %d' % n, gowin_half))
     print()
     print('Extended part numbers: %s - the Gowin end adds none'
           % ', '.join(ext))

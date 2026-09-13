@@ -366,7 +366,12 @@ Bulk capacitance is deliberately modest — **10 µF per rail and no more**.
 
 **Do not fit or remove the board with the radio powered.** It is on the
 silkscreen. That 22 A microsecond spike would dip the radio's 3.3 V rail, and
-it is also the reason the bulk is 10 µF and not 100 µF.
+it is also why the bulk ahead of the filter is 10 µF and not 100 µF.
+
+**Since 13 Sep 2026** a 100 µF tantalum (C29) sits on +3V3 **behind** the new
+4.7 µH inductor L1 (§14.4). The inductor limits its charging to 0.7 A per
+microsecond and its own 1.7 Ω ESR damps the rest, so the hot-plug spike above,
+into the 10.1 µF ahead of FB1, is unchanged.
 
 **FB1, BLM18PG121SN1D (LCSC C14709), 0603, 120 Ω at 100 MHz, 2 A, 50 mΩ**,
 sits in the 3.3 V feed and drops **15 mV at 300 mA**. It keeps this board's
@@ -573,7 +578,19 @@ are Extended.
 | 1 kΩ 0402 | | **C11702** | Basic | 1 + 1 DNP | 0.0022 |
 | 1 µF 0402 | | **C52923** | Basic | 1 | 0.0097 |
 | N-MOSFET, the AUXIO drive presence interlock Q1 | AO3400A, SOT-23 | **C20917** | Basic | 1 | 0.0853 at 5+ |
-| 0 Ω 0805 | 0805W8F0000T5E | **C17477** | Basic | 1 | 0.0045 |
+| 0 Ω 0805 | 0805W8F0000T5E | **C17477** | Basic | 1 + 1 DNP | 0.0045 |
+| **Added 13 Sep 2026 (§14)** | | | | | |
+| AO3400A, now Q1–Q6 | | **C20917** | Basic | 6 | 0.0853 |
+| Schottky, link-alive detector | RB751V-40, SOD-323 | **C7502691** | **Preferred Extended, no fee** | 2 | 0.0148 |
+| 10 pF C0G 0402 | CL05C100JB5NNNC | **C32949** | Basic | 1 | 0.0069 |
+| 10 nF X7R 0402 | CL05B103KB5NNNC | **C15195** | Basic | 1 | 0.0035 |
+| 100 kΩ 0402 | | **C25741** | Basic | 1 | 0.0028 |
+| 4.7 µH shielded inductor | Sunlord SWPA4030S4R7NT | **C193025** | **Extended** | 1 | 0.0856 |
+| 100 µF 6.3 V tantalum, case B | AVX TAJB107K006RNJ | **C16133** | Basic | 1 | 0.2574 |
+| 10 nF X7R 0805, shell bonds | CL21B103KBANNNC | **C1710** | Basic | 2 DNP | — |
+
+Since 13 Sep 2026: **24 placed part numbers, 16 Basic, 7 Extended with a fee,
+1 Preferred Extended.**
 
 **One part number for all seven translators and buffers, and that is a money
 decision, not an aesthetic one.** JLCPCB's assembly library contains **no
@@ -623,7 +640,7 @@ hardware rather than of the owner's memory:
 | Line | Path | Gating |
 |---|---|---|
 | TCK, TMS, TDI | cable → **gated buffer** → 330 Ω → CN1 | OE* = `JTAG_EN_N`, pulled up at both ends, so **disabled with no gateware and with nothing plugged in** |
-| TDO | CN1 → 330 Ω → **buffer input** (high impedance) → cable | always on; reading TDO cannot fight the FPGA that drives it, and the cable never loads the FPGA pin |
+| TDO | CN1 → 330 Ω → **buffer input** (high impedance) → cable | on while a far end is present; reading TDO cannot fight the FPGA that drives it, and the cable never loads the FPGA pin. **As first built this buffer was backwards and drove the TDO pin; fixed, §14.1** |
 
 So a USB Blaster in the local pass-through meets **a tri-stated output**, not a
 driver, unless the gateware has deliberately enabled the remote path — and you
@@ -688,6 +705,10 @@ The ones that could stop the build are first.
 | **The Gowin-end M3 spacer** | Its hole is under the connector housing and 0.66 mm from the connector's locating-peg hole, so the spacer must be fixed from below and must fit a 3.2 mm hole | Choose the part before ordering. §11.3 |
 | **Dock coordinates on rev 31005** | Every Gowin-end position comes from Sipeed's interactive BOM for dock rev 31004 | Measure J14 pin 1 and hole H7_LU1 on the dock in hand, or offer up the 1:1 template |
 | **C55160396 stock** | The only 5.0 mm 2×18 socket found for the scheme 1 stack; 10 in stock | Buy early. §11.4 |
+| **Whether CAB-8654/8654-8i-P carries all 16 sidebands** | Since §14.3 the radio end's LVDS drivers run only while presence reads HIGH over a sideband; a no-sideband cable leaves the link dead | the ohmmeter test above |
+| **Whether an unpowered Gowin Bank 4 clamps** | decides how much the remaining 0.25 mA presence current matters | nothing to do; §14.3 already removed the rest |
+| **L1 stock** | C193025 had about 2,000 in stock on 13 Sep 2026 | buy early, or use SWPA4020S100MT (C82398) |
+| **Every noise ranking** | judgement until measured | §14.6 |
 | **Gowin on-die termination at VCCIO 3.3 V** | Documented for the bottom banks with no voltage restriction, accepted by Gowin EDA, not yet measured | Seven not-fitted 100 Ω footprints are on the Gowin end as the fallback |
 
 ---
@@ -815,12 +836,14 @@ PINMAP.md §11.4 explains why nothing that works today is lost.
 | JTAG disabled at power-up by a pull resistor | the radio end's gated buffer and its pull-ups still decide; the Gowin can drive TCK/TMS/TDI but they reach the radio's CN1 only once the radio enables the path |
 | No TCK edge from an unconfigured controller | **R105, 1 kΩ to ground on the FPGA side of TCK**: against the Gowin's strongest 400 µA configuration pull-up it holds 0.4 V |
 | A fight is bounded | 330 Ω in every JTAG line at this end too |
-| Unpowered end does not back-feed | 1 k in the presence input and 330 Ω in TDO limit injection into an unpowered FPGA |
+| Unpowered end does not back-feed | 10 k in the presence input (1 k until 13 Sep 2026) and 330 Ω in TDO limit injection into an unpowered FPGA; the radio end's drivers, TDO and AUXIO buffers now run only while this end drives presence (§14.3) |
 
 **Presence here is driven by the gateware** because J14 has no 3.3 V pin:
-HIGH through 1 k is present, LOW is link reset. The radio end only uses its
-presence input for the optional driver-gating link, so an unconfigured Gowin
-reading as absent is harmless.
+HIGH through 1 k is present, LOW is link reset. Since 13 Sep 2026 the radio
+end's LVDS drivers, its TDO and AUXIO buffers and its link-alive gate all
+follow this line (§14.3), so an unconfigured Gowin reading as absent keeps
+the radio end quiet, which is the point. The Gowin gateware must likewise keep
+its own outputs off until it reads presence HIGH.
 
 ### 11.6 One design on one board
 
@@ -908,7 +931,7 @@ It is now on the boundary.
 |---|---|---|---|
 | J2 on DB1, J3 on DB12, J4 on CN1 | HL2 hole grids | `hermeslite.kicad_pcb`, recomputed by `check_geometry.py` | yes |
 | J1 SlimSAS | datum HL2 (80.40, 119.30) | `HL2_END_PANEL.md` | yes |
-| J5 JTAG pass-through | local (56.00, 24.50) | `ROUTING.md` section 5; not set by the radio, locked so the placer cannot bury it | yes |
+| J5 JTAG pass-through | local (51.40, 30.80), rotation 90, since 13 Sep 2026 (was (56.00, 24.50), vertical) | §14.5; not set by the radio, locked so the placer cannot bury it | yes |
 | M3 U-notch | x 1.30-4.70 round HL2 MH2 (73.00, 137.00) | `HL2_MECHANICAL_ENVELOPE.md` | yes |
 | MH6 locating hole | HL2 (74.04, 75.42) | same | yes |
 | Jumper window | local x 43.30-57.00, y 39.50-53.00 | section 13.3 | yes: DB6 read from the HL2 board is inside with 2.5 mm all round. It was 0.50 mm short until 13 Sep 2026 |
@@ -1117,6 +1140,8 @@ finger or tweezers. It is part of the cut-out in §13.1, so it clears the same
 1 mm keep-back; J5's courtyard ends 3.1 mm above it, and DRC passes.
 
 **Found on the way: DB3's position was wrong in the notes and the checker.**
+(Superseded on 13 Sep 2026: DB3 is now wholly inside the cut-out and J5 has
+moved; §14.5.)
 DB3 is at HL2 x 123.33–125.87, **y 109.31–119.47**, not y 114.39–122.01; the
 old figure rotated its footprint the wrong way. So DB3 was never "inside the
 window". About a third of it (its end toward J5) is under the board, and it
@@ -1144,3 +1169,305 @@ These replace the assumptions used until then.
 
 **The internal case measurements are superseded:** use the existing 55 mm
 front panel design (`panel-endcap/`).
+
+---
+
+## 14. Risk-review fixes (13 Sep 2026)
+
+A risk review of rev D found two buffers wired backwards, continuous
+contention with the radio's stock gateware, back-powering of an unpowered
+Tang, and noise paths into the receiver. The owner approved the fixes below.
+All of it is in the generator; `check_netlist.py` and `check_geometry.py`
+assert it.
+
+### 14.1 Two buffers were wired backwards
+
+On an SN74AVC4T245, **DIR LOW is B data to A bus** and DIR HIGH is A data to
+B bus (TI SCES576I, Table 7-1; confirmed from the datasheet on 13 Sep 2026).
+
+| Part | As found | What it did | As fixed |
+|---|---|---|---|
+| **U8**, AUXIO read | A = radio pins 90/91/103/104 (via 330 Ω), B = cable; both DIR on GND, both OE* on GND | **drove the radio's CW key, PTT and clock-chip I2C pins from four floating cable wires, always on**. A LOW is "keyed": the radio could transmit by itself | both DIR on +3V3 (radio → cable), both OE* on `PRSNT_OE_N` |
+| **U10 port 1**, TDO read | 1A1 = `J_TDO_T` (CN1 pin 3), 1B1 = cable; 1DIR on GND, 1OE* on GND | **drove the FPGA's TDO pin from the cable, always on**; broke local USB Blaster programming | 1DIR on +3V3 (radio → cable), 1OE* on `PRSNT_OE_N`, R48 10 kΩ pull-up on `J_TDO_T` |
+
+Every other translator and buffer was checked the same way, against the truth
+tables and the intended direction; `PINMAP.md` §12 has the full table.
+
+| Part | Direction as found | Enable as found | As fixed |
+|---|---|---|---|
+| U1 (forward group) | radio → drivers, correct | always on | unchanged |
+| U2 (aux out, enables) | radio → board, correct | always on | unchanged; the enable outputs now pass Q3 and Q4 |
+| U3 (to radio pins 87/88/89) | receivers → radio, correct | **always on**, fought pin 87 under stock gateware | OE* on `RX_EN_N` (link-alive gate) |
+| U9 (AUXIO drive) | cable → radio, correct | gateware AND presence | also gated by `LINK_ALIVE` (Q4) |
+| U10 port 2 (TCK, TMS) | cable → radio, correct | gateware only; **stock gateware enabled it** | `JTAG_EN_N` now gated by `LINK_ALIVE` (Q3) |
+| U11 port 1 (TDI) | cable → radio, correct | same as U10 port 2 | same fix |
+| U11 port 2 | spare, disabled | off | now always on: the detector's clock buffer |
+| U4, U5 DS90LV047A drivers | cable | always on | gated by presence (R_DRVEN_PRSNT fitted) |
+| U6, U7 DS90LV048A receivers | to radio pins 99/100/101 and U3 | **always on**, fought pins 99–101 under stock gateware | EN* on `RX_EN_N` |
+| SN74AVC8T245 | none on the board | | |
+
+**The checker now derives every direction** from the DIR and OE nets and the
+truth table and compares each channel with `PINMAP.md` §12. Proved by putting
+U8's DIR pins back on GND: `check_netlist.py` failed with 10 problems,
+including "U8 port 1 runs B>A (DIR = GND), PINMAP.md says A>B" and "still
+enabled toward the radio: U8 port 1, U8 port 2" under stock gateware.
+
+### 14.2 Contention with stock gateware: the link-alive detector
+
+**The problem.** Stock gateware for HL2 build 5 and later drives FPGA pin 87
+LOW and pins 99, 100 and 101 as LED outputs; our U3 and U6 drove the same pins
+continuously, at 20–49 mA per pin, at or over the Cyclone IV's 25 mA limit.
+And it drives pins 72 and 80 LOW, which our enables read as "on". No spare DC
+pin stays HIGH under stock gateware, and series resistors large enough to
+limit the fight would close the 3.26 ns eye.
+
+**The fix.** Link gateware drives a continuous 153.6 MHz clock on pin 98; no
+released variant does (pin 98 is an LED blinking at a few hertz). A voltage
+doubler turns "clock running" into a DC level.
+
+| Part | Ref | Value | LCSC | Tier | Role |
+|---|---|---|---|---|---|
+| clock buffer | U11 port 2 | SN74AVC4T245 (already fitted) | C81461 | Extended, already paid | copy of `DI_FWDCLK` → `LA_CLK`; loads neither pin 98 nor its divider |
+| pump capacitor | C27 | 10 pF C0G 0402 | C32949 | Basic | `LA_CLK` → `LA_PUMP` |
+| clamp diode | D13 | RB751V-40, SOD-323 | C7502691 | **Preferred Extended: no fee** | `LA_PUMP` to GND |
+| rectifier | D14 | RB751V-40 | C7502691 | same | `LA_PUMP` → `LINK_ALIVE` |
+| hold capacitor | C28 | 10 nF X7R 0402 | C15195 | Basic | `LINK_ALIVE` to GND |
+| discharge | R45 | 100 kΩ 0402 | C25741 | Basic | 1 ms with C28 |
+| receiver gate | Q2 | AO3400A | C20917 | Basic | `LINK_ALIVE` HIGH pulls `RX_EN_N` LOW |
+| JTAG gate | Q3 | AO3400A | C20917 | Basic | between U2's output and `JTAG_EN_N` |
+| AUXIO gate | Q4 | AO3400A | C20917 | Basic | in series with Q1 |
+| far-end clamp | Q6 | AO3400A | C20917 | Basic | holds `LINK_ALIVE` LOW with no far end |
+| pull-up | R46 | 10 kΩ | C25744 | Basic | `RX_EN_N` |
+| input holds | R49–R52 | 10 kΩ to GND | C25744 | Basic | U3's four inputs while U6/U7 are tri-stated (TI: inputs must not float) |
+| test point | TP10 | | | | `LINK_ALIVE` |
+
+**The numbers** (from the review; the AO3400A threshold re-read from the AOS
+datasheet: VGS(th) 0.65 / 1.05 / 1.45 V min / typ / max at 250 µA):
+
+| Case | `LINK_ALIVE` |
+|---|---|
+| Clock running, far end present | `LA_PUMP` swings about 2.75 V (10 pF against the diode's ~2 pF); output about **2.2 V**, 0.75 V over the 1.45 V maximum threshold |
+| Stock gateware | each LED edge adds 10 pF × 3.3 V / 10 nF = 3.3 mV, decaying in 1 ms: **under 0.1 V**, far under the 0.65 V minimum threshold |
+| FPGA reconfiguring | clock stops, output falls in a few milliseconds, before stock gateware starts |
+| No far end, or cable unplugged | clamped to 0 V by Q6 |
+
+**The receivers really tri-state.** DS90LV048A (TI SNLS045C Table 1): outputs
+enabled only for EN HIGH with EN* LOW or open; every other combination is
+TRI-STATE, 10 µA maximum leakage. SN74AVC4T245: OE* HIGH puts both ports in
+isolation; OE* is referenced to VCCA, which is 3.3 V on U3.
+
+**Placement.** U11 must sit beside U1 (the forward-clock translator): U11 is
+in `REGION_RADIO_HDR` with U1, Quilter gets a 5 mm proximity constraint, and
+`check_geometry.py` checks it on return. The pump parts C27, D13 and D14 go
+within 3 mm of U11.
+
+**The one behaviour to know.** With the link gateware running but no far end,
+or during a far-end link reset, the receivers, the JTAG buffers and the AUXIO
+drive are off too. That is intended: the owner's safe state requires it.
+
+**Recovery JTAG.** R_JTAG_FORCE (R21, not fitted) moved from `HL2_JTAG_EN` to
+`JTAG_EN_N`, behind Q3, because a radio without working gateware makes no
+clock. Fitted, it enables the JTAG buffers regardless.
+
+**Cost of §14.1–14.3 together:** about $0.55 per board (five AO3400A, two
+diodes, two capacitors, eight resistors, 39 joints) and **no new feeder fee**:
+the RB751V-40 is a JLCPCB Preferred Extended part, exempt from the fee on
+Economic assembly, which the review had assumed would cost $3.07. (Tier read
+from the JLCPCB library mirror at jlcsearch.tscircuit.com; JLCPCB's own FAQ
+confirms Preferred parts carry no feeder fee.)
+
+### 14.3 Power sequencing: presence gates the cable drivers
+
+**The problem.** Radio on, Tang off: the radio end's always-on LVDS drivers and
+the presence line push roughly 30–60 mA into an unpowered Gowin, whose
+behaviour unpowered is not documented.
+
+| Change | Effect |
+|---|---|
+| **R_DRVEN_PRSNT fitted, R_DRVEN_ON not fitted** | U4, U5 run only while the far end drives presence HIGH. A Tang drives presence from gateware, so its drivers stay off while it is off or unconfigured |
+| **Q5** AO3400A (gate `SB_PRSNT_IN`, drain `PRSNT_OE_N`) + R47 10 kΩ pull-up | U8 (AUXIO read) and U10 port 1 (TDO) drive the cable only with a far end present. Removes the 7 mA TDO path into a dead Tang and 1.3 mA radio to radio |
+| **R103 1 kΩ → 10 kΩ** at the Gowin end | presence injection into a dead Tang from 1.35 mA to about 0.25 mA; reading unaffected |
+| **Gowin gateware rule** (`PINMAP.md` §11.4) | keep LVDS and JTAG outputs off until presence reads HIGH |
+
+What remains with the Tang off: about 0.25 mA on the presence line. **This
+needs the sideband cable**; the no-sideband variant leaves the link dead.
+Cost: one AO3400A and one 10 kΩ, about $0.09 per board, no fee.
+
+`check_netlist.py` asserts it in all three pairings: radio end fed by a radio
+far end (A8 through 1 kΩ to that radio's +3V3), radio end fed by a Gowin far
+end (A8 through 1 kΩ from a gateware ball, no pull-up), and the Gowin end fed
+by a radio (read through 10 kΩ).
+
+### 14.4 Noise into the receiver: what is built in
+
+Nothing here can be measured before boards exist. These are the measures the
+owner approved to build in; §14.6 is how to measure them.
+
+**1. LC filter on our 3.3 V input.** DB1 pins 19/20 → FB1 → **L1** → +3V3.
+
+| Part | Ref | LCSC | Tier | Price |
+|---|---|---|---|---|
+| Sunlord SWPA4030S4R7NT, 4.7 µH, 2 A, 78 mΩ, shielded 4 × 4 mm | L1 | C193025 | **Extended, $3.07 fee** | $0.0856; **only about 2,000 in stock** |
+| AVX TAJB107K006RNJ, 100 µF 6.3 V tantalum, case B, ESR 1.7 Ω | C29 | C16133 | Basic | $0.2574 |
+| 0 Ω 0805 bypass across L1, **not fitted** | R_LBYP | C17477 | Basic | — |
+
+Corner about 7.3 kHz. The tantalum's 1.7 Ω ESR damps the LC peak
+(characteristic impedance about 0.22 Ω). Drop at 300 mA: 23 mV, so the board's
++3V3 is about 3.24 V. Place L1 and C29 within 8 mm of DB1 pins 19/20 and return
+C29 to ground beside DB1 pins 13/14 (Quilter proximity constraint; checked on
+return). Hot plug (§4.3) is unchanged ahead of FB1; behind L1 the capacitors
+charge at no more than 0.7 A per microsecond. Still do not plug or unplug
+powered. The review's alternative if C193025 runs out: SWPA4020S100MT (10 µH,
+900 mA, 215 mΩ, C82398), 65 mV drop.
+
+**2. Shell RF bond footprints, not fitted.** C30 (10 nF 0805, C1710) beside
+R_SHELL and C101 beside R117. At bring-up the shell can be DC-open but
+RF-bonded: lift the 0 Ω, fit the capacitor. Expect little effect: the cable's
+26 ground contacts carry the loop current regardless.
+
+**3. Layout rules at the radio end.** "Fast" means every radio-end pair plus
+the single-ended nets that switch at 153.6 MHz: the header nets on pins 98,
+76, 77, 83, 85, 86, 87, 88, 89, 99, 100, 101, the translator nets `DI_*`,
+`RX_*`, `X_*25`, and the detector's `LA_CLK`, `LA_PUMP` (the generator's
+`FAST_SE`).
+
+| Rule | For Quilter (in the board file) | For KiCad DRC | Checked on the returned board (`check_geometry.py`) |
+|---|---|---|---|
+| Solid ground pour on the bottom layer facing the radio | pour `GND_BOTTOM_RADIO` (add to Preserved Pours); `KEEPOUT_RADIO_BOTTOM_TRACKS`: no track on B.Cu anywhere over the radio end | the keepout | GND pour present; no track on B.Cu at the radio end |
+| No fast track over the FPGA, AD9866 or T2 | `KEEPOUT_FAST_*`: no track within 3 mm of the cut-outs over them (the cut-outs are 1.5 mm bigger than the packages) | the keepouts | no fast track within the package outline plus 3 mm |
+| Ground vias every 5 mm or less round each cut-out | **pre-placed**: 48 GND vias, 1.6 mm from the edge, largest gap 4.44 mm round the main cut-out and 4.20 mm round the FPGA notch; `KEEPOUT_FENCE_*` keeps footprints 2.2 mm off every cut edge so nothing lands on them | — | GND vias within 3 mm of each cut edge, no gap over 5.0 mm |
+| Fast tracks at least 3 mm from any edge | round the cut-outs: the `KEEPOUT_FAST_*` areas. Along the outer edges a keepout would also block the connector's shell tails and every slow track, so it is not a keepout | **`bridge/bridge.kicad_dru`**: custom rule, edge clearance 3 mm for the fast nets (tested: it flags a fast track 0.9 mm from the edge and ignores a slow one) | every fast track segment 3 mm or more from every radio-end edge and cut-out |
+| No fast track within 3 mm of DB3 pins 3 and 4 | `KEEPOUT_DB3_ADC_INPUT` (tracks, all copper layers) | the keepout | no track at all within 3 mm of those pads |
+
+A keepout cannot name nets, so the `KEEPOUT_FAST_*` areas hold back **all**
+tracks. Two places are left open on purpose: the 2.9 mm neck between the FPGA
+notch and the main cut-out (it can never be 3 mm from both, so slow tracks
+only; the checker catches a fast one), and J5's pin field. The Gowin end is
+not covered by these rules: its pairs must reach J102, whose pins sit 2.4 mm
+from its edge.
+
+**4. Scramble every lane, including idle** — a gateware rule, recorded in
+`PINMAP.md` §9.
+
+**Not built in, by decision:** common-mode chokes on the pairs; galvanic
+isolation.
+
+### 14.5 DB3 on the radio, the cut-out and J5
+
+**What DB3 is.** An optional, normally not fitted 4-pin header on the HL2,
+footprint HERMESLITE:4x1 at HL2 (124.60, 118.20), rotation 90. From
+`hermeslite.net`: pin 1 +3V3, pin 2 GND, pins 3 and 4 the **AD9866's receive
+input pair** (U7 pins 51 and 52 via C49, L4, L7, R50, R64). It is an RF
+daughterboard tap straight into the ADC input. The owner's radio does not
+have it fitted; other owners may, and what plugs in there is an RF board that
+needs space above it. Pins at HL2 x 124.60, y 118.20 / 115.66 / 113.12 / 110.58
+(pins 1 to 4).
+
+**The cut-out.** Before: about a third of DB3 lay under the board beside J5.
+Now the merged cut-out (AD9866, T2, jumper window) also clears DB3:
+
+| | |
+|---|---|
+| DB3 outline, from the HL2 board file | 2.54 × 10.16 mm, HL2 x 123.33–125.87, y 109.31–119.47 |
+| Allowance for a plugged-in 1 × 4 socket body | 0.5 mm each side |
+| Margin, as every other hole | 1.5 mm each side |
+| **Clear area** | **6.54 × 14.16 mm**, HL2 x 121.33–127.87, y 107.31–121.47; radio local x 51.33–57.87, y 34.01–48.17 |
+| Merged cut-out now | local x 34.09–57.87, y 30.00–56.25. The 3.3 mm tongue between the AD9866 hole and the DB3 hole is cut away too, and the window's right edge is at x 57.87 all the way down |
+| Milling path | 0.565 m on 0.0059 m², still 95 m per m² (fee from 120) |
+| Open cut-out, not holes | an RF board on DB3 needs room above, and our fast signals must stay away from an ADC input |
+
+**J5 moved.** J5, the USB Blaster pass-through, is not placed by the radio; it
+is locked only so Quilter cannot bury it. It was vertical at local
+(56.00, 24.50), where the DB3 cut-out now is.
+
+| | |
+|---|---|
+| New position | pin 1 at local **(51.40, 30.80)** = HL2 (121.40, 104.10), **rotation 90**: horizontal, odd pins along y 30.80, even pins along y 28.26, pins 1–2 at x 51.40 to pins 9–10 at x 61.56 |
+| Where that is | the strip between the FPGA notch and the main cut-out, directly under CN1's socket J4 |
+| Clearances | courtyard x 49.63–63.33, y 26.48–32.57: 0.63 mm from the AD9866 hole keep-back, 0.38 mm from the FPGA notch keep-back, 0.44 mm from the DB3 hole keep-back |
+| JTAG tracks | J4's pins end at y 19.08; J5's nearest row is at y 28.26: ten short, straight runs |
+| USB Blaster access | the IDC keep-out ring is kept, 20 × 12 mm round the pin field; the plug body overhangs the FPGA notch and the board's right edge in open air |
+| One conflict to know | a USB Blaster plug on J5 and a tall RF board on DB3 cannot both be used at once: the IDC body reaches to about 1 mm from the DB3 cut-out |
+
+`check_geometry.py` asserts DB3 plus socket plus margin is off the board, the
+3 mm no-track keep-out round pins 3 and 4 covers every bit of board within it
+on every copper layer, no track is there on the returned board, and J5 is
+locked at its new position and rotation.
+
+**Placement areas re-checked** (usable area after cut-outs and footprint
+keep-outs, against the parts' courtyards, sampled at 0.25 mm):
+
+| Region | Before | Now |
+|---|---|---|
+| `REGION_RADIO_HDR` | 538 mm² for 298 mm² (1.81×) | **590 mm² for 338 mm² (1.74×)**: U11 added; edges pulled back 2.2 mm from the notch and the main cut-out for the via fence; extended down to y 43 between the ESD strip and the fence |
+| `REGION_RADIO` | 2368 mm² for 483 mm² (4.9×) | **2166 mm² for 593 mm² (3.65×)** |
+| `REGION_RADIO_ESD`, `REGION_GOWIN_ESD`, `REGION_GOWIN` | unchanged | unchanged (the Gowin region gains C101) |
+
+**The 25 mm single-ended rule still has room:** for every HL2 header pin, at
+least **289 mm²** of the header region lies within 21.5 mm of it (was 308 mm²
+with the same method). The worst is still DB1 pin 1, whose net goes to U2 and
+R18: a 48 mm² TSSOP and a resistor.
+
+### 14.6 Bring-up noise test plan
+
+**Setup.** 50 Ω load on the radio's receive input, fixed LNA gain, the same
+software settings every run. Record the noise floor in dBm per 500 Hz at 1.9,
+3.6, 7.1, 10.1, 14.1, 18.1, 21.1, 24.9 and 28.5 MHz. Then scan 0–38 MHz with a
+narrow bandwidth for spurs. Repeat once with an antenna for real-band noise.
+
+**Before any of it:** bench-check `LINK_ALIVE` (TP10) with a 153.6 MHz signal
+on DB1 pin 9 and presence held HIGH (TP3 to +3V3 through 1 kΩ): about 2.2 V.
+With the signal off: under 0.1 V.
+
+| Step | Configuration | What it isolates |
+|---|---|---|
+| 0 | Stock gateware, **board removed** | baseline |
+| 1 | Link gateware, board removed | the gateware alone |
+| 2 | Board fitted, cable unplugged (drivers off by presence) | our board's static and translator activity |
+| 3 | As 2, drivers forced on (fit R_DRVEN_ON) | driver activity, no cable |
+| 4 | Cable to the Tang, Tang powered and configured, **link idle** (scrambled) | the ground loop plus idle traffic |
+| 5 | **Link running**, full ADC stream | worst case |
+| 6 | Variations on step 5, one at a time (below) | which measure matters |
+
+**Step 6 trials:**
+
+| Trial | How |
+|---|---|
+| Clip-on cable ferrite | material 31 (works from about 1 MHz), at the radio end, at the Tang end, then both. The cable's cross-section is not measured; about $3–6, part not chosen |
+| Tang on the radio's supply, separate leads | from the brick's terminals, not daisy-chained; then with a ferrite on the Tang's DC lead |
+| Tang on its own supply | as the reference for the row above |
+| Tang Ethernet unplugged | removes that loop |
+| Shell DC-open, RF-bonded | lift R_SHELL / R117, fit C30 / C101 |
+| LED resistors lifted | HL2 R71–R74, which carry our lanes to the front-panel LEDs |
+| LC filter bypassed | fit R_LBYP |
+
+**Pass:** noise floor within 1 dB of step 0, and no spur visible above the
+floor in 500 Hz.
+
+### 14.7 Hardrock-50 and the DB9 adapter board: compatibility requirement
+
+**The DB9 adapter board (`hardware/companions/db9/`) cannot be fitted with
+this bridge board.** Its hand-wired leads land on DB1 pins 3, 7, 13 and 19,
+which our socket J2 covers, and DB1 pin 3 (FPGA pin 77, the HL2 UART TX) is our
+ADC data lane 1.
+
+**Owner decision (13 Sep 2026):** the Hardrock-50 amplifier's serial and PTT
+connection moves to the **N2ADR HL2 IO board** (github.com/jimahlstrom/HL2IOBoard),
+which has its own DB9 connector and a Hardrock-50 firmware example
+(`n1adj_hr50`); PTT comes from the IO board's pass-through of EXTTR. The DB9
+adapter is retired. No change to this board. The IO board itself coexists: it
+sits at the opposite end of the radio, about 29 mm from ours, shares no FPGA
+pin and no I2C bus with this link, and adds an estimated 30–50 mA to the
+radio's 3.3 V.
+
+### 14.8 What it cost
+
+| | Before | Now |
+|---|---|---|
+| Order total, five boards | $154.84 | **$162.43** |
+| One complete link | $30.97 | **$32.49** |
+| The Gowin half (Gowin-end parts and joints, five boards) | $21.91 | **$21.92** (R103 value only) |
+| Extended feeder fees | 6 × $3.07 | **7 × $3.07** (L1; the RB751V-40 is Preferred, no fee) |
+| Radio-end parts per board | $13.39 | **$14.23** |
+
+`COST.md` has the lines.

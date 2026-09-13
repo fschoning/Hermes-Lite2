@@ -67,6 +67,27 @@ generator could get wrong without ERC noticing:
     asserts presence.  Walked for radio-to-Gowin, Gowin-to-radio and
     radio-to-radio.
 
+13. EVERY TRANSLATOR AND BUFFER RUNS THE WAY PINMAP.md SAYS.  For every
+    SN74AVC4T245 (and any SN74AVC8T245) the direction and enable of each port
+    are DERIVED from its DIR and OE* nets and TI's truth table, and every
+    channel's input and output net is compared with PINMAP.md section 12; the
+    DS90LV047A and DS90LV048A enables likewise.  rev D as first built had U8
+    and U10 port 1 wired backwards and nothing noticed.
+
+14. THE SAFE STATE.  The board's logic is evaluated for all sixteen
+    combinations of forward clock on/off, far end present/absent and FPGA
+    pins 72 and 80 HIGH/LOW.  Whenever the clock is off (stock gateware, no
+    gateware) or no far end is present (far end absent, cable unplugged),
+    nothing on the board may drive a radio FPGA pin, the JTAG buffers and the
+    AUXIO drive must be off, and with no far end every cable-facing buffer
+    and both LVDS drivers must be off.  With the clock on, a far end present
+    and the enables asserted, all of it must come on.
+
+15. THE PRESENCE GATING in all three pairings: the radio end's drivers
+    follow B8; a radio far end asserts A8 only while powered, a Gowin far end
+    only while its gateware drives it; the Gowin end reads presence through
+    10 k.
+
 The tables below are retyped here from PINMAP.md and from the specifications
 rather than imported from the generator, so the two can disagree and be
 caught.
@@ -202,6 +223,8 @@ ENABLES = {
     'HL2_AUXIO_EN': '+2V5',
     'AUXIO_EN_N': '+3V3',
     'AUXIO_OE_N': '+3V3',
+    'RX_EN_N': '+3V3',
+    'PRSNT_OE_N': '+3V3',
 }
 
 # The four AUXIO lines, retyped from the HL2 schematic (hardware/hl,
@@ -312,7 +335,7 @@ GSIDEBANDS = {
 # connector net -> (J14 net, series resistor value)
 GOWIN_SB_SERIES = {
     'G_SB_PRSNT_OUT': ('G_PRSNT_DRV', '1k'),
-    'G_SB_PRSNT_IN': ('G_PRSNT_RD', '1k'),
+    'G_SB_PRSNT_IN': ('G_PRSNT_RD', '10k'),
     'G_SB_TCK_OUT': ('G_TCK_DRV', '330R'),
     'G_SB_TMS_OUT': ('G_TMS_DRV', '330R'),
     'G_SB_TDI_OUT': ('G_TDI_DRV', '330R'),
@@ -351,15 +374,23 @@ def export():
     return out
 
 
+DNP = set()
+
+
 def load(path):
-    """-> (pin map, value map, net map, part-pin map)."""
+    """-> (pin map, value map, net map, part-pin map); DNP is filled in."""
     root = K.parse(open(path, encoding='utf-8').read())[0]
     pins, vals, bynet, byref = {}, {}, {}, {}
+    DNP.clear()
     for comps in K.kids(root, 'components'):
         for comp in K.kids(comps, 'comp'):
             r = K.atoms(K.kid(comp, 'ref'))[0]
             v = K.kid(comp, 'value')
             vals[r] = K.atoms(v)[0] if v is not None else ''
+            for pr in K.kids(comp, 'property'):
+                nm = K.kid(pr, 'name')
+                if nm is not None and K.atoms(nm) and K.atoms(nm)[0] == 'dnp':
+                    DNP.add(r)
     for n in K.kids(root, 'nets'):
         for net in K.kids(n, 'net'):
             nm = K.atoms(K.kid(net, 'name'))[0]
@@ -527,9 +558,11 @@ def check_enables(pins, vals, bynet, byref):
                   % (net, rail, ', '.join(sorted(set(ups)))))
         if downs:
             # Only tolerable as the deliberately not-fitted JTAG recovery
-            # link, which is a 1k on HL2_JTAG_EN.
-            ok = (net == 'HL2_JTAG_EN'
-                  and all(d.endswith('=1k') for d in downs))
+            # link, a 1k on JTAG_EN_N (behind the link-alive gate, because a
+            # radio with no link gateware makes no forward clock).
+            ok = (net == 'JTAG_EN_N'
+                  and all(d.endswith('=1k') and d.split('=')[0] in DNP
+                          for d in downs))
             if ok:
                 print('         plus the NOT-FITTED 1k recovery link (%s), '
                       'which is how you enable JTAG when the gateware that '
@@ -928,20 +961,535 @@ def auxio_failsafe(pins, vals, bynet, byref, near, far):
     gate = pins.get((q[0], '1'))
     src = pins.get((q[0], '2'))
     gu, gd = pulls(gate, pins, vals, bynet, byref)
-    if gate != 'SB_PRSNT_IN' or src != 'AUXIO_EN_N' or gu or not gd:
+    # the source reaches the gateware enable AUXIO_EN_N through the
+    # link-alive gate (a second MOSFET whose gate is LINK_ALIVE)
+    q2 = [r for (r, pd) in bynet.get(src, []) if r.startswith('Q')
+          and pd == '3']
+    via_la = (len(q2) == 1 and pins.get((q2[0], '1')) == 'LINK_ALIVE'
+              and pins.get((q2[0], '2')) == 'AUXIO_EN_N')
+    if gate != 'SB_PRSNT_IN' or not via_la or gu or not gd:
         prob.append('the interlock %s must have gate SB_PRSNT_IN (pulled '
-                    'DOWN, so LOW with the far end absent) and source '
-                    'AUXIO_EN_N: gate %s (up %s, down %s), source %s'
-                    % (q[0], gate, gu, gd, src))
+                    'DOWN, so LOW with the far end absent) and its source must '
+                    'reach AUXIO_EN_N only through a MOSFET gated by '
+                    'LINK_ALIVE: gate %s (up %s, down %s), source %s via %s'
+                    % (q[0], gate, gu, gd, src, q2))
         return prob
     f_prs = pins.get((fref, 'A8'), '<open>')
     print('  drive enable: %s OE* = AUXIO_OE_N, pulled UP by %s; pulled low '
-          'only through %s, gate %s held LOW by %s with the %s end absent, '
-          'so the drive path is TRI-STATED whatever the gateware does'
-          % (AUXIO_DRIVE_BUF, ', '.join(ups), q[0], gate, ', '.join(gd), fl))
+          'only through %s (gate %s, held LOW by %s with the %s end '
+          'absent) in series with %s (gate LINK_ALIVE), so the drive path is '
+          'TRI-STATED whatever the gateware does'
+          % (AUXIO_DRIVE_BUF, ', '.join(ups), q[0], gate, ', '.join(gd), fl,
+             q2[0]))
     if f_prs == '<open>':
         prob.append('the %s end has nothing on A8, so it can never assert '
                     'presence' % fl)
+    return prob
+
+
+
+# ==========================================================================
+#  13 SEP 2026: EVERY BUFFER'S DIRECTION AND ENABLE, FROM THE TRUTH TABLE,
+#  THE SAFE STATE, AND THE PRESENCE GATING
+# ==========================================================================
+#
+# rev D as first built had two SN74AVC4T245s wired backwards (U8, and U10
+# port 1): DIR LOW is B data to A bus, so both drove radio pins from the
+# cable.  The old check looked only at U9's DIR pins.  This one derives every
+# channel of every translator and LVDS part from its DIR and enable nets and
+# the datasheet truth tables, and compares it with the table in PINMAP.md
+# section 12, retyped here.
+#
+# SN74AVC4T245, TI SCES576I Table 7-1 (each 2-bit section):
+#   OE* L, DIR L -> A port outputs enabled, B hi-Z: B data to A bus
+#   OE* L, DIR H -> A hi-Z, B outputs enabled: A data to B bus
+#   OE* H        -> both hi-Z (isolation)
+# PW pinout (SCES576I, Pin Functions): 1 VCCA, 2 1DIR, 3 2DIR, 4 1A1, 5 1A2,
+# 6 2A1, 7 2A2, 8/9 GND, 10 2B2, 11 2B1, 12 1B2, 13 1B1, 14 2OE*, 15 1OE*,
+# 16 VCCB.  DIR and OE* are referenced to VCCA.
+X4_PORT = {1: dict(dir='2', oe='15', ch=(('4', '13'), ('5', '12'))),
+           2: dict(dir='3', oe='14', ch=(('6', '11'), ('7', '10')))}
+# DS90LV048A, TI SNLS045C Table 1: outputs enabled only for EN (16) HIGH and
+# EN* (9) LOW or open; every other combination TRI-STATE.  ROUT 15/14/11/10.
+# DS90LV047A, TI SNLS044D: EN (1) HIGH and EN* (8) LOW enables the drivers.
+RAILS = {'+3V3': 1, '+2V5': 1, 'GND': 0}
+
+# PINMAP.md section 12, retyped.  ref -> port -> (intended direction,
+# intended enable, [(input net, output net) per channel]).  Direction 'A>B'
+# means the A side is the input.  Enable 'always' = OE* tied LOW; otherwise
+# the active-LOW enable net.  An output of None is a spare left unconnected.
+XLAT = {
+    'U1': {1: ('A>B', 'always', [('HL2_FWD_CLK', 'DI_FWDCLK'),
+                                 ('HL2_ADC_D0', 'DI_ADCD0')]),
+           2: ('A>B', 'always', [('HL2_ADC_D1', 'DI_ADCD1'),
+                                 ('HL2_ADC_D2', 'DI_ADCD2')])},
+    'U2': {1: ('A>B', 'always', [('HL2_AUX_CLK_OUT', 'DI_AUXCLK'),
+                                 ('HL2_AUX_DAT_OUT', 'DI_AUXDAT')]),
+           2: ('A>B', 'always', [('HL2_JTAG_EN', 'JTAG_EN_RAW_N'),
+                                 ('HL2_AUXIO_EN', 'AUXIO_EN_N')])},
+    'U3': {1: ('A>B', 'RX_EN_N', [('RX_REVCLK', 'X_REVCLK25'),
+                                  ('RX_DUPCLK', 'X_DUPCLK25')]),
+           2: ('A>B', 'RX_EN_N', [('RX_AUXCLK', 'X_AUXCLK25'),
+                                  ('RX_AUXDAT', 'X_AUXDAT25')])},
+    'U8': {1: ('A>B', 'PRSNT_OE_N', [('AUXIO0_T', 'SB_AUXIO0_OUT'),
+                                     ('AUXIO1_T', 'SB_AUXIO1_OUT')]),
+           2: ('A>B', 'PRSNT_OE_N', [('AUXIO2_T', 'SB_AUXIO2_OUT'),
+                                     ('AUXIO3_T', 'SB_AUXIO3_OUT')])},
+    'U9': {1: ('A>B', 'AUXIO_OE_N', [('SB_AUXIO0_IN', 'AUXIO0_T'),
+                                     ('SB_AUXIO1_IN', 'AUXIO1_T')]),
+           2: ('A>B', 'AUXIO_OE_N', [('SB_AUXIO2_IN', 'AUXIO2_T'),
+                                     ('SB_AUXIO3_IN', 'AUXIO3_T')])},
+    'U10': {1: ('A>B', 'PRSNT_OE_N', [('J_TDO_T', 'SB_TDO_OUT'),
+                                      ('GND', None)]),
+            2: ('A>B', 'JTAG_EN_N', [('SB_TCK_IN', 'SB_TCK_IN_B'),
+                                     ('SB_TMS_IN', 'SB_TMS_IN_B')])},
+    'U11': {1: ('A>B', 'JTAG_EN_N', [('SB_TDI_IN', 'SB_TDI_IN_B'),
+                                     ('GND', None)]),
+            2: ('A>B', 'always', [('DI_FWDCLK', 'LA_CLK'), ('GND', None)])},
+}
+# What each translator is FOR, in words, and which side faces what.
+XLAT_WHY = {
+    'U1': 'forward group, radio pins 98/76/77/83 -> LVDS drivers',
+    'U2': 'aux out and the two gateware enables, radio -> board',
+    'U3': 'reverse/aux clocks and aux data, receivers -> radio pins 88/89/87',
+    'U8': 'AUXIO READ, radio pins 90/91/103/104 -> cable',
+    'U9': 'AUXIO DRIVE, cable -> radio pins 90/91/103/104',
+    'U10': 'port 1 TDO radio -> cable; port 2 TCK/TMS cable -> radio',
+    'U11': 'port 1 TDI cable -> radio; port 2 forward-clock copy -> detector',
+}
+# LVDS parts: ref -> (kind, EN pin, EN* pin, intended enable net after 0 R
+# links, outputs).
+LVDS = {
+    'U4': ('driver', '1', '8', 'SB_PRSNT_IN', 'cable pairs'),
+    'U5': ('driver', '1', '8', 'SB_PRSNT_IN', 'cable pairs'),
+    'U6': ('receiver', '16', '9', 'RX_EN_N', ('15', '14', '11', '10')),
+    'U7': ('receiver', '16', '9', 'RX_EN_N', ('15', '14', '11', '10')),
+}
+# The scenario model's inputs: what the radio FPGA can do to the enables and
+# the forward clock, and what the far end does to presence.
+RADIO_CLOCK_NET = 'HL2_FWD_CLK'          # after the pin 98 divider
+GATEWARE_ENABLE_NETS = {'HL2_JTAG_EN': 'pin80', 'HL2_AUXIO_EN': 'pin72'}
+PRESENCE_NET = 'SB_PRSNT_IN'             # J1 contact B8
+DETECTOR_OUT = 'LINK_ALIVE'
+HL2_HEADERS = ('J2', 'J3', 'J4')
+POWER_NETS = ('GND', '+3V3', '+2V5', 'DB1_3V3', 'P3V3_FB', 'VLVDS', 'VLVDS_F',
+              'CN1_VTREF')
+
+
+class Net:
+    """The netlist as the logic engine sees it: fitted parts only."""
+
+    def __init__(self, pins, vals, bynet, byref, dnp):
+        self.pins, self.vals, self.bynet, self.byref = pins, vals, bynet, byref
+        self.dnp = dnp
+
+    def fitted(self, r):
+        return r not in self.dnp
+
+    def on(self, net, prefix=None):
+        return [(r, p) for (r, p) in self.bynet.get(net, [])
+                if self.fitted(r) and (prefix is None or r.startswith(prefix))]
+
+    def other(self, r, p):
+        return self.pins.get((r, '2' if p == '1' else '1'))
+
+
+def rail_level(n, net, vcca):
+    """A static control net -> 'H', 'L' or None (not static)."""
+    if net == 'GND':
+        return 'L'
+    if net == vcca:
+        return 'H'
+    if net in ('+3V3', '+2V5'):
+        return 'OVER' if (net == '+3V3' and vcca == '+2V5') else 'H'
+    return None
+
+
+def derive_x4(n, ref):
+    """-> {port: (direction 'A>B'/'B>A', enable 'always'/'off'/net,
+    [(input net, output net)], vcca)} from the truth table."""
+    vcca = n.pins.get((ref, '1'))
+    out = {}
+    for port, d in X4_PORT.items():
+        dnet = n.pins.get((ref, d['dir']))
+        onet = n.pins.get((ref, d['oe']))
+        dl = rail_level(n, dnet, vcca)
+        ol = rail_level(n, onet, vcca)
+        direction = {'H': 'A>B', 'L': 'B>A'}.get(dl, 'DIR=%s' % dnet)
+        enable = {'L': 'always', 'H': 'off'}.get(ol, onet)
+        chans = []
+        for a, b_ in d['ch']:
+            na, nb = n.pins.get((ref, a)), n.pins.get((ref, b_))
+            na = None if na == '<open>' else na
+            nb = None if nb == '<open>' else nb
+            chans.append((na, nb) if direction == 'A>B' else (nb, na))
+        out[port] = (direction, enable, chans, dnet, onet)
+    return out
+
+
+def resolve_links(n, net):
+    """Follow fitted 0 R links: -> the set of nets joined to `net`."""
+    seen, todo = {net}, [net]
+    while todo:
+        cur = todo.pop()
+        for (r, p) in n.on(cur, 'R'):
+            if n.vals.get(r) in ('0R', '0') and n.other(r, p) not in RAILS:
+                o = n.other(r, p)
+                if o and o not in seen:
+                    seen.add(o)
+                    todo.append(o)
+            elif n.vals.get(r) in ('0R', '0') and n.other(r, p) in RAILS:
+                seen.add(n.other(r, p))
+    return seen
+
+
+def check_buffers(n):
+    print('=== every translator and buffer: direction and enable derived from '
+          'its DIR/OE nets and the truth table ===')
+    prob = []
+    x4s = sorted((r for r, v in n.vals.items() if v.startswith('SN74AVC4T245')),
+                 key=lambda s: int(s[1:]))
+    if sorted(x4s) != sorted(XLAT):
+        prob.append('SN74AVC4T245 instances %s do not match the PINMAP.md '
+                    'table %s' % (x4s, sorted(XLAT)))
+    x8 = sorted(r for r, v in n.vals.items() if v.startswith('SN74AVC8T245'))
+    print('  SN74AVC8T245 instances: %s' % (', '.join(x8) or 'none'))
+    if x8:
+        prob.append('SN74AVC8T245 instances %s are not in the PINMAP.md table'
+                    % x8)
+    for ref in x4s:
+        if ref not in XLAT:
+            continue
+        got = derive_x4(n, ref)
+        print('  %s  (%s)' % (ref, XLAT_WHY[ref]))
+        for port in (1, 2):
+            direction, enable, chans, dnet, onet = got[port]
+            wdir, wen, wch = XLAT[ref][port]
+            print('     port %d: DIR = %-6s -> %s;  OE* = %-10s -> %s'
+                  % (port, dnet, direction, onet,
+                     'always enabled' if enable == 'always' else
+                     'always off' if enable == 'off' else
+                     'enabled only while %s is LOW' % enable))
+            if direction != wdir:
+                prob.append('%s port %d runs %s (DIR = %s), PINMAP.md says %s'
+                            % (ref, port, direction, dnet, wdir))
+            if enable != wen:
+                prob.append('%s port %d enable is %s (OE* = %s), PINMAP.md '
+                            'says %s' % (ref, port, enable, onet, wen))
+            for k, ((gi, go), (wi, wo)) in enumerate(zip(chans, wch), 1):
+                ok = gi == wi and (go == wo or (wo is None and go is None))
+                print('        ch %d: %-14s -> %-14s %s'
+                      % (k, gi, go or '(unconnected)',
+                         'OK' if ok else '!! intended %s -> %s' % (wi, wo)))
+                if not ok:
+                    prob.append('%s port %d channel %d carries %s -> %s, '
+                                'PINMAP.md says %s -> %s'
+                                % (ref, port, k, gi, go, wi, wo))
+    for ref, (kind, en, enb, want, outs) in sorted(LVDS.items()):
+        enn, enbn = n.pins.get((ref, en)), n.pins.get((ref, enb))
+        en_nets = resolve_links(n, enn)
+        if kind == 'driver':
+            ok_b = enbn == 'GND'
+            ctrl = want if want in en_nets and '+3V3' not in en_nets else None
+            state = ('always on' if '+3V3' in en_nets else
+                     'enabled only while %s is HIGH' % ctrl if ctrl else
+                     'EN = %s' % enn)
+        else:
+            ok_b = enn == '+3V3'
+            ctrl = want if enbn == want else None
+            state = ('always on' if enbn == 'GND' else
+                     'enabled only while %s is LOW' % ctrl if ctrl else
+                     'EN* = %s' % enbn)
+        print('  %s  %s, EN = %s (via fitted links: %s), EN* = %s -> %s'
+              % (ref, n.vals.get(ref), enn, ', '.join(sorted(en_nets)), enbn,
+                 state))
+        if not ok_b or not ctrl:
+            prob.append('%s enable is "%s"; PINMAP.md says it is gated by %s'
+                        % (ref, state, want))
+    return prob
+
+
+class Scenario:
+    """Evaluate the board's logic for one assignment of the outside world:
+    clock = the forward clock runs on pin 98; far = a powered far end drives
+    presence; pin72 / pin80 = the level the radio FPGA puts on its enable
+    pins (0 = asking for the feature, which is what stock gateware does)."""
+
+    def __init__(self, n, clock, far, pin72, pin80):
+        self.n, self.clock, self.far = n, clock, far
+        self.gw = {'pin72': pin72, 'pin80': pin80}
+        self.x4 = {r: derive_x4(n, r) for r, v in n.vals.items()
+                   if v.startswith('SN74AVC4T245')}
+        self.memo = {}
+
+    def port_enabled(self, ref, port):
+        _d, enable, _c, _dn, _on = self.x4[ref][port]
+        if enable == 'always':
+            return True
+        if enable == 'off':
+            return False
+        return self.val(enable) == 0
+
+    def lvds_enabled(self, ref):
+        kind, en, enb, _w, _o = LVDS[ref]
+        e = self.val(self.n.pins.get((ref, en)))
+        eb = self.val(self.n.pins.get((ref, enb)))
+        return e == 1 and eb == 0
+
+    def val(self, net):
+        """-> 1, 0, 'CLK' (a running clock), 'DATA' or 'Z'."""
+        if net in RAILS:
+            return RAILS[net]
+        if net in self.memo:
+            return self.memo[net]
+        self.memo[net] = 'Z'                     # break loops
+        v = self._val(net)
+        self.memo[net] = v
+        return v
+
+    def _val(self, net):
+        n = self.n
+        if net == RADIO_CLOCK_NET:
+            return 'CLK' if self.clock else 0
+        if net in GATEWARE_ENABLE_NETS:
+            return self.gw[GATEWARE_ENABLE_NETS[net]]
+        # a MOSFET pulling it low wins
+        for (r, p) in n.on(net, 'Q'):
+            if p == '3':
+                g = self.val(n.pins.get((r, '1')))
+                s = self.val(n.pins.get((r, '2')))
+                if g == 1 and s == 0:
+                    return 0
+        # a buffer output driving it
+        for (r, p) in n.on(net, 'U'):
+            if r in self.x4:
+                for port, (d, _e, chans, _dn, _on) in self.x4[r].items():
+                    for gi, go in chans:
+                        if go == net and self.port_enabled(r, port):
+                            return self.val(gi)
+        # the link-alive detector: a diode cathode on this net, its anode on
+        # a node that is a capacitor away from a running clock
+        for (r, p) in n.on(net, 'D'):
+            if n.vals.get(r, '').startswith('RB751') and p == '1':
+                pump = n.pins.get((r, '2'))
+                for (c, cp) in n.on(pump, 'C'):
+                    src = n.other(c, cp)
+                    if src and self.val(src) == 'CLK':
+                        return 1
+        # the presence contact
+        if net == PRESENCE_NET:
+            return 1 if self.far else 0
+        # a fitted 0 R link to another signal net
+        for (r, p) in n.on(net, 'R'):
+            o = n.other(r, p)
+            if n.vals.get(r) in ('0R', '0') and o and o not in RAILS:
+                v = self.val(o)
+                if v != 'Z':
+                    return v
+        ups = [r for (r, p) in n.on(net, 'R')
+               if n.other(r, p) in ('+3V3', '+2V5')]
+        downs = [r for (r, p) in n.on(net, 'R') if n.other(r, p) == 'GND']
+        if ups and not downs:
+            return 1
+        if downs and not ups:
+            return 0
+        return 'DATA' if not (ups or downs) else 'Z'
+
+
+def radio_facing_outputs(n):
+    """Every buffer channel or receiver output that can drive a radio FPGA
+    pin: its output net reaches a J2/J3/J4 pin directly or through fitted
+    series resistors.  -> [(label, ref, port or None, output net, pin)]"""
+    hdr = {}
+    for ref in HL2_HEADERS:
+        for (r, p), net in n.pins.items():
+            if r == ref and net not in POWER_NETS and net != '<open>':
+                hdr.setdefault(net, '%s-%s' % (ref, p))
+    reach = dict(hdr)
+    for net, pin in list(hdr.items()):
+        for (r, p) in n.on(net, 'R'):
+            o = n.other(r, p)
+            if o and o not in RAILS and o not in POWER_NETS:
+                reach.setdefault(o, pin + ' via ' + r)
+    outs = []
+    for ref, v in sorted(n.vals.items()):
+        if not n.fitted(ref):
+            continue
+        if v.startswith('SN74AVC4T245'):
+            for port, (d, _e, chans, _dn, _on) in derive_x4(n, ref).items():
+                for gi, go in chans:
+                    if go in reach:
+                        outs.append(('%s port %d' % (ref, port), ref, port, go,
+                                     reach[go]))
+        elif ref in LVDS and LVDS[ref][0] == 'receiver':
+            for pd in LVDS[ref][4]:
+                go = n.pins.get((ref, pd))
+                if go in reach:
+                    outs.append(('%s ROUT' % ref, ref, None, go, reach[go]))
+    return outs
+
+
+def check_safe_state(n):
+    """With stock gateware, no gateware, no far end or no cable, nothing on
+    the board may drive a radio FPGA pin; the JTAG buffers and the AUXIO drive
+    must be off; and every cable-facing driver must be off without a far
+    end.  Checked by evaluating all sixteen combinations."""
+    print('=== the safe state: stock gateware, no gateware, far end absent, '
+          'cable unplugged ===')
+    prob = []
+    outs = radio_facing_outputs(n)
+    seen = set()
+    for label, ref, port, go, pin in outs:
+        if (label, go) in seen:
+            continue
+        seen.add((label, go))
+        print('  can drive the radio: %-12s -> %-14s -> %s' % (label, go, pin))
+    jtag = [(r, p) for r, ports in XLAT.items() for p, (_d, e, _c) in
+            ports.items() if e == 'JTAG_EN_N']
+    auxio = [(r, p) for r, ports in XLAT.items() for p, (_d, e, _c) in
+             ports.items() if e == 'AUXIO_OE_N']
+    cable = [(r, p) for r, ports in XLAT.items() for p, (_d, e, _c) in
+             ports.items() if e == 'PRSNT_OE_N']
+    live = {}
+    for clock in (False, True):
+        for far in (False, True):
+            for p72 in (0, 1):
+                for p80 in (0, 1):
+                    s = Scenario(n, clock, far, p72, p80)
+                    tag = ('clock %-3s far end %-7s pin72 %d pin80 %d'
+                           % ('on' if clock else 'off',
+                              'present' if far else 'absent', p72, p80))
+                    en_out = sorted({label for label, ref, port, go, pin
+                                     in outs if (s.port_enabled(ref, port)
+                                                 if port else
+                                                 s.lvds_enabled(ref))})
+                    en_jtag = sorted({r for r, p in jtag
+                                      if s.port_enabled(r, p)})
+                    en_aux = sorted({r for r, p in auxio
+                                     if s.port_enabled(r, p)})
+                    en_cab = sorted({r for r, p in cable
+                                     if s.port_enabled(r, p)})
+                    en_drv = [r for r in ('U4', 'U5') if s.lvds_enabled(r)]
+                    live[(clock, far, p72, p80)] = (en_out, en_jtag, en_aux,
+                                                    en_cab, en_drv)
+                    if not (clock and far):
+                        if en_out or en_jtag or en_aux:
+                            prob.append('%s: still enabled toward the radio: '
+                                        '%s' % (tag, sorted(set(
+                                            en_out + en_jtag + en_aux))))
+                    if not far and (en_cab or en_drv):
+                        prob.append('%s: cable-facing drivers enabled with no '
+                                    'far end: %s' % (tag, en_cab + en_drv))
+    # the value the detector and the enables take in each named case
+    cases = (('stock gateware (clock off, pins 72/80 LOW), far end present',
+              (False, True, 0, 0)),
+             ('no gateware (clock off, pins pulled HIGH), far end present',
+              (False, True, 1, 1)),
+             ('link gateware running, far end absent or cable unplugged',
+              (True, False, 0, 0)),
+             ('link gateware running, far end present, both enables LOW',
+              (True, True, 0, 0)))
+    for label, key in cases:
+        s = Scenario(n, *key)
+        en_out, en_jtag, en_aux, en_cab, en_drv = live[key]
+        print('  %s:' % label)
+        print('     LINK_ALIVE %s, RX_EN_N %s, JTAG_EN_N %s, AUXIO_OE_N %s, '
+              'PRSNT_OE_N %s' % (s.val(DETECTOR_OUT), s.val('RX_EN_N'),
+                                 s.val('JTAG_EN_N'), s.val('AUXIO_OE_N'),
+                                 s.val('PRSNT_OE_N')))
+        print('     driving the radio: %s; JTAG buffers %s; AUXIO drive %s; '
+              'cable buffers %s; LVDS drivers %s'
+              % (', '.join(sorted(set(en_out))) or 'NOTHING (all hi-Z)',
+                 'ON' if en_jtag else 'off', 'ON' if en_aux else 'off',
+                 'ON' if en_cab else 'off', 'ON' if en_drv else 'off'))
+    # and the link must still work when it should
+    en_out, en_jtag, en_aux, en_cab, en_drv = live[(True, True, 0, 0)]
+    if not (en_out and en_jtag and en_aux and en_cab and en_drv):
+        prob.append('with the clock running, a far end present and both '
+                    'enables asserted, something needed stays off: outputs %s, '
+                    'JTAG %s, AUXIO %s, cable %s, drivers %s'
+                    % (en_out, en_jtag, en_aux, en_cab, en_drv))
+    en_out, en_jtag, en_aux, en_cab, en_drv = live[(True, True, 1, 1)]
+    if en_jtag or en_aux:
+        prob.append('with both enables HIGH the JTAG or AUXIO path is on')
+    # LINK_ALIVE must have no DC source: only the detector diode and pulls to
+    # ground; RX_EN_N, PRSNT_OE_N pulled up and pulled low only by MOSFETs
+    la = n.on(DETECTOR_OUT)
+    bad = [(r, p) for (r, p) in la if not (
+        r.startswith('TP') or (r.startswith('R') and n.other(r, p) == 'GND')
+        or (r.startswith('C') and n.other(r, p) == 'GND')
+        or (r.startswith('D') and p == '1')
+        or (r.startswith('Q') and p in ('1', '3')))]
+    if bad:
+        prob.append('LINK_ALIVE has a DC path other than the detector: %s'
+                    % bad)
+    if not prob:
+        print('  OK: in all 12 combinations where the forward clock is off or '
+              'no far end is present, nothing drives a radio pin, the JTAG '
+              'buffers and the AUXIO drive are off; with no far end every '
+              'cable-facing buffer and both LVDS drivers are off')
+    return prob
+
+
+def check_presence_pairings(n):
+    """The presence gating, for radio to Gowin, Gowin to radio and radio to
+    radio.  A near end's cable drivers may run only while its B8 input reads
+    HIGH, and that input may be HIGH only while the far end is powered (radio)
+    or its gateware drives HIGH (Gowin)."""
+    print('=== presence gating in all three pairings ===')
+    prob = []
+    # the radio end as the near end: its gated parts
+    gated = []
+    for r in ('U4', 'U5'):
+        if 'SB_PRSNT_IN' in resolve_links(n, n.pins.get((r, '1'))):
+            gated.append(r)
+    if any(n.fitted(r) and n.vals.get(r) == '0R' and {
+            n.pins.get((r, '1')), n.pins.get((r, '2'))} == {'DRV_EN', '+3V3'}
+            for r in n.byref):
+        prob.append('a FITTED 0 R ties DRV_EN to +3V3: the LVDS drivers run '
+                    'with no far end')
+    b8 = n.pins.get(('J1', 'B8'))
+    downs = [r for (r, p) in n.on(b8, 'R') if n.other(r, p) == 'GND']
+    ups = [r for (r, p) in n.on(b8, 'R') if n.other(r, p) in ('+3V3', '+2V5')]
+    if b8 != 'SB_PRSNT_IN' or not downs or ups:
+        prob.append('radio end B8 must be SB_PRSNT_IN, pulled down only')
+    for far_label, far_ref, a8_ok in (
+            ('radio', 'J1', lambda a8: any(
+                n.other(r, p) == '+3V3' for (r, p) in n.on(a8, 'R'))),
+            ('Gowin', 'J101', lambda a8: any(
+                n.other(r, p) == 'G_PRSNT_DRV' for (r, p) in n.on(a8, 'R'))
+                and not any(n.other(r, p) in ('+3V3', '+2V5', 'G_5V')
+                            for (r, p) in n.on(a8, 'R')))):
+        a8 = n.pins.get((far_ref, 'A8'))
+        if not a8_ok(a8):
+            prob.append('%s far end: A8 (%s) does not assert presence only '
+                        'when powered/configured' % (far_label, a8))
+            continue
+        how = ('1 k to its own +3V3: HIGH only while that radio is powered'
+               if far_label == 'radio' else
+               '1 k from gateware ball AB18 with no pull-up: HIGH only while '
+               'the Gowin is powered AND configured')
+        print('  radio end <- %s end: far A8 = %s, %s. Radio end drivers U4, U5 '
+              '(DRV_EN via R_DRVEN_PRSNT), U8 and U10 port 1 (PRSNT_OE_N) and '
+              'LINK_ALIVE (clamped by PRSNT_OE_N) all follow it'
+              % (far_label, a8, how))
+    if sorted(gated) != ['U4', 'U5']:
+        prob.append('LVDS drivers gated on presence: %s, expected U4 and U5'
+                    % gated)
+    # Gowin end as the near end: no on-board drivers; the FPGA is the driver.
+    rd = [r for (r, p) in n.on('G_SB_PRSNT_IN', 'R')
+          if n.other(r, p) == 'G_PRSNT_RD']
+    if len(rd) != 1 or n.vals.get(rd[0]) != '10k':
+        prob.append('Gowin end presence input must reach ball AA18 through '
+                    'one 10 k (was 1 k): found %s'
+                    % [(r, n.vals.get(r)) for r in rd])
+    else:
+        print('  Gowin end <- radio end: radio A8 = SB_PRSNT_OUT, 1 k to the '
+              'radio +3V3; read on ball AA18 through %s = 10 k with R102 '
+              '10 k to ground, so a powered radio injects about 0.25 mA into '
+              'an unpowered Tang. The Gowin drives nothing on this board: its '
+              'gateware must keep LVDS and JTAG outputs off until AA18 reads '
+              'HIGH (PINMAP.md 11.4)' % rd[0])
     return prob
 
 
@@ -995,6 +1543,14 @@ def main():
     prob += auxio_failsafe(pins, vals, bynet, byref, r3, r3)   # radio-to-radio
 
     print()
+    print('################ buffers, safe state and presence gating '
+          '################')
+    n = Net(pins, vals, bynet, byref, DNP)
+    prob += check_buffers(n)
+    prob += check_safe_state(n)
+    prob += check_presence_pairings(n)
+
+    print()
     for p in prob:
         print('  !! ' + p)
     print('  %s' % ('OK - the three radio-end header maps and the Gowin-end '
@@ -1008,6 +1564,11 @@ def main():
                     'pulled to their disabled state at both ends, no absent '
                     'or undriven far end can key CW/PTT or disturb the clock '
                     'chip bus in any of the three pairings, every '
+                    'translator and LVDS part runs the direction and enable '
+                    'PINMAP.md section 12 gives it, nothing drives a radio pin '
+                    'and the JTAG and AUXIO paths are off unless the forward '
+                    'clock runs and a far end is present, every cable-facing '
+                    'driver is gated on presence in all three pairings, every '
                     'conductor leaving the board is clamped, and there is one '
                     'design'
                     if not prob else '%d PROBLEMS' % len(prob)))

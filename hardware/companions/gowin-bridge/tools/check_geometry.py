@@ -36,7 +36,17 @@ Reads the board back and checks, independently of KiCad:
     only be asked for - ESD arrays and terminations within 5 mm, decoupling
     capacitors at their pins, HL2 header nets under 25 mm, one side only,
     every SMD capacitor parallel to the break lines - and, once routed, pairs
-    on the top layer only and the length-matched groups within 2.5 mm.
+    on the top layer only and the length-matched groups within 2.5 mm;
+11. DB3, the radio's optional AD9866 receive-input header, read from the HL2
+    file: its outline plus a mating socket plus 1.5 mm wholly off the board,
+    a no-track keep-out on every copper layer within 3 mm of pins 3 and 4,
+    and J5 at its new documented position and rotation;
+12. the noise layout rules for the radio end: a GND pour and a no-track
+    keep-out on the bottom layer facing the radio, the no-track keep-outs
+    round the cut-outs, GND stitching vias no more than 5 mm apart round every
+    cut-out; and once routed, no track on that bottom layer, every fast track
+    at least 3 mm from every radio-end edge and cut-out and not over the
+    FPGA, AD9866 or T2, and the new parts beside what they serve.
 
 This exists because the placement is generated, not drawn, so it needs a test.
 KiCad's own DRC is still the authority on manufacturability; this catches the
@@ -118,7 +128,7 @@ LOCKED = {
     'J2': (4.04, RADIO_Y0 + 4.66),             # DB1 pin 1, HL2 (74.04, 77.96)
     'J3': (13.50, RADIO_Y0 + 14.16),           # DB12 pin 1, HL2 (83.50, 87.46)
     'J4': (58.23, RADIO_Y0 + 8.92),            # CN1 pin 1, HL2 (128.23, 82.22)
-    'J5': (56.00, RADIO_Y0 + 24.50),           # ROUTING.md section 5
+    'J5': (51.40, RADIO_Y0 + 30.80),           # rotation 90; DESIGN_NOTES 14.5
     'J101': (89.43 + 10.40 - 89.43, GOWIN_Y0 + 53.73 - 41.17),  # dock x 89.73
     'J102': (103.70 + 2 * 2.54 - 89.43, GOWIN_Y0 + 63.84 - 41.17),  # J14 pos 5
     'MB1': (4.04, RADIO_Y0 + 2.12),            # HL2 MH6 (74.04, 75.42)
@@ -307,6 +317,7 @@ def load(path):
     fps = []
     edges = []
     tracks = []
+    widths = []
     vias = []
     codes = {}
     for node in root[1:]:
@@ -334,6 +345,8 @@ def load(path):
             tracks.append((net, lay, ln,
                            (float(s0[0]), float(s0[1])),
                            (float(e0[0]), float(e0[1]))))
+            wd = K.kid(node, 'width')
+            widths.append(float(K.atoms(wd)[0]) if wd is not None else 0.2)
         elif h == 'via':
             a = K.atoms(K.kid(node, 'at'))
             sz = K.atoms(K.kid(node, 'size'))
@@ -409,6 +422,8 @@ def load(path):
     load.edges = edges
     load.tracks = [(codes.get(n, n), l_, ln, a, b) for (n, l_, ln, a, b)
                    in tracks]
+    load.tracks_w = [(codes.get(n, n), l_, a, b, w_) for (n, l_, ln, a, b), w_
+                     in zip(tracks, widths)]
     load.vias = [(codes.get(n, n), x, y, r) for (n, x, y, r) in vias]
     load.loops = edge_loops(edges)
     return fps, box
@@ -884,12 +899,6 @@ def check_holes(fps):
         prob.append('DB6 plus %.1f mm is not wholly inside the window (board '
                     'at panel (%.2f, %.2f))' % (WINDOW_REACH, hits[0][0],
                                                 hits[0][1]))
-    db3 = hl2_rect('DB3')
-    pts = list(sample_rect(db3))
-    cov = sum(1 for pt in pts if on_board(PAGE[0] + pt[0], PAGE[1] + pt[1]))
-    print('      DB3 (reported, not checked) x %.2f..%.2f, y %.2f..%.2f: '
-          '%.0f %% of it under the board; that end is under locked J5'
-          % (db3[0], db3[2], db3[1], db3[3], 100.0 * cov / len(pts)))
     # 3. nothing within HOLE_KEEP of a hole.  "In a hole" = off the board and
     # inside the extent of a cut-out, so the outer edges do not count.
     ext = [(r[3][0] - 3, r[3][1] - 3, r[3][2] + 3, r[3][3] + 3)
@@ -1227,8 +1236,365 @@ def check_rules(fps):
     return prob
 
 
+
+# ---------------------------------------------- DB3, J5 and the noise rules
+# 13 Sep 2026, approved.  DESIGN_NOTES.md section 14.
+#
+# DB3 is an optional 4-pin header on the radio (HERMESLITE:4x1): pin 1 +3V3,
+# pin 2 GND, pins 3 and 4 the AD9866's receive input pair - an RF
+# daughterboard tap straight into the ADC input.  Its whole outline, plus a
+# plugged-in mating socket, plus the usual hole margin, must be off the board;
+# and no fast track may come within 3 mm of pins 3 and 4.  The pads and the
+# outline are read from the HL2 board file here, not retyped.
+DB3_SOCKET_ALLOW = 0.5   # a 1x4 socket body beyond the header outline, a side
+DB3_FAST_KEEP = 3.0
+# The noise layout rules for the radio end.  "Fast" = every radio-end pair
+# net plus these single-ended nets (retyped from the generator's FAST_SE).
+FAST_SE = ('HL2_FWD_CLK_RAW', 'HL2_FWD_CLK', 'HL2_ADC_D0', 'HL2_ADC_D1',
+           'HL2_ADC_D2', 'HL2_AUX_CLK_OUT', 'HL2_AUX_DAT_OUT', 'HL2_REV_CLK',
+           'HL2_AUX_CLK_IN', 'HL2_AUX_DAT_IN', 'HL2_TX_D0', 'HL2_TX_D1',
+           'HL2_TX_D2', 'DI_FWDCLK', 'DI_ADCD0', 'DI_ADCD1', 'DI_ADCD2',
+           'DI_AUXCLK', 'DI_AUXDAT', 'RX_REVCLK', 'RX_TXD0', 'RX_TXD1',
+           'RX_TXD2', 'RX_DUPCLK', 'RX_AUXCLK', 'RX_AUXDAT', 'X_REVCLK25',
+           'X_DUPCLK25', 'X_AUXCLK25', 'X_AUXDAT25', 'LA_CLK', 'LA_PUMP')
+FAST_EDGE_KEEP = 3.0     # fast tracks at least 3 mm from any radio-end edge
+FAST_PART_KEEP = 3.0     # and from the package outline of FPGA, ADC and T2
+FENCE_MAX_GAP = 5.0      # GND via to next GND via round every cut-out
+PROXIMITY = (            # (part, target part, target pads or None, limit mm)
+    ('U11', 'U1', None, 5.0),
+    ('C27', 'U11', None, 3.0),
+    ('D13', 'U11', None, 3.0),
+    ('D14', 'U11', None, 3.0),
+    ('L1', 'J2', ('19', '20'), 8.0),
+    ('C29', 'J2', ('19', '20'), 8.0),
+    ('C30', 'R_SHELL', None, 3.0),
+    ('C101', 'R117', None, 3.0),
+)
+
+
+def is_fast(net):
+    if net.startswith(('A_', 'B_')) and net.endswith(('_P', '_N')):
+        return True
+    return net in FAST_SE
+
+
+def hl2_pads(ref):
+    """{pad number: (x, y, half width, half height)} in panel coordinates,
+    read from the HL2 board file."""
+    hl2_package(ref)                       # loads the module table
+    m = hl2_package.mods[ref]
+    at = K.atoms(K.kid(m, 'at'))
+    mx, my = float(at[0]), float(at[1])
+    mr = float(at[2]) if len(at) > 2 else 0.0
+    out = {}
+    for pd in K.kids(m, 'pad'):
+        num = [x for x in pd[1:] if isinstance(x, str)][0]
+        pa = K.atoms(K.kid(pd, 'at'))
+        sz = K.atoms(K.kid(pd, 'size'))
+        ax, ay = rot(float(pa[0]), float(pa[1]), mr)
+        x, y = hl2_to_panel(mx + ax, my + ay)
+        out[num] = (x, y, float(sz[0]) / 2, float(sz[1]) / 2)
+    return out
+
+
+def load_zones(path):
+    """-> [(name, layers, net name, keepout set or None, polygon)] panel
+    coordinates."""
+    root = K.parse(open(path, encoding='utf-8').read())[0]
+    out = []
+    for z in K.kids(root, 'zone'):
+        nm = K.kid(z, 'name')
+        name = K.atoms(nm)[0] if nm is not None else ''
+        lays = []
+        for key in ('layer', 'layers'):
+            k_ = K.kid(z, key)
+            if k_ is not None:
+                lays += K.atoms(k_)
+        nn = K.kid(z, 'net_name')
+        net = K.atoms(nn)[0] if nn is not None and K.atoms(nn) else ''
+        if not net and K.kid(z, 'net') is not None and K.atoms(K.kid(z, 'net')):
+            net = K.atoms(K.kid(z, 'net'))[-1]       # KiCad 10: (net "GND")
+        ko = K.kid(z, 'keepout')
+        keep = None
+        if ko is not None:
+            keep = set()
+            for item in ko[1:]:
+                if isinstance(item, list) and K.atoms(item) and \
+                        K.atoms(item)[0] == 'not_allowed':
+                    keep.add(K.head(item))
+        pg = K.kid(z, 'polygon')
+        pts = []
+        if pg is not None:
+            for xy in K.kids(K.kid(pg, 'pts'), 'xy'):
+                a = K.atoms(xy)
+                pts.append((float(a[0]) - PAGE[0], float(a[1]) - PAGE[1]))
+        out.append((name, lays, net, keep, pts))
+    return out
+
+
+def in_poly(x, y, poly):
+    ins = False
+    for i in range(len(poly)):
+        x1, y1 = poly[i - 1]
+        x2, y2 = poly[i]
+        if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+            ins = not ins
+    return ins
+
+
+def pt_seg(px, py, a, b):
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    L2 = dx * dx + dy * dy
+    t = 0.0 if L2 == 0 else max(0.0, min(1.0, ((px - a[0]) * dx
+                                                + (py - a[1]) * dy) / L2))
+    return math.hypot(px - a[0] - t * dx, py - a[1] - t * dy)
+
+
+def radio_edge_segments():
+    """Every Edge.Cuts segment that bounds the radio end (panel coords)."""
+    segs = []
+    for lp in load.loops or []:
+        pts = [(x - PAGE[0], y - PAGE[1]) for x, y in lp]
+        for i in range(len(pts)):
+            a, b = pts[i - 1], pts[i]
+            if max(a[1], b[1]) <= RADIO_BOTTOM + 0.01:
+                segs.append((a, b))
+    return segs
+
+
+def cutout_loops():
+    """The radio end's hole outlines, panel coordinates: every internal loop
+    inside the radio end, and the FPGA notch as an open polyline."""
+    loops = []
+    for lp in load.loops or []:
+        pts = [(round(x - PAGE[0], 3), round(y - PAGE[1], 3)) for x, y in lp]
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        whole = (min(xs) < 0.01 and max(xs) > PANEL_W - 0.01)
+        if not whole and max(ys) < RADIO_BOTTOM - 0.01:
+            loops.append(('main cut-out', pts, True))
+    fp = hl2_rect('U2')
+    x0, x1 = fp[0] - HOLE_MARGIN, fp[2] + HOLE_MARGIN
+    notch = []
+    for lp in load.loops or []:
+        pts = [(round(x - PAGE[0], 3), round(y - PAGE[1], 3)) for x, y in lp]
+        if min(p[0] for p in pts) < 0.01 and max(p[0] for p in pts) > \
+                PANEL_W - 0.01:
+            notch = [p for p in pts if x0 - 0.01 <= p[0] <= x1 + 0.01
+                     and p[1] < 30.0]
+    if notch:
+        loops.append(('FPGA notch', notch, False))
+    return loops
+
+
+def fence_gaps(boundary, closed, vias):
+    """GND vias within 3.0 mm of a boundary polyline, in boundary order ->
+    (count, largest via-to-via distance, where)."""
+    # arc-length samples of the boundary
+    samples = []
+    s = 0.0
+    segs = list(zip(boundary, boundary[1:] + (boundary[:1] if closed else [])))
+    for a, b in segs:
+        ln = math.hypot(b[0] - a[0], b[1] - a[1])
+        k = max(1, int(ln / 0.2))
+        for i in range(k):
+            samples.append((s + ln * i / k, a[0] + (b[0] - a[0]) * i / k,
+                            a[1] + (b[1] - a[1]) * i / k))
+        s += ln
+    near = []
+    for (net, x, y, r) in vias:
+        if net != 'GND':
+            continue
+        x, y = x - PAGE[0], y - PAGE[1]
+        d, pos = min((math.hypot(x - sx, y - sy), sp) for sp, sx, sy in samples)
+        if d <= 3.0:
+            near.append((pos, x, y))
+    near.sort()
+    if len(near) < 2:
+        return len(near), 1e9, None
+    worst, where = 0.0, None
+    pairs = list(zip(near, near[1:] + (near[:1] if closed else [])))
+    for (p1, x1, y1), (p2, x2, y2) in pairs:
+        d = math.hypot(x2 - x1, y2 - y1)
+        if d > worst:
+            worst, where = d, ((x1, y1), (x2, y2))
+    return len(near), worst, where
+
+
+def check_db3_j5(fps):
+    prob = []
+    if load.loops is None:
+        return prob
+    db3 = hl2_rect('DB3')
+    g = HOLE_MARGIN + DB3_SOCKET_ALLOW
+    clear = (db3[0] - g, db3[1] - g, db3[2] + g, db3[3] + g)
+    hits = [pt for pt in sample_rect(shrink(clear), 0.1)
+            if in_rounded(pt[0], pt[1], shrink(clear), HOLE_R)
+            and on_board(PAGE[0] + pt[0], PAGE[1] + pt[1])]
+    print('   DB3 (the AD9866 receive-input tap) outline %.2f x %.2f mm read '
+          'from the HL2 board, plus %.1f mm for a mating socket and %.1f mm '
+          'margin: clear %.2f x %.2f mm at panel x %.2f..%.2f, y %.2f..%.2f: %s'
+          % (db3[2] - db3[0], db3[3] - db3[1], DB3_SOCKET_ALLOW, HOLE_MARGIN,
+             clear[2] - clear[0], clear[3] - clear[1], clear[0], clear[2],
+             clear[1], clear[3],
+             'clear' if not hits else '%d points are board' % len(hits)))
+    if hits:
+        prob.append('DB3 plus its socket and margin is not clear of the board '
+                    '(board at panel (%.2f, %.2f))' % hits[0])
+    # the keepout round pins 3 and 4, on every copper layer, for tracks
+    pads = hl2_pads('DB3')
+    zones = check_db3_j5.zones
+    keep = [z for z in zones if z[3] and 'tracks' in z[3]
+            and all(l_ in z[1] or '*.Cu' in z[1] for l_ in
+                    ('F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu'))]
+    bad = []
+    for pn in ('3', '4'):
+        x, y, hx, hy = pads[pn]
+        R_ = DB3_FAST_KEEP
+        for pt in sample_rect((x - hx - R_, y - hy - R_, x + hx + R_,
+                               y + hy + R_), 0.5):
+            if math.hypot(max(0, abs(pt[0] - x) - hx),
+                          max(0, abs(pt[1] - y) - hy)) > R_:
+                continue
+            if on_board(PAGE[0] + pt[0], PAGE[1] + pt[1]) and not any(
+                    in_poly(pt[0], pt[1], z[4]) for z in keep):
+                bad.append(pt)
+    print('   no-track keep-out within %.1f mm of DB3 pins 3 and 4 (pins at '
+          'panel (%.2f, %.2f) and (%.2f, %.2f)): %s'
+          % (DB3_FAST_KEEP, pads['3'][0], pads['3'][1], pads['4'][0],
+             pads['4'][1], 'covers all board within it' if not bad else
+             'MISSING at %d points' % len(bad)))
+    if bad:
+        prob.append('board within 3 mm of DB3 pin 3 or 4 is not covered by a '
+                    'no-track keep-out on every copper layer (panel %.2f, '
+                    '%.2f)' % bad[0])
+    for (net, lay, ln, a, b) in load.tracks:
+        for pn in ('3', '4'):
+            x, y, hx, hy = pads[pn]
+            steps = max(1, int(ln / 0.2))
+            for i in range(steps + 1):
+                px = a[0] + (b[0] - a[0]) * i / steps - PAGE[0]
+                py = a[1] + (b[1] - a[1]) * i / steps - PAGE[1]
+                if math.hypot(max(0, abs(px - x) - hx),
+                              max(0, abs(py - y) - hy)) < DB3_FAST_KEEP:
+                    prob.append('track on %s within %.1f mm of DB3 pin %s'
+                                % (net, DB3_FAST_KEEP, pn))
+                    break
+    byref = {f.ref: f for f in fps}
+    j5 = byref.get('J5')
+    if j5 is not None:
+        print('   J5 (USB Blaster pass-through) at panel (%.2f, %.2f), rotation '
+              '%g, locked; its IDC ring keep-out: %s'
+              % (j5.at[0] - PAGE[0], j5.at[1] - PAGE[1], j5.r,
+                 ', '.join(sorted(z[0] for z in zones
+                                  if z[0].startswith('KEEPOUT_J5_IDC')))))
+        if round(j5.r) % 360 != 90:
+            prob.append('J5 is at rotation %g, documented 90' % j5.r)
+    return prob
+
+
+def check_noise_rules(fps):
+    prob = []
+    zones = check_db3_j5.zones
+    # a. the bottom layer facing the radio: a solid ground pour, no tracks
+    pour = [z for z in zones if z[3] is None and 'B.Cu' in z[1]
+            and z[2] == 'GND']
+    radio_pts = [(x, y) for x in (1.0, 20.0, 60.0) for y in (2.0, 30.0, 62.0)]
+    covered = all(any(in_poly(x, y, z[4]) for z in pour) for x, y in radio_pts)
+    tk = [z for z in zones if z[3] and 'tracks' in z[3] and 'B.Cu' in z[1]
+          and z[0] == 'KEEPOUT_RADIO_BOTTOM_TRACKS']
+    tk_ok = tk and all(in_poly(x, y, tk[0][4]) for x, y in
+                       [(0.2, 0.2), (64.3, 0.2), (0.2, 64.7), (64.3, 64.7)])
+    print('   bottom layer facing the radio: GND pour over the radio end %s; '
+          'no-track keep-out on B.Cu over the whole radio end %s'
+          % ('present' if covered else 'MISSING',
+             'present' if tk_ok else 'MISSING'))
+    if not covered:
+        prob.append('no GND pour on B.Cu covering the radio end')
+    if not tk_ok:
+        prob.append('KEEPOUT_RADIO_BOTTOM_TRACKS missing or not covering the '
+                    'radio end')
+    bt = [t for t in load.tracks if t[1] == 'B.Cu'
+          and min(t[3][1], t[4][1]) - PAGE[1] < RADIO_BOTTOM]
+    if bt:
+        prob.append('%d track segments on B.Cu at the radio end (first on %s); '
+                    'the bottom layer facing the radio is ground only'
+                    % (len(bt), bt[0][0]))
+    fast_keeps = sorted(z[0] for z in zones if z[0].startswith('KEEPOUT_FAST_'))
+    print('   no-track keep-outs 3 mm round the cut-outs (Quilter reads '
+          'these): %d areas' % len(fast_keeps))
+    if not fast_keeps:
+        prob.append('the KEEPOUT_FAST_* areas round the cut-outs are missing')
+    # b. ground stitching vias round every cut-out
+    for label, pts, closed in cutout_loops():
+        cnt, worst, where = fence_gaps(pts, closed, load.vias)
+        print('   ground via fence round the %s: %d GND vias, largest '
+              'via-to-via gap %.2f mm (limit %.1f)'
+              % (label, cnt, worst if worst < 1e8 else 0.0, FENCE_MAX_GAP))
+        if worst > FENCE_MAX_GAP + 1e-6:
+            prob.append('ground via fence round the %s: gap %.2f mm between '
+                        '%s' % (label, worst, where))
+    # c. fast tracks: 3 mm from every radio-end edge and from the packages
+    segs = radio_edge_segments()
+    pk = [(ref, hl2_rect(ref)) for ref in ('U2', 'U7', 'T2')]
+    n_fast = 0
+    worst_e = (1e9, '')
+    for (net, lay, a, b, w) in load.tracks_w:
+        if not is_fast(net):
+            continue
+        n_fast += 1
+        ln = math.hypot(b[0] - a[0], b[1] - a[1])
+        steps = max(1, int(ln / 0.25))
+        for i in range(steps + 1):
+            px = a[0] + (b[0] - a[0]) * i / steps - PAGE[0]
+            py = a[1] + (b[1] - a[1]) * i / steps - PAGE[1]
+            d = min(pt_seg(px, py, s0, s1) for s0, s1 in segs) - w / 2.0
+            if d < worst_e[0]:
+                worst_e = (d, net)
+            if d < FAST_EDGE_KEEP:
+                prob.append('fast track %s is %.2f mm from a board edge or '
+                            'cut-out at panel (%.2f, %.2f); the limit is %.1f'
+                            % (net, d, px, py, FAST_EDGE_KEEP))
+                break
+            hit = [ref for ref, r in pk if
+                   r[0] - FAST_PART_KEEP < px < r[2] + FAST_PART_KEEP and
+                   r[1] - FAST_PART_KEEP < py < r[3] + FAST_PART_KEEP]
+            if hit:
+                prob.append('fast track %s over radio part %s at panel '
+                            '(%.2f, %.2f)' % (net, hit[0], px, py))
+                break
+    if n_fast:
+        print('   fast tracks: %d segments, nearest to an edge or cut-out '
+              '%.2f mm (%s), limit %.1f; also checked against the FPGA, '
+              'AD9866 and T2 outlines plus 3 mm'
+              % (n_fast, worst_e[0], worst_e[1], FAST_EDGE_KEEP))
+    else:
+        print('   fast tracks: none routed yet - the 3 mm edge rule and the '
+              'no-track-over-FPGA/ADC/T2 rule are checked on the returned board')
+    # d. the proximity rules for the new parts, once placed
+    byref = {f.ref: f for f in fps}
+    for ref, tgt, tpads, lim in PROXIMITY:
+        f, t = byref.get(ref), byref.get(tgt)
+        if f is None or t is None:
+            prob.append('%s or %s missing' % (ref, tgt))
+            continue
+        if f in check.staged or t in check.staged:
+            continue
+        tp = [p for p in t.pads if tpads is None or p[0] in tpads]
+        d = min(edge_gap(p, q) for p in f.pads for q in tp)
+        print('   %s to %s%s: %.2f mm (limit %.1f)'
+              % (ref, tgt, ' pins ' + '/'.join(tpads) if tpads else '', d, lim))
+        if d > lim:
+            prob.append('%s is %.2f mm from %s; the limit is %.1f'
+                        % (ref, d, tgt, lim))
+    return prob
+
+
 def main():
     fps, box, prob = check('bridge')
+    path = (sys.argv[1] if len(sys.argv) > 1
+            else os.path.join(ROOT, 'bridge', 'bridge.kicad_pcb'))
+    check_db3_j5.zones = load_zones(path)
     # the radio end's LOCAL frame (HL2 y 73.30 at its top), not its trimmed
     # outline: the HL2 grids and the notch arithmetic are in that frame
     rbox = (PAGE[0] + RADIO_FRAME[0], PAGE[1] + RADIO_FRAME[1],
@@ -1243,6 +1609,9 @@ def main():
     prob += check_panel(fps)
     print('-- the cut-outs over the radio --')
     prob += check_holes(fps)
+    prob += check_db3_j5(fps)
+    print('-- the noise layout rules at the radio end --')
+    prob += check_noise_rules(fps)
     print('-- the locked parts --')
     prob += check_locked(fps)
     print('-- the placement and routing rules --')
@@ -1257,7 +1626,12 @@ def main():
                      'ends are joined only by the tabs with no part within 5 mm '
                      'of a break line, the three holes over the radio are '
                      'clear with nothing inside their margin, DB6 is inside '
-                     'its window, exactly the fixed parts are locked at '
+                     'its window, DB3 and a mating socket are clear with no '
+                     'track allowed within 3 mm of its ADC input pins, the '
+                     'bottom layer facing the radio is a ground pour with no '
+                     'tracks, a ground via fence at 5 mm or less runs round '
+                     'every cut-out, fast tracks keep 3 mm from every edge, '
+                     'exactly the fixed parts are locked at '
                      'their documented positions, and every placement and '
                      'routing rule that applies at this stage holds'
                      if not prob else '%d PROBLEMS' % len(prob)))

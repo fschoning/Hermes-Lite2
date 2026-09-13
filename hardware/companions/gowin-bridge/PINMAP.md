@@ -6,7 +6,8 @@ end** (connector J101) plugs onto the Tang Mega 138K dock's J14. They are
 fabricated together and snapped apart. Two radio ends and one cable make a
 radio-to-radio link; a radio end, a Gowin end and one cable make a
 radio-to-FPGA link. Sections 1–10 are the radio end and the contract both ends
-share; **section 11 is the Gowin end.**
+share; **section 11 is the Gowin end; section 12 is every translator and
+buffer, its direction and its enable, and the safe state** (13 Sep 2026).
 
 Authoritative. `tools/check_netlist.py` retypes every table below from this
 file and asserts it against the generated netlist, so the two cannot drift.
@@ -280,12 +281,22 @@ present-**and**-powered, which is what the brief asked for.
 `SB_PRSNT_IN` also serves as **link reset**: the far end pulls it low. On this
 board there is a test point on it you can ground by hand to assert reset in
 the other direction — a gateware-driven reset would need another HL2 pin and
-there is not one. The signal is brought to that test point and to the
-not-fitted link
-**R_DRVEN_PRSNT**, which if fitted instead of **R_DRVEN_ON** gates the two LVDS
-drivers on the far end being present and powered, saving about 60 mA with no
-cable plugged in. It is not the default because 10Gtek sell a **no-sideband**
-variant of this cable that would leave the link dead with no clue why.
+there is not one.
+
+**Presence now gates everything this end drives onto the cable (13 Sep
+2026).** `SB_PRSNT_IN` reaches:
+
+| What | How | Effect with no powered far end |
+|---|---|---|
+| LVDS drivers U4, U5 | **R_DRVEN_PRSNT fitted** (R_DRVEN_ON not fitted): DRV_EN = presence | drivers off, so a powered radio pushes no LVDS current into an unpowered Tang |
+| AUXIO read buffer U8, TDO buffer U10 port 1 | Q5 (gate presence) pulls `PRSNT_OE_N` low; 10 kΩ pull-up | both off |
+| AUXIO drive U9 | Q1 (gate presence) in the `AUXIO_OE_N` chain | off |
+| `LINK_ALIVE` | Q6 (gate `PRSNT_OE_N`) clamps it to ground | receivers, JTAG buffers and AUXIO drive off (section 12) |
+
+**This needs the sideband cable, CAB-8654/8654-8i-P.** 10Gtek also sell a
+no-sideband variant; with it the link is dead. Whether CAB-8654/8654-8i-P
+carries all 16 sidebands is not verified: check with the ohmmeter test.
+Fit R_DRVEN_ON instead only for bench work with no far end.
 
 ### 6.2 JTAG over the cable, and the radio-to-radio proof
 
@@ -307,7 +318,7 @@ feature disabled — which is its power-up state:**
 | TCK | the gated buffer output is **tri-stated**, so CN1 pin 1 sees only the HL2's own 10 kΩ pull-up (R4) |
 | TMS | the same, with R2 |
 | TDI | the same, with R3 |
-| TDO | read by a **high-impedance buffer input** through 330 Ω; the FPGA's TDO pin is not loaded by the cable and nothing drives against it |
+| TDO | read by a **high-impedance buffer input** (U10 port 1, A side) through 330 Ω; the FPGA's TDO pin is not loaded by the cable and nothing drives against it. A 10 kΩ pull-up holds the buffer input while TDO is not shifting. **rev D as first built had this buffer backwards (DIR LOW) and drove the TDO pin from the cable; fixed 13 Sep 2026** |
 
 **Neither radio can disturb the other's programming pins.** And if the feature
 is wrongly enabled in a radio-to-radio link it is *still* safe: TCK and TMS
@@ -359,19 +370,27 @@ paths**, which is safer than one bidirectional translator:
 
 | Path | Wiring | State |
 |---|---|---|
-| **READ** (default) | HL2 pin → 330 Ω → **buffer input** (high impedance) → sideband out | **always on, and physically incapable of driving an HL2 pin** |
-| **DRIVE** (optional) | sideband in (10 kΩ **pull-up**) → **buffer output** → 330 Ω → HL2 pin | gated by `AUXIO_OE_N`: **off** at power-up, and **off whenever no powered far end is present**, whatever the gateware does |
+| **READ** (default) | HL2 pin → 330 Ω → **buffer input** (U8, A side, DIR HIGH) → sideband out | on while a powered far end is present (`PRSNT_OE_N`); **incapable of driving an HL2 pin** |
+| **DRIVE** (optional) | sideband in (10 kΩ **pull-up**) → **buffer output** (U9) → 330 Ω → HL2 pin | gated by `AUXIO_OE_N`: **off** unless the gateware enables **and** a powered far end is present **and** the forward clock runs |
+
+**Correction (13 Sep 2026).** rev D as first built had U8's DIR pins on GND.
+On an SN74AVC4T245, DIR LOW is **B data to A bus** (TI SCES576I Table 7-1),
+so U8 drove the radio's CW key, PTT and clock-chip I2C pins from floating
+cable wires, permanently. It now has DIR HIGH (A = radio side = input, B =
+cable = output). `check_netlist.py` derives every channel's direction from
+its DIR and OE nets and fails if it does not match section 12.
 
 **The DRIVE path is fail-safe against an absent far end, in hardware.**
 
 1. The four cable-side inputs are **pulled UP** to +3V3. A far end that is
    unplugged, unpowered, unwired (the Gowin end) or tri-stated leaves them
    HIGH, and the buffer can only pass HIGH: not keyed, bus idle.
-2. U9's enable `AUXIO_OE_N` is pulled up and pulled down only through **Q1**,
-   an AO3400A: source on the gateware enable `AUXIO_EN_N`, gate on presence
-   `SB_PRSNT_IN`. Q1 conducts only when the gateware enables **and** a powered
-   far end holds presence at 3.0 V. With no far end the gate sits at 0 V on
-   its 10 kΩ and U9 is tri-stated.
+2. U9's enable `AUXIO_OE_N` is pulled up and pulled down only through **Q1**
+   (gate presence `SB_PRSNT_IN`) in series with **Q4** (gate `LINK_ALIVE`),
+   both AO3400A, from the gateware enable `AUXIO_EN_N`. It goes LOW only when
+   the gateware enables **and** a powered far end holds presence at 3.0 V
+   **and** the forward clock runs. With no far end the gate of Q1 sits at 0 V
+   on its 10 kΩ and U9 is tri-stated.
 
 So no gateware setting and no operator action can key the radio from an
 absent far end, and a floating line cannot put an edge on the clock chip's
@@ -416,8 +435,21 @@ LOW**:
 
 | Net at DB1 | FPGA | Feature | 3.3 V net |
 |---|---|---|---|
-| `HL2_JTAG_EN` | 80 (DB1-4) | JTAG over the cable | `JTAG_EN_N` |
-| `HL2_AUXIO_EN` | 72 (DB1-1) | the AUXIO drive path | `AUXIO_EN_N`, then `AUXIO_OE_N` through the presence interlock Q1 |
+| `HL2_JTAG_EN` | 80 (DB1-4) | JTAG over the cable | `JTAG_EN_RAW_N` (U2 output), then `JTAG_EN_N` through Q3, gated by `LINK_ALIVE` |
+| `HL2_AUXIO_EN` | 72 (DB1-1) | the AUXIO drive path | `AUXIO_EN_N` (U2 output), then Q4 (`LINK_ALIVE`) and Q1 (presence) to `AUXIO_OE_N` |
+
+**The released HL2 gateware drives both pins LOW (found 13 Sep 2026).** Pin 80
+is `fan_pwm`, LOW with the fan off; pin 72 is the TX envelope PWM, constant
+LOW (`control.v`, `radio.v`). LOW is "enabled". So the pull-ups below cannot
+make a stock radio safe on their own. Both enables now pass a MOSFET gated by
+`LINK_ALIVE`, which is HIGH only while the link gateware's 153.6 MHz forward
+clock runs on pin 98 and a far end is present. No released gateware makes
+that clock. Section 12.
+
+**Correction: HL2 J25 is not an optional solder jumper.** It is a JNC part, a
+normally-closed jumper placed as 0 Ω on the HL2 assembly BOM
+(`hardware/hl/bom/bom.assembly.pdf`, line 30). So pin 72 reaches DB1 pin 1 on a
+stock radio.
 
 Each is pulled **UP at both ends** of the translator that carries it: 10 kΩ to
 +2V5 on the HL2 side and 10 kΩ to +3V3 on the logic side. Pulled up is
@@ -429,7 +461,8 @@ disabled. So the disabled state survives every one of these:
 | Gateware loaded but not driving the pin | the 10 kΩ pull-up holds it high |
 | Far end unplugged or unpowered | irrelevant — both controls are local |
 | U2, the translator, missing, unfitted or unpowered | its output is high-impedance and the 10 kΩ to +3V3 wins |
-| **HL2 jumper J25 never soldered** | DB1 pin 1 is then an isolated pad and the 10 kΩ to +2V5 holds AUXIO disabled. The feature is unavailable; nothing is at risk |
+| **HL2 jumper J25 open** (it is fitted as 0 Ω on a stock radio) | DB1 pin 1 is then an isolated pad and the 10 kΩ to +2V5 holds AUXIO disabled. The feature is unavailable; nothing is at risk |
+| **Stock gateware driving pins 72 and 80 LOW** | no forward clock, so `LINK_ALIVE` is LOW and Q3, Q4 are off: both features stay disabled |
 
 **`check_netlist.py` asserts exactly this**: four pull-ups, to the right rails,
 and no fitted pull-down anywhere on either enable. That check replaces rev C's
@@ -447,10 +480,11 @@ jumper level.
 **And one limitation, stated plainly.** JTAG over the cable is enabled by the
 HL2's own gateware, which is a chicken-and-egg problem in exactly the case you
 most want it: a radio whose gateware will not run. The recovery path is
-**R_JTAG_FORCE**, a not-fitted 1 kΩ from `HL2_JTAG_EN` to ground. Fitted, it
-beats the 10 kΩ pull-up (0.23 V, enabled) and costs the FPGA only 2.5 mA if the
-gateware drives that pin high anyway. It is a soldering-iron job on a board
-whose headers you are soldering regardless.
+**R_JTAG_FORCE** (R21), a not-fitted 1 kΩ from **`JTAG_EN_N`** to ground,
+on the buffer side of Q3, because a radio without link gateware makes no
+forward clock. Fitted, it beats the 10 kΩ pull-up (0.30 V, enabled); U2 cannot
+fight it, because Q3 is off whenever its source is HIGH. It is a
+soldering-iron job on a board whose headers you are soldering regardless.
 
 ---
 
@@ -493,6 +527,18 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to gl_auxio_en_n
 
 What the gateware must do that the hardware cannot enforce:
 
+* **Run the forward clock on PIN_98 continuously** whenever the link is up.
+  The radio end's receivers (the only parts that drive pins 87, 88, 89, 99,
+  100 and 101), the JTAG buffers and the AUXIO drive are all tri-stated
+  unless that 153.6 MHz clock is running and a far end is present
+  (section 12). A stopped clock tri-states them within a few milliseconds.
+* **Scramble every lane, including idle.** Use a long LFSR, at least
+  2^23 − 1, on the data lanes, the aux lane and idle. Never send a short
+  repeating idle word: an N-bit repeating word puts a spur at 307.2/N MHz,
+  i.e. 38.4 MHz for N = 8 and 19.2 MHz for N = 16, inside or beside the
+  receive band. Provide a register that stops the drivers, for the noise
+  A/B tests in `DESIGN_NOTES.md` §14.6.
+
 * **Tri-state PIN_90, 91, 103 and 104 before asserting `gl_auxio_en_n`.** The
   330 Ω series resistors make getting the order wrong survivable at 7.4 mA, not
   harmless.
@@ -514,7 +560,7 @@ What the gateware must do that the hardware cannot enforce:
 | Two sideband output contacts, A9 and A29 | undriven on purpose — section 6.2 |
 | One of the 16 differential pairs, positions 35/36 | a spare full-duplex lane; driver input held low, receiver output unconnected |
 | Two of 48 ESD channels | the twelfth array's spare channels |
-| Three of 28 translator channels | U11's port 2 is disabled with its inputs grounded and its outputs unconnected, and one channel of U11 port 1 is spare. Three gated 3.3 V channels available for a future revision |
+| Three of 28 translator channels | U10 port 1 channel 2 (radio → cable, presence-gated), U11 port 1 channel 2 (cable → radio, JTAG-gated) and U11 port 2 channel 2 (always on): inputs grounded, outputs unconnected. U11 port 2 channel 1 is no longer spare: it feeds the link-alive detector |
 
 ---
 
@@ -570,7 +616,7 @@ Even J14 position = Gowin A leg = P. **Rx** = received from the radio (row B),
 | 23 / 24 | `G_B_AUXCLK_N/P` | AB22 / AB21 | IOB129B/A | Rx aux clock | |
 | 25 / 26 | `G_B_AUXDAT_N/P` | AA21 / AA20 | IOB126B/A | Rx aux data | |
 | 27 / 28 | `G_A_AUXCLK_N/P` | AB20 / AA19 | IOB110B/A | Tx aux clock | |
-| 29 | `G_PRSNT_RD` | AA18 | IOB108A | presence in, via R103 1 k; reaches J14 through the dock's fitted 0 Ω R72 | |
+| 29 | `G_PRSNT_RD` | AA18 | IOB108A | presence in, via R103 **10 k** (was 1 k until 13 Sep 2026); reaches J14 through the dock's fitted 0 Ω R72 | |
 | 30 | `G_PRSNT_DRV` | AB18 | IOB108B | presence out and link reset, via R101 1 k; through the dock's R74 | |
 | **31 / 32** | `G_B_DUPCLK_N/P` | **Y19 / Y18** | IOB116B/A | **Rx duplicate forward clock** | **MGCLKC_4 / MGCLKT_4, also BPLL2/BPLL3 FB0** |
 | 33 | `G_TDI_DRV` | T20 | IOB102B | JTAG TDI out, via R107 330 Ω | |
@@ -622,8 +668,17 @@ at the connector. The test pads they used to end on were removed on 13 Sep
 
 **Presence is driven by the gateware**, not by a resistor to 3.3 V: J14 has no
 3.3 V pin. HIGH through 1 k means present, LOW means link reset. An
-unconfigured Gowin reads as absent or weakly present, which only matters if
-the radio end's optional driver-gating link is fitted.
+unconfigured Gowin reads as absent or weakly present.
+
+**Required of the Gowin gateware (13 Sep 2026): keep every LVDS output and
+the JTAG outputs (TCK, TMS, TDI) off, tri-stated, until `G_PRSNT_RD` (ball
+AA18) reads HIGH.** Only then is a powered radio end present. The radio end
+already does the same in hardware: its drivers run only while the Gowin
+drives presence HIGH. R103 is 10 kΩ so a powered radio pushes only about
+0.25 mA into an unpowered Tang through this line. One caution: an
+unconfigured Gowin's weak pull-up (up to 400 µA) through R101 into the radio
+end's 10 kΩ can read as "present", so the radio end's drivers may start
+into a powered but unterminated Gowin input. That is harmless.
 
 **JTAG from this end keeps the radio end's safety properties.** The radio
 end's TCK, TMS and TDI inputs still pass through its gated buffer, still
@@ -655,3 +710,81 @@ The geometry is identical for both mounting schemes in
 A normal-way-up male header does not work in scheme 1: its 6.0 mm end would
 bottom out in a 5.0 mm socket. No stocked square-pin 2.54 mm 2×18 pair at LCSC
 stacks lower.
+
+---
+
+## 12. Every translator and buffer, and the safe state (13 Sep 2026)
+
+`tools/check_netlist.py` retypes the table below and, for every instance,
+**derives** each port's direction and enable from its DIR and OE* nets and the
+datasheet truth table, then compares every channel with this table. A
+translator wired backwards fails the check; this was proved by putting U8's
+DIR pins back on GND, which fails with 10 problems.
+
+**Truth tables.** SN74AVC4T245 (TI SCES576I Table 7-1, each 2-bit section):
+OE* LOW with DIR LOW = B data to A bus; OE* LOW with DIR HIGH = A data to B
+bus; OE* HIGH = both ports high-impedance. DIR and OE* are referenced to
+VCCA. Pins: 1 VCCA, 2 1DIR, 3 2DIR, 4 1A1, 5 1A2, 6 2A1, 7 2A2, 8/9 GND,
+10 2B2, 11 2B1, 12 1B2, 13 1B1, 14 2OE*, 15 1OE*, 16 VCCB. DS90LV048A (TI
+SNLS045C Table 1): outputs enabled only for EN HIGH with EN* LOW or open,
+TRI-STATE for every other combination. DS90LV047A (TI SNLS044D): EN HIGH and
+EN* LOW enable the drivers. **No SN74AVC8T245 is on the board.**
+
+### 12.1 The SN74AVC4T245s
+
+| Part | Port | DIR | Direction | OE* | Channel 1 (input → output) | Channel 2 (input → output) | Intended |
+|---|---|---|---|---|---|---|---|
+| U1 | 1 | +2V5 | A → B | GND, always on | `HL2_FWD_CLK` → `DI_FWDCLK` | `HL2_ADC_D0` → `DI_ADCD0` | radio → LVDS driver |
+| U1 | 2 | +2V5 | A → B | GND, always on | `HL2_ADC_D1` → `DI_ADCD1` | `HL2_ADC_D2` → `DI_ADCD2` | radio → LVDS driver |
+| U2 | 1 | +2V5 | A → B | GND, always on | `HL2_AUX_CLK_OUT` → `DI_AUXCLK` | `HL2_AUX_DAT_OUT` → `DI_AUXDAT` | radio → LVDS driver |
+| U2 | 2 | +2V5 | A → B | GND, always on | `HL2_JTAG_EN` → `JTAG_EN_RAW_N` | `HL2_AUXIO_EN` → `AUXIO_EN_N` | radio enables → board |
+| U3 | 1 | +3V3 | A → B | `RX_EN_N` | `RX_REVCLK` → `X_REVCLK25` | `RX_DUPCLK` → `X_DUPCLK25` | receivers → radio pin 88 |
+| U3 | 2 | +3V3 | A → B | `RX_EN_N` | `RX_AUXCLK` → `X_AUXCLK25` | `RX_AUXDAT` → `X_AUXDAT25` | receivers → radio pins 89, 87 |
+| U8 | 1 | +3V3 | A → B | `PRSNT_OE_N` | `AUXIO0_T` → `SB_AUXIO0_OUT` | `AUXIO1_T` → `SB_AUXIO1_OUT` | radio → cable (AUXIO read) |
+| U8 | 2 | +3V3 | A → B | `PRSNT_OE_N` | `AUXIO2_T` → `SB_AUXIO2_OUT` | `AUXIO3_T` → `SB_AUXIO3_OUT` | radio → cable (AUXIO read) |
+| U9 | 1 | +3V3 | A → B | `AUXIO_OE_N` | `SB_AUXIO0_IN` → `AUXIO0_T` | `SB_AUXIO1_IN` → `AUXIO1_T` | cable → radio (AUXIO drive) |
+| U9 | 2 | +3V3 | A → B | `AUXIO_OE_N` | `SB_AUXIO2_IN` → `AUXIO2_T` | `SB_AUXIO3_IN` → `AUXIO3_T` | cable → radio (AUXIO drive) |
+| U10 | 1 | +3V3 | A → B | `PRSNT_OE_N` | `J_TDO_T` → `SB_TDO_OUT` | `GND` → unconnected | radio TDO → cable |
+| U10 | 2 | +3V3 | A → B | `JTAG_EN_N` | `SB_TCK_IN` → `SB_TCK_IN_B` | `SB_TMS_IN` → `SB_TMS_IN_B` | cable → radio TCK, TMS |
+| U11 | 1 | +3V3 | A → B | `JTAG_EN_N` | `SB_TDI_IN` → `SB_TDI_IN_B` | `GND` → unconnected | cable → radio TDI |
+| U11 | 2 | +3V3 | A → B | GND, always on | `DI_FWDCLK` → `LA_CLK` | `GND` → unconnected | clock copy → detector |
+
+**As found on 13 Sep 2026, before the fix:** U8 ports 1 and 2 had DIR on GND
+(B → A, cable → radio, always on) and U10 port 1 had DIR on GND (B → A,
+cable → the FPGA's TDO pin, always on). U3, U8 and U10 port 1 had OE* on
+GND and U11 port 2 was disabled. Every other port was already as above.
+
+### 12.2 The LVDS parts
+
+| Part | EN | EN* | Enabled when |
+|---|---|---|---|
+| U4, U5 DS90LV047A drivers | `DRV_EN` = `SB_PRSNT_IN` through fitted R_DRVEN_PRSNT | GND | a powered far end asserts presence |
+| U6, U7 DS90LV048A receivers | +3V3 | `RX_EN_N` | `LINK_ALIVE` is HIGH |
+
+### 12.3 The link-alive detector and what it gates
+
+The released HL2 gateware drives pins 87, 99, 100 and 101 as outputs and pins
+72 and 80 LOW. The one thing none of it makes is a continuous clock on pin 98
+(an LED pin blinking at a few hertz). So:
+
+| Net | Made by | HIGH / LOW |
+|---|---|---|
+| `LA_CLK` | U11 port 2, a buffered copy of `DI_FWDCLK` | the forward clock |
+| `LINK_ALIVE` | 10 pF series cap, RB751V-40 clamp (D13) and rectifier (D14), 10 nF + 100 kΩ to GND; clamped LOW by Q6 while `PRSNT_OE_N` is HIGH | about 2.2 V with the clock running and a far end present; under 0.1 V otherwise |
+| `RX_EN_N` | 10 kΩ up; Q2 (gate `LINK_ALIVE`) to GND | LOW = U3, U6, U7 outputs enabled |
+| `JTAG_EN_N` | 10 kΩ up; Q3 (gate `LINK_ALIVE`) from `JTAG_EN_RAW_N` | LOW = JTAG buffers enabled |
+| `AUXIO_OE_N` | 10 kΩ up; Q4 (gate `LINK_ALIVE`) then Q1 (gate presence) from `AUXIO_EN_N` | LOW = AUXIO drive enabled |
+| `PRSNT_OE_N` | 10 kΩ up; Q5 (gate `SB_PRSNT_IN`) to GND | LOW = U8, U10 port 1 enabled |
+
+### 12.4 The safe state
+
+`check_netlist.py` evaluates the board for all 16 combinations of forward
+clock on/off, far end present/absent, and pins 72 and 80 HIGH/LOW. Whenever
+the clock is off or no far end is present:
+
+| Case | Anything driving a radio FPGA pin | JTAG buffers | AUXIO drive | Cable-facing buffers and LVDS drivers |
+|---|---|---|---|---|
+| Stock gateware (no clock, 72/80 LOW), far end present | **nothing**: U3, U6, U7, U9, U10 port 2, U11 port 1 all high-impedance | off | off | on (they drive only the cable) |
+| No gateware (no clock) | nothing | off | off | on only if a far end is present |
+| Far end absent, or cable unplugged | nothing | off | off | **off** |
+| Link gateware running, far end present, enables LOW | receivers and, if enabled, JTAG and AUXIO | on | on | on |

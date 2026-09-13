@@ -1,7 +1,8 @@
 # gowin-bridge status (branch `gowin-bridge-pcb`, rev D)
 
-Last updated 2026-09-13 (holes over the radio, tabs, jumper window; re-prepared for Quilter). Worktree
-`G:\proj\worktrees\Hermes-Lite2-gowin-bridge-pcb`.
+Last updated 2026-09-13, evening (the risk-review fixes: two backwards buffers,
+stock-gateware contention, power sequencing, noise measures, DB3, front-panel
+vents, Hardrock-50). Worktree `G:\proj\worktrees\Hermes-Lite2-gowin-bridge-pcb`.
 
 **rev D is one design with two ends, on one board.** The **radio end** plugs
 onto the Hermes-Lite 2. The **Gowin end** plugs onto the Tang Mega 138K dock.
@@ -10,14 +11,79 @@ mouse-bite tabs after manufacture.
 
 | | |
 |---|---|
-| `bridge/` | **161 parts (132 fitted), 168 nets, ten test points.** ERC **0**, DRC **0** violations, schematic/PCB parity **0**. **Prepared for Quilter, not placed:** 11 fixed parts and 48 mouse-bite holes locked, 142 parts waiting off the board |
-| `quilter-upload/` | the three files to upload, KiCad 10 format. ERC 0, DRC 0, parity 0 on those copies too. Procedure: `QUILTER.md` |
-| `tools/check_netlist.py` | **OK** — radio-end header maps, the Gowin-end J14 map with both clocks on clock balls, all 74 contacts at each end, **the crossover walked radio→Gowin, Gowin→radio and radio→radio**, the radio-to-radio JTAG proof, the enables, **the AUXIO fail-safe in all three pairings**, every conductor clamped at both ends, and no net shared between the ends |
+| `bridge/` | **184 parts (152 fitted), 176 nets, eleven test points, 48 ground stitching vias.** ERC **0**, DRC **0** violations, schematic/PCB parity **0**. **Prepared for Quilter, not placed:** 11 fixed parts and 48 mouse-bite holes locked, 165 parts waiting off the board. `bridge.kicad_dru` holds the 3 mm fast-net edge rule for KiCad DRC |
+| `quilter-upload/` | the three files to upload, KiCad 10 format (plus the `.kicad_dru`, not uploaded). ERC 0, DRC 0, parity 0 on those copies too. Procedure: `QUILTER.md` |
+| `tools/check_netlist.py` | **OK** — radio-end header maps, the Gowin-end J14 map with both clocks on clock balls, all 74 contacts at each end, **the crossover walked radio→Gowin, Gowin→radio and radio→radio**, the radio-to-radio JTAG proof, the enables, **the AUXIO fail-safe in all three pairings**, every conductor clamped at both ends, no net shared between the ends, and since 13 Sep 2026 **every translator's and LVDS part's direction and enable derived from the truth table**, **the safe state in all 16 combinations** of clock, far end and enable pins, and **the presence gating in all three pairings**. With U8's fault put back it fails with 10 problems |
 | `tools/check_geometry.py` | **OK** — **one continuous outline, 64.50 × 92.00 mm, no rails**, the ends joined only by the three tabs, **nearest part 6.22 mm from a break line**, milling path 95 m per m² (fee from 120), **the three holes over the radio clear at their full size, read from the HL2 board file**, DB6 inside its window with 2.5 mm, the radio-end sockets on the HL2 grids, the Gowin-end socket on dock J14 positions 5–40, both connector land patterns recomputed from SFF-8654 Table A-1, exactly the fixed parts locked at their documented positions, every other part off the board. Given the board Quilter returns, it also checks the placement and routing rules, including nothing within 1 mm of a hole, pairs 2 mm from a hole, parts 5 mm from a break line and capacitors parallel to it |
-| `tools/cost_model.py` | **$154.84** for five boards; one link **$30.97**; the Gowin half **$22.41** |
+| `tools/cost_model.py` | **$162.43** for five boards; one link **$32.49**; the Gowin half **$21.92** |
 | `gowin_end_j14.cst` | the Gowin constraint file, placed and routed by Gowin EDA 1.9.11.03 without error |
 
 DRC reports 499 unconnected items: the placement and routing, left for Quilter.
+
+---
+
+## The risk-review fixes (13 Sep 2026, owner-approved)
+
+Full detail and numbers: `DESIGN_NOTES.md` §14. Pin contract: `PINMAP.md` §12.
+
+**1. Two buffers were wired backwards, and are fixed.** U8, the AUXIO read
+buffer, had its direction pins on ground, which on this part means cable →
+radio: it drove the radio's CW key, PTT and clock-chip I2C pins from floating
+cable wires, permanently. U10 port 1 did the same to the FPGA's TDO pin. Both
+now run radio → cable, enabled only with a far end present. Every other
+translator was checked against the truth table and was the right way round;
+the checker now derives every channel's direction and fails on a backwards
+one (proved by re-inserting U8's fault).
+
+**2. The board no longer fights a radio running stock gateware.** Stock
+gateware drives pins 87, 99, 100 and 101, which our receivers also drove
+(20–49 mA per pin), and drives pins 72 and 80 LOW, which switched our JTAG
+and AUXIO paths on. A small detector (U11's spare channel, 10 pF, two
+RB751V-40 diodes, 10 nF, 100 kΩ) makes `LINK_ALIVE` HIGH only while the link
+gateware's 153.6 MHz forward clock runs on pin 98 and a far end is present.
+Every output that can drive a radio pin (U3, U6, U7), the JTAG buffers and the
+AUXIO drive are off unless it is HIGH. Five AO3400A MOSFETs do the gating. The
+checker proves it for stock gateware, no gateware, far end absent and cable
+unplugged.
+
+**3. A powered radio no longer pushes current into an unpowered Tang.** The
+LVDS drivers now run only while the far end asserts presence (R_DRVEN_PRSNT
+fitted), and so do the TDO and AUXIO read buffers (one more MOSFET). R103 at
+the Gowin end is now 10 kΩ. **The Gowin gateware must keep its outputs off
+until it reads presence** (`PINMAP.md` §11.4). **Buy the sideband cable:** a
+no-sideband cable now leaves the link dead.
+
+**4. Noise measures built in.** A 4.7 µH plus 100 µF filter on our 3.3 V
+input; unfitted 10 nF footprints beside both shell-to-ground links; no track
+on the bottom layer facing the radio; fast signals 3 mm from every edge and
+none over the FPGA, AD9866 or T2; 48 ground vias round the cut-outs, at most
+4.44 mm apart; every lane scrambled including idle (gateware rule). No
+common-mode chokes. The bring-up noise test plan is `DESIGN_NOTES.md` §14.6.
+
+**5. DB3 is clear.** DB3 is an optional radio header whose pins 3 and 4 go
+straight into the AD9866's receive input. The main cut-out now clears it with
+room for a mating socket (6.54 × 14.16 mm), no track may come within 3 mm of
+those pins, and J5 (the USB Blaster header) moved to lie horizontal just below
+J4, pin 1 at local (51.40, 30.80).
+
+**6. Front panel vents restored.** Nine holes put back above the SlimSAS
+opening in `panel-endcap/`: 27 holes, 73.7 mm², the stock figure. Strength
+margin unchanged at 3.9×.
+
+**7. Compatibility requirement: the DB9 adapter board cannot be fitted with
+this bridge board.** Its wires land on DB1 pins our socket covers, and DB1
+pin 3 is our ADC lane 1. The owner moves the Hardrock-50 serial and PTT to the
+N2ADR HL2 IO board (own DB9, Hardrock-50 firmware example) and retires the DB9
+adapter. No design change.
+
+**Cost:** order $154.84 → **$162.43**; one link $30.97 → **$32.49**; the Gowin
+half **$21.92**. One new $3.07 fee (the inductor); the detector diodes are
+JLCPCB Preferred parts with no fee.
+
+**Placement room after the changes:** header region 590 mm² for 338 mm² of
+parts (was 538 for 298); main radio region 2166 for 593 (was 2368 for 483).
+The 25 mm header-net rule still has at least 289 mm² of region within reach
+of every header pin.
 
 ---
 
@@ -97,14 +163,15 @@ terminations within 5 mm are typed in as proximity constraints.
 | Ref | Net | Why |
 |---|---|---|
 | TP9 | GND | radio ground clip |
-| TP1 | +3V3 | rail after the input bead |
+| TP1 | +3V3 | rail after the input filter |
 | TP2 | +2V5 | the translators' 2.5 V rail |
 | TP3 | SB_PRSNT_IN | is a powered far end present |
-| TP4 | JTAG_EN_N | must read HIGH at power-up |
-| TP5 | AUXIO_EN_N | must read HIGH at power-up |
-| TP6 | AUXIO_OE_N | the drive enable after the presence interlock |
+| TP4 | JTAG_EN_N | must read HIGH at power-up and with stock gateware |
+| TP5 | AUXIO_EN_N | the raw enable from FPGA pin 72: LOW under stock gateware |
+| TP6 | AUXIO_OE_N | the drive enable after the link-alive and presence gates |
 | TP7 | HL2_FWD_CLK | forward clock after the divider, 2.50 V high |
 | TP8 | HL2_REV_CLK | reverse clock into FPGA pin 88 |
+| TP10 | LINK_ALIVE | about 2.2 V only while the forward clock runs and a far end is present (added 13 Sep 2026) |
 | TP101 | G_GND | Gowin ground clip |
 
 No pull resistor, clamp or fail-safe element depended on a removed pad.
@@ -247,11 +314,11 @@ enable. It passes in all three.
 |---|---|
 | Board | **64.50 × 92.00 mm, one continuous outline, no rails**: radio end on top, Gowin end below, joined by three mouse-bite tabs across a 2 mm slot; both connectors on the left edge |
 | The 0.07 mm | the radio end's top edge is 0.07 mm in (HL2 y 73.37), kept from when the rails had to fit 100 mm |
-| **Order total, five boards** | **$154.84**, costed at 64.50 × 90.00 mm; 92.00 mm is in the same size band, but see the tabs question above |
-| Paid once | **$61.78**: PCB $12.10 (board $7.00, lead-free HASL $5.10), setup $8.18, stencil $1.53, six Extended fees $18.42, shipping $21.55 |
-| Paid per board | **$18.61**: radio-end parts $13.39, Gowin-end parts $4.04, joints $1.18 |
-| **One complete link** | **$30.97** |
-| **The Gowin half** | **$22.41** over the $132.43 radio-only order: $21.91 the Gowin end's parts and joints, $0.50 the AUXIO fail-safe parts and today's prices. The PCB costs the same $12.10 as the radio end alone |
+| **Order total, five boards** | **$162.43** (was $154.84 before the risk-review fixes); 92.00 mm is in the same size band as the quote, but see the tabs question above |
+| Paid once | **$64.85**: PCB $12.10 (board $7.00, lead-free HASL $5.10), setup $8.18, stencil $1.53, seven Extended fees $21.49, shipping $21.55 |
+| Paid per board | **$19.52**: radio-end parts $14.23, Gowin-end parts $4.04, joints $1.25 |
+| **One complete link** | **$32.49** |
+| **The Gowin half** | **$21.92**: the Gowin end's parts and joints for five boards. The PCB costs the same $12.10 as the radio end alone |
 
 `COST.md` has every line and source.
 
@@ -282,21 +349,32 @@ by two; no net changed.
 | **C5432262 stock** | 189 in stock on 13 Sep 2026; the order needs 10 | buy or order soon |
 | **The connector's front-face setback** | derived, ±0.5 mm; sets where both mating faces sit | Amphenol's drawing for U10A474240T |
 | **The radio end's open items** | HL2 R17 not fitted, the three-socket tolerance stack, Cyclone IV capture at 307.2 Mbit/s | `DESIGN_NOTES.md` §10 |
+| **Whether the 10Gtek cable carries all 16 sidebands** | the LVDS drivers now need presence over a sideband; a no-sideband cable leaves the link dead | the ohmmeter test |
+| **The link-alive detector on real parts** | its 2.2 V output is calculated, not measured | bench test with a 153.6 MHz signal before plugging into a radio (`ROUTING.md` §7 step 0) |
+| **C193025 stock**, the 4.7 µH inductor | about 2,000 in stock | buy soon, or use SWPA4020S100MT (C82398) |
+| **Whether Quilter keeps the 48 pre-placed ground vias, and routes with no track on the radio end's bottom layer** | its docs are silent on pre-placed vias; the bottom-layer ban leaves top and In2 for signals | `QUILTER.md` steps 5a and 50c |
+| **Every noise ranking** | judgement until measured | `DESIGN_NOTES.md` §14.6 |
 
 ---
 
 ## The radio-end front panel
 
-`panel-endcap/` (for the 55 mm case) still has its SlimSAS opening **31.65 mm
-out of position**: it must move to panel x 120.30–144.30, same height and size.
-That is layout work for a separate session and was not touched. No extra
-ventilation holes are to be cut.
+`panel-endcap/` (for the 55 mm case, rev C) has its SlimSAS opening at panel
+x 120.30–144.30, centred on the connector. Moving it had cost nine of the 27
+stock vent holes; on 13 Sep 2026 nine were put back, same Ø1.4 mm and 2.5 mm
+pitch, as a 3 × 3 block above the opening at panel x 130.5–135.5, y 56.7–61.7.
+Vent area is back to the stock **73.7 mm²**. The block is 12.5 mm from the
+opening and 3.6 mm from the nearest stock hole. The 55 N strength margin is
+unchanged at 3.9× (the new holes sit where the bending moment is lowest).
+DRC: the same single, expected library-mismatch note. Full record:
+`franz-claude-analysis/HL2_END_PANEL.md` in the master repo (kept out of git).
 
 ---
 
 ## Next steps, in order
 
-1. Buy one cable and ohmmeter it.
+1. Buy one cable and ohmmeter it, including all 16 sidebands.
+1a. Retire the DB9 adapter board; move the Hardrock-50 serial and PTT to the N2ADR IO board.
 2. Decide scheme 1 or scheme 2. If scheme 1, buy the C55160396 sockets now.
 3. Choose the Gowin-end M3 spacer; confirm it fits a 3.2 mm hole.
 4. Print `templates/bridge-1to1-TOP-fit-check.pdf` at 100 %. Offer the radio
@@ -309,7 +387,12 @@ ventilation holes are to be cut.
    boards, 4 layer, 1.6 mm, lead-free HASL, Economic assembly, tabs left
    unbroken. `COST.md`.
 7. Gowin gateware: start from `gowin_end_j14.cst`, with the two
-   configuration-pin options set.
+   configuration-pin options set. Keep every LVDS and JTAG output off until
+   presence (ball AA18) reads HIGH, and scramble every lane including idle.
+8. HL2 link gateware: run the forward clock on pin 98 continuously; nothing
+   reaches the radio's pins without it (`PINMAP.md` §9, §12).
+9. At bring-up: bench-test `LINK_ALIVE`, then the safety check, then the noise
+   test plan (`ROUTING.md` §7, `DESIGN_NOTES.md` §14.6).
 
 **Anything that changes a net is changed in `tools/gen_gowin_bridge.py` and
 regenerated, never hand-edited in the KiCad files, and `PINMAP.md` is updated
@@ -326,12 +409,13 @@ python tools/gen_gowin_bridge.py
 python tools/check_geometry.py
 python tools/check_netlist.py
 python tools/cost_model.py
+%KC% pcb drc --refill-zones panel-endcap/panel-endcap.kicad_pcb
 
 %KC% sch erc --severity-error -o bridge/bridge-erc.rpt bridge/bridge.kicad_sch
 %KC% pcb drc --severity-error --schematic-parity --refill-zones ^
      -o bridge/bridge-drc.rpt bridge/bridge.kicad_pcb
 
-copy bridge\bridge.kicad_pro, .kicad_sch, .kicad_pcb to quilter-upload\
+copy bridge\bridge.kicad_pro, .kicad_sch, .kicad_pcb, .kicad_dru to quilter-upload\
 %KC% pcb upgrade --force quilter-upload/bridge.kicad_pcb
 %KC% sch upgrade --force quilter-upload/bridge.kicad_sch
 del quilter-upload\bridge.kicad_prl

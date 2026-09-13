@@ -111,6 +111,126 @@
 						(effects (font (size 1.27 1.27))))
 					(number "2"
 						(effects (font (size 1.27 1.27)))))))
+		(symbol "gowin-bridge:C_Polarized"
+			(pin_numbers hide)
+			(pin_names (offset 0.254))
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "C"
+				(at 0 0 0)
+				(effects (font (size 1.27 1.27))))
+			(property "Value" "C_Polarized"
+				(at 0 -2.54 0)
+				(effects (font (size 1.27 1.27))))
+			(property "Footprint" "gowin-bridge:CP_EIA-3528-21_Kemet-B"
+				(at 0 -5.08 0)
+				(effects (font (size 1.27 1.27)) (hide yes)))
+			(property "Datasheet" ""
+				(at 0 -7.62 0)
+				(effects (font (size 1.27 1.27)) (hide yes)))
+			(property "Description" "Polarized capacitor"
+				(at 0 -10.16 0)
+				(effects (font (size 1.27 1.27)) (hide yes)))
+			(symbol "C_Polarized_0_1"
+				(rectangle
+					(start -2.286 0.508)
+					(end 2.286 1.016)
+					(stroke (width 0) (type default))
+					(fill (type none)))
+				(polyline
+					(pts
+						(xy -1.778 2.286)
+						(xy -0.762 2.286))
+					(stroke (width 0) (type default))
+					(fill (type none)))
+				(polyline
+					(pts
+						(xy -1.27 2.794)
+						(xy -1.27 1.778))
+					(stroke (width 0) (type default))
+					(fill (type none)))
+				(rectangle
+					(start 2.286 -0.508)
+					(end -2.286 -1.016)
+					(stroke (width 0) (type default))
+					(fill (type outline))))
+			(symbol "C_Polarized_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name ""
+						(effects (font (size 1.27 1.27))))
+					(number "1"
+						(effects (font (size 1.27 1.27)))))
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.794)
+					(name ""
+						(effects (font (size 1.27 1.27))))
+					(number "2"
+						(effects (font (size 1.27 1.27)))))))
+		(symbol "gowin-bridge:D_Schottky"
+			(pin_numbers hide)
+			(pin_names (offset 1.016))
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(at 0 0 0)
+				(effects (font (size 1.27 1.27))))
+			(property "Value" "D_Schottky"
+				(at 0 -2.54 0)
+				(effects (font (size 1.27 1.27))))
+			(property "Footprint" "gowin-bridge:D_SOD-323"
+				(at 0 -5.08 0)
+				(effects (font (size 1.27 1.27)) (hide yes)))
+			(property "Datasheet" ""
+				(at 0 -7.62 0)
+				(effects (font (size 1.27 1.27)) (hide yes)))
+			(property "Description" "Schottky diode"
+				(at 0 -10.16 0)
+				(effects (font (size 1.27 1.27)) (hide yes)))
+			(symbol "D_Schottky_0_1"
+				(polyline
+					(pts
+						(xy -1.905 0.635)
+						(xy -1.905 1.27)
+						(xy -1.27 1.27)
+						(xy -1.27 -1.27)
+						(xy -0.635 -1.27)
+						(xy -0.635 -0.635))
+					(stroke (width 0.254) (type default))
+					(fill (type none)))
+				(polyline
+					(pts
+						(xy 1.27 1.27)
+						(xy 1.27 -1.27)
+						(xy -1.27 0)
+						(xy 1.27 1.27))
+					(stroke (width 0.254) (type default))
+					(fill (type none)))
+				(polyline
+					(pts
+						(xy 1.27 0)
+						(xy -1.27 0))
+					(stroke (width 0) (type default))
+					(fill (type none))))
+			(symbol "D_Schottky_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "K"
+						(effects (font (size 1.27 1.27))))
+					(number "1"
+						(effects (font (size 1.27 1.27)))))
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "A"
+						(effects (font (size 1.27 1.27))))
+					(number "2"
+						(effects (font (size 1.27 1.27)))))))
 		(symbol "gowin-bridge:TPD4E05U06DQA"
 			(pin_names (offset 0))
 			(exclude_from_sim no)
@@ -678,6 +798,67 @@
 					(name "Pin_10"
 						(effects (font (size 1.27 1.27))))
 					(number "10"
+						(effects (font (size 1.27 1.27)))))))
+		(symbol "gowin-bridge:L"
+			(pin_numbers hide)
+			(pin_names (offset 1.016))
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "L"
+				(at 0 0 0)
+				(effects (font (size 1.27 1.27))))
+			(property "Value" "L"
+				(at 0 -2.54 0)
+				(effects (font (size 1.27 1.27))))
+			(property "Footprint" "gowin-bridge:L_Sunlord_SWPA4030S"
+				(at 0 -5.08 0)
+				(effects (font (size 1.27 1.27)) (hide yes)))
+			(property "Datasheet" ""
+				(at 0 -7.62 0)
+				(effects (font (size 1.27 1.27)) (hide yes)))
+			(property "Description" "Inductor"
+				(at 0 -10.16 0)
+				(effects (font (size 1.27 1.27)) (hide yes)))
+			(symbol "L_0_1"
+				(arc
+					(start 0 2.54)
+					(mid 0.6323 1.905)
+					(end 0 1.27)
+					(stroke (width 0) (type default))
+					(fill (type none)))
+				(arc
+					(start 0 1.27)
+					(mid 0.6323 0.635)
+					(end 0 0)
+					(stroke (width 0) (type default))
+					(fill (type none)))
+				(arc
+					(start 0 0)
+					(mid 0.6323 -0.635)
+					(end 0 -1.27)
+					(stroke (width 0) (type default))
+					(fill (type none)))
+				(arc
+					(start 0 -1.27)
+					(mid 0.6323 -1.905)
+					(end 0 -2.54)
+					(stroke (width 0) (type default))
+					(fill (type none))))
+			(symbol "L_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name "1"
+						(effects (font (size 1.27 1.27))))
+					(number "1"
+						(effects (font (size 1.27 1.27)))))
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name "2"
+						(effects (font (size 1.27 1.27))))
+					(number "2"
 						(effects (font (size 1.27 1.27)))))))
 		(symbol "gowin-bridge:ME6211C25M5"
 			(exclude_from_sim no)
@@ -5146,16 +5327,16 @@
 		(property "Reference" "R103"
 			(at 388.62 35.37 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
-		(property "Value" "1k"
+		(property "Value" "10k"
 			(at 388.62 37.87 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:R_0402_1005Metric"
 			(at 388.62 43.18 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "LCSC" "C11702"
+		(property "LCSC" "C25744"
 			(at 388.62 43.18 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Description" "Presence detect into J14 position 29. Limits injection into an unpowered FPGA to 0.3 mA"
+		(property "Description" "Presence detect into J14 position 29. 10 k (was 1 k until 13 Sep 2026): in series with the FPGA input only, so reading is unaffected, and injection from a powered radio into an unpowered Tang falls from 1.35 mA to about 0.25 mA"
 			(at 388.62 43.18 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
@@ -5951,8 +6132,64 @@
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "b1d2c5c6-63d2-2378-44fe-d037b7ffb9d6"))
 	(symbol
+		(lib_id "gowin-bridge:C")
+		(at 345.44 170.18 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(uuid "2deca5c6-f857-60d1-1aa7-796b845fde2f")
+		(property "Reference" "C101"
+			(at 345.44 162.37 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "10nF"
+			(at 345.44 164.87 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:C_0805_2012Metric"
+			(at 345.44 170.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C1710"
+			(at 345.44 170.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Note" "NOT FITTED. Bring-up trial: lift R117 and fit this, so the shell is DC-open but RF-bonded to ground."
+			(at 345.44 170.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Shell RF bond, 10 nF 0805, beside R117. PLACE WITHIN 3 mm OF R117"
+			(at 345.44 170.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "e703e78c-ac84-f43f-e987-f2264ca71857"))
+		(pin "2"
+			(uuid "b8c7b2de-cec8-6147-101f-18189858487e"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "C101")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 345.44 166.37)
+			(xy 345.44 163.83))
+		(stroke (width 0) (type default))
+		(uuid "7e96eeda-6c27-d362-f34a-1ccf1e867ad4"))
+	(label "G_SHELL"
+		(at 345.44 163.83 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "e5ab58f4-05ae-d3f8-2a83-5327b88d8a6d"))
+	(wire
+		(pts
+			(xy 345.44 173.99)
+			(xy 345.44 176.53))
+		(stroke (width 0) (type default))
+		(uuid "c69fb635-eb0a-8579-db1c-731dc5c998fd"))
+	(label "G_GND"
+		(at 345.44 176.53 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "58036b5a-f920-6fca-ba98-396c94a2f1c3"))
+	(symbol
 		(lib_id "gowin-bridge:TPD4E05U06DQA")
-		(at 358.14 173.99 0)
+		(at 431.8 173.99 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5960,25 +6197,25 @@
 		(dnp no)
 		(uuid "bdc47457-32ce-1ebd-3042-2b6e4d50307c")
 		(property "Reference" "D101"
-			(at 358.14 162.37 0)
+			(at 431.8 162.37 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TPD4E05U06"
-			(at 358.14 164.87 0)
+			(at 431.8 164.87 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
-			(at 358.14 173.99 0)
+			(at 431.8 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "LCSC" "C138714"
-			(at 358.14 173.99 0)
+			(at 431.8 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "MFR" "TPD4E05U06DQAR"
-			(at 358.14 173.99 0)
+			(at 431.8 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Note" "PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS."
-			(at 358.14 173.99 0)
+			(at 431.8 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad 0.5 pF ESD array, 5.5 V, USON-10"
-			(at 358.14 173.99 0)
+			(at 431.8 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "5215accd-68c7-9e2e-bf79-82d55460e09d"))
@@ -6007,103 +6244,103 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 345.44 171.45)
-			(xy 342.9 171.45))
+			(xy 419.1 171.45)
+			(xy 416.56 171.45))
 		(stroke (width 0) (type default))
 		(uuid "0568f2b8-bcf2-cdb1-d6a2-057994dfe122"))
 	(label "G_A_AUXCLK_P"
-		(at 342.9 171.45 180)
+		(at 416.56 171.45 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "e65255bc-d112-f7cb-9434-780185fd6d63"))
 	(wire
 		(pts
-			(xy 345.44 176.53)
-			(xy 342.9 176.53))
+			(xy 419.1 176.53)
+			(xy 416.56 176.53))
 		(stroke (width 0) (type default))
 		(uuid "025e3bf1-aa75-1c82-7e1f-3b730163a43d"))
 	(label "G_A_AUXCLK_N"
-		(at 342.9 176.53 180)
+		(at 416.56 176.53 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "5556fa7f-1242-a998-ca6b-2d6d8f05f442"))
 	(wire
 		(pts
-			(xy 358.14 186.69)
-			(xy 358.14 189.23))
+			(xy 431.8 186.69)
+			(xy 431.8 189.23))
 		(stroke (width 0) (type default))
 		(uuid "c49bf128-11bc-f9f0-6ad0-c2563362c7cf"))
 	(label "G_GND"
-		(at 358.14 189.23 270)
+		(at 431.8 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "f43b2c16-69fe-2a02-d537-5c83b401f055"))
 	(wire
 		(pts
-			(xy 370.84 171.45)
-			(xy 373.38 171.45))
+			(xy 444.5 171.45)
+			(xy 447.04 171.45))
 		(stroke (width 0) (type default))
 		(uuid "b4807ef8-9bb2-88c2-c897-e38949efa626"))
 	(label "G_B_AUXCLK_P"
-		(at 373.38 171.45 0)
+		(at 447.04 171.45 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "2a2685df-9724-0421-deec-cf6fc81ff539"))
 	(wire
 		(pts
-			(xy 370.84 176.53)
-			(xy 373.38 176.53))
+			(xy 444.5 176.53)
+			(xy 447.04 176.53))
 		(stroke (width 0) (type default))
 		(uuid "02401d13-b559-d8b9-31c7-3561aeddd33b"))
 	(label "G_B_AUXCLK_N"
-		(at 373.38 176.53 0)
+		(at 447.04 176.53 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "6bfbe111-e279-e3b3-23c5-c6c8c823e6b2"))
 	(wire
 		(pts
-			(xy 370.84 181.61)
-			(xy 373.38 181.61))
+			(xy 444.5 181.61)
+			(xy 447.04 181.61))
 		(stroke (width 0) (type default))
 		(uuid "41886bc3-7cb9-c252-c9d1-03f6755f1e95"))
 	(no_connect
-		(at 373.38 181.61)
+		(at 447.04 181.61)
 		(uuid "471677b8-24cb-c41f-2243-8d9a65b7c5d6"))
 	(wire
 		(pts
-			(xy 370.84 166.37)
-			(xy 373.38 166.37))
+			(xy 444.5 166.37)
+			(xy 447.04 166.37))
 		(stroke (width 0) (type default))
 		(uuid "6f412e06-4e2a-ee20-d079-0974802b128f"))
 	(no_connect
-		(at 373.38 166.37)
+		(at 447.04 166.37)
 		(uuid "1d75ec23-2956-bb4a-5772-76db058390cd"))
 	(wire
 		(pts
-			(xy 358.14 186.69)
-			(xy 358.14 189.23))
+			(xy 431.8 186.69)
+			(xy 431.8 189.23))
 		(stroke (width 0) (type default))
 		(uuid "fa7e4c32-a43f-55e6-7683-764cd1c12ddd"))
 	(label "G_GND"
-		(at 358.14 189.23 270)
+		(at 431.8 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "03d331d7-5585-c973-b962-815294b38c6d"))
 	(wire
 		(pts
-			(xy 345.44 181.61)
-			(xy 342.9 181.61))
+			(xy 419.1 181.61)
+			(xy 416.56 181.61))
 		(stroke (width 0) (type default))
 		(uuid "70d93d95-d569-8a8b-decc-3caf0a06f39f"))
 	(no_connect
-		(at 342.9 181.61)
+		(at 416.56 181.61)
 		(uuid "3e66b485-ab64-9379-7191-7096d10f8de4"))
 	(wire
 		(pts
-			(xy 345.44 166.37)
-			(xy 342.9 166.37))
+			(xy 419.1 166.37)
+			(xy 416.56 166.37))
 		(stroke (width 0) (type default))
 		(uuid "b7046dcb-d8f7-6f54-7556-2cf88694bc19"))
 	(no_connect
-		(at 342.9 166.37)
+		(at 416.56 166.37)
 		(uuid "74be3814-3c15-b8d1-e2d9-a16ca1cc0d2b"))
 	(symbol
 		(lib_id "gowin-bridge:TPD4E05U06DQA")
-		(at 457.2 173.99 0)
+		(at 529.59 173.99 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6111,25 +6348,25 @@
 		(dnp no)
 		(uuid "23626037-2b88-3678-f2d0-9eeb37828b66")
 		(property "Reference" "D102"
-			(at 457.2 162.37 0)
+			(at 529.59 162.37 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TPD4E05U06"
-			(at 457.2 164.87 0)
+			(at 529.59 164.87 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
-			(at 457.2 173.99 0)
+			(at 529.59 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "LCSC" "C138714"
-			(at 457.2 173.99 0)
+			(at 529.59 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "MFR" "TPD4E05U06DQAR"
-			(at 457.2 173.99 0)
+			(at 529.59 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Note" "PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS."
-			(at 457.2 173.99 0)
+			(at 529.59 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad 0.5 pF ESD array, 5.5 V, USON-10"
-			(at 457.2 173.99 0)
+			(at 529.59 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "a54bfe03-de9b-b784-e02b-726a48d09e5c"))
@@ -6158,103 +6395,103 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 444.5 171.45)
-			(xy 441.96 171.45))
+			(xy 516.89 171.45)
+			(xy 514.35 171.45))
 		(stroke (width 0) (type default))
 		(uuid "2b345e4d-c929-40ec-c2ef-19f43e0ba828"))
 	(label "G_A_AUXDAT_P"
-		(at 441.96 171.45 180)
+		(at 514.35 171.45 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "620086bc-7d96-c69e-33a1-57daf9e79aaf"))
 	(wire
 		(pts
-			(xy 444.5 176.53)
-			(xy 441.96 176.53))
+			(xy 516.89 176.53)
+			(xy 514.35 176.53))
 		(stroke (width 0) (type default))
 		(uuid "21f76609-d590-8413-d06b-ff95ac691abc"))
 	(label "G_A_AUXDAT_N"
-		(at 441.96 176.53 180)
+		(at 514.35 176.53 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "2c2d9a91-a148-d759-fb72-6d15f14bf9b8"))
 	(wire
 		(pts
-			(xy 457.2 186.69)
-			(xy 457.2 189.23))
+			(xy 529.59 186.69)
+			(xy 529.59 189.23))
 		(stroke (width 0) (type default))
 		(uuid "5de54fba-c541-e89e-581f-553793976877"))
 	(label "G_GND"
-		(at 457.2 189.23 270)
+		(at 529.59 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "fc300e73-c485-8130-ab80-c1768ea752ce"))
 	(wire
 		(pts
-			(xy 469.9 171.45)
-			(xy 472.44 171.45))
+			(xy 542.29 171.45)
+			(xy 544.83 171.45))
 		(stroke (width 0) (type default))
 		(uuid "84fac149-5f3c-4e3f-cc46-ef35d54da036"))
 	(label "G_B_AUXDAT_P"
-		(at 472.44 171.45 0)
+		(at 544.83 171.45 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "9786d865-d945-84d7-1f3c-a3a5f499bca9"))
 	(wire
 		(pts
-			(xy 469.9 176.53)
-			(xy 472.44 176.53))
+			(xy 542.29 176.53)
+			(xy 544.83 176.53))
 		(stroke (width 0) (type default))
 		(uuid "9734f9ed-b5dc-4e8f-dd97-00d4e35a053f"))
 	(label "G_B_AUXDAT_N"
-		(at 472.44 176.53 0)
+		(at 544.83 176.53 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "ab16d695-6b5d-4b3b-0cfd-5fa297c84786"))
 	(wire
 		(pts
-			(xy 469.9 181.61)
-			(xy 472.44 181.61))
+			(xy 542.29 181.61)
+			(xy 544.83 181.61))
 		(stroke (width 0) (type default))
 		(uuid "c9ea270c-86c7-7ad6-4a9e-c5dba027053e"))
 	(no_connect
-		(at 472.44 181.61)
+		(at 544.83 181.61)
 		(uuid "27c1ff1a-cee9-f00a-1c0d-67afa5ecc048"))
 	(wire
 		(pts
-			(xy 469.9 166.37)
-			(xy 472.44 166.37))
+			(xy 542.29 166.37)
+			(xy 544.83 166.37))
 		(stroke (width 0) (type default))
 		(uuid "5962f0f7-a6a6-01e1-169f-90b161ee847b"))
 	(no_connect
-		(at 472.44 166.37)
+		(at 544.83 166.37)
 		(uuid "4cdb73ca-9b37-c6b1-4486-18422fd00441"))
 	(wire
 		(pts
-			(xy 457.2 186.69)
-			(xy 457.2 189.23))
+			(xy 529.59 186.69)
+			(xy 529.59 189.23))
 		(stroke (width 0) (type default))
 		(uuid "74462c3a-58f2-66e8-906c-0edb1dd59266"))
 	(label "G_GND"
-		(at 457.2 189.23 270)
+		(at 529.59 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "b7ac6d7b-01a0-acba-eec1-84826521a359"))
 	(wire
 		(pts
-			(xy 444.5 181.61)
-			(xy 441.96 181.61))
+			(xy 516.89 181.61)
+			(xy 514.35 181.61))
 		(stroke (width 0) (type default))
 		(uuid "5550ebb7-0bfd-2b46-0984-5c5973bd687d"))
 	(no_connect
-		(at 441.96 181.61)
+		(at 514.35 181.61)
 		(uuid "b77c4d0f-0903-dd66-b964-9546e202e8a1"))
 	(wire
 		(pts
-			(xy 444.5 166.37)
-			(xy 441.96 166.37))
+			(xy 516.89 166.37)
+			(xy 514.35 166.37))
 		(stroke (width 0) (type default))
 		(uuid "584f173b-494c-cc0f-8ac0-33969d657dc2"))
 	(no_connect
-		(at 441.96 166.37)
+		(at 514.35 166.37)
 		(uuid "6128fecb-14bf-fc67-592c-d0a642446cc1"))
 	(symbol
 		(lib_id "gowin-bridge:TPD4E05U06DQA")
-		(at 554.99 173.99 0)
+		(at 628.65 173.99 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6262,25 +6499,25 @@
 		(dnp no)
 		(uuid "f05f0f15-eaf7-e3fe-a0df-14feb5a479eb")
 		(property "Reference" "D103"
-			(at 554.99 162.37 0)
+			(at 628.65 162.37 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TPD4E05U06"
-			(at 554.99 164.87 0)
+			(at 628.65 164.87 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
-			(at 554.99 173.99 0)
+			(at 628.65 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "LCSC" "C138714"
-			(at 554.99 173.99 0)
+			(at 628.65 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "MFR" "TPD4E05U06DQAR"
-			(at 554.99 173.99 0)
+			(at 628.65 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Note" "PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS."
-			(at 554.99 173.99 0)
+			(at 628.65 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad 0.5 pF ESD array, 5.5 V, USON-10"
-			(at 554.99 173.99 0)
+			(at 628.65 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "dcf431a8-95d2-cde6-5d63-ef5c6f812dfe"))
@@ -6309,103 +6546,103 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 542.29 171.45)
-			(xy 539.75 171.45))
+			(xy 615.95 171.45)
+			(xy 613.41 171.45))
 		(stroke (width 0) (type default))
 		(uuid "5901eb1d-174b-135c-f534-f84535b57c36"))
 	(label "G_A_REVCLK_P"
-		(at 539.75 171.45 180)
+		(at 613.41 171.45 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "59c9a47c-36a2-6e8a-a8eb-110f8b8f2cd1"))
 	(wire
 		(pts
-			(xy 542.29 176.53)
-			(xy 539.75 176.53))
+			(xy 615.95 176.53)
+			(xy 613.41 176.53))
 		(stroke (width 0) (type default))
 		(uuid "a4061875-475c-a98e-8d81-4ddc41adf051"))
 	(label "G_A_REVCLK_N"
-		(at 539.75 176.53 180)
+		(at 613.41 176.53 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "a2248d30-dc4d-1ee6-99f3-adb558a4eec9"))
 	(wire
 		(pts
-			(xy 554.99 186.69)
-			(xy 554.99 189.23))
+			(xy 628.65 186.69)
+			(xy 628.65 189.23))
 		(stroke (width 0) (type default))
 		(uuid "2ebdb85c-b8ae-c24e-113f-82d0ebf33b11"))
 	(label "G_GND"
-		(at 554.99 189.23 270)
+		(at 628.65 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "842becb1-d64a-73c2-0479-851e72097cfa"))
 	(wire
 		(pts
-			(xy 567.69 171.45)
-			(xy 570.23 171.45))
+			(xy 641.35 171.45)
+			(xy 643.89 171.45))
 		(stroke (width 0) (type default))
 		(uuid "e8068b96-0f22-74e7-374a-49789807cb9e"))
 	(label "G_B_FWDCLK_P"
-		(at 570.23 171.45 0)
+		(at 643.89 171.45 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "2d50355a-00a2-0321-eefa-2b46ec4ff46b"))
 	(wire
 		(pts
-			(xy 567.69 176.53)
-			(xy 570.23 176.53))
+			(xy 641.35 176.53)
+			(xy 643.89 176.53))
 		(stroke (width 0) (type default))
 		(uuid "543b433e-80b9-4e29-49e2-c2a26ffd9e57"))
 	(label "G_B_FWDCLK_N"
-		(at 570.23 176.53 0)
+		(at 643.89 176.53 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "162c11ae-92f5-5ed7-41ce-68dc0de0de27"))
 	(wire
 		(pts
-			(xy 567.69 181.61)
-			(xy 570.23 181.61))
+			(xy 641.35 181.61)
+			(xy 643.89 181.61))
 		(stroke (width 0) (type default))
 		(uuid "cafc7694-1ff7-83fe-6fb9-2ac25a3f233a"))
 	(no_connect
-		(at 570.23 181.61)
+		(at 643.89 181.61)
 		(uuid "cef39375-6417-4d57-f05d-d50d473f0391"))
 	(wire
 		(pts
-			(xy 567.69 166.37)
-			(xy 570.23 166.37))
+			(xy 641.35 166.37)
+			(xy 643.89 166.37))
 		(stroke (width 0) (type default))
 		(uuid "5d19b21f-cf8b-b102-1f98-78fa897f6663"))
 	(no_connect
-		(at 570.23 166.37)
+		(at 643.89 166.37)
 		(uuid "af151f27-5de4-45bc-60b3-9b114af09a3e"))
 	(wire
 		(pts
-			(xy 554.99 186.69)
-			(xy 554.99 189.23))
+			(xy 628.65 186.69)
+			(xy 628.65 189.23))
 		(stroke (width 0) (type default))
 		(uuid "8438386b-4a6a-527f-7264-37c7dbf7083e"))
 	(label "G_GND"
-		(at 554.99 189.23 270)
+		(at 628.65 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "d3d2e955-7c0c-60c3-3054-ac2bded0b429"))
 	(wire
 		(pts
-			(xy 542.29 181.61)
-			(xy 539.75 181.61))
+			(xy 615.95 181.61)
+			(xy 613.41 181.61))
 		(stroke (width 0) (type default))
 		(uuid "0fa8fbd7-21e2-5a35-8a5c-ca71663a6d23"))
 	(no_connect
-		(at 539.75 181.61)
+		(at 613.41 181.61)
 		(uuid "ff27d4e6-d929-5f1c-583e-8b404e3b0e26"))
 	(wire
 		(pts
-			(xy 542.29 166.37)
-			(xy 539.75 166.37))
+			(xy 615.95 166.37)
+			(xy 613.41 166.37))
 		(stroke (width 0) (type default))
 		(uuid "26de4c54-6646-b9a4-0445-fe9f3e056a13"))
 	(no_connect
-		(at 539.75 166.37)
+		(at 613.41 166.37)
 		(uuid "643ccf9f-ad3f-d15d-892a-10a8855ebc2c"))
 	(symbol
 		(lib_id "gowin-bridge:TPD4E05U06DQA")
-		(at 654.05 173.99 0)
+		(at 726.44 173.99 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6413,25 +6650,25 @@
 		(dnp no)
 		(uuid "701aa7f0-9a17-c0d6-8426-c03e2b7f8bb4")
 		(property "Reference" "D104"
-			(at 654.05 162.37 0)
+			(at 726.44 162.37 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TPD4E05U06"
-			(at 654.05 164.87 0)
+			(at 726.44 164.87 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
-			(at 654.05 173.99 0)
+			(at 726.44 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "LCSC" "C138714"
-			(at 654.05 173.99 0)
+			(at 726.44 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "MFR" "TPD4E05U06DQAR"
-			(at 654.05 173.99 0)
+			(at 726.44 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Note" "PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS."
-			(at 654.05 173.99 0)
+			(at 726.44 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad 0.5 pF ESD array, 5.5 V, USON-10"
-			(at 654.05 173.99 0)
+			(at 726.44 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "f33d2052-ff3d-515e-5122-ac3eb616bf27"))
@@ -6460,103 +6697,103 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 641.35 171.45)
-			(xy 638.81 171.45))
+			(xy 713.74 171.45)
+			(xy 711.2 171.45))
 		(stroke (width 0) (type default))
 		(uuid "21ab6934-5ee3-f3bf-e9ca-c5b7626eb0ee"))
 	(label "G_A_TXD0_P"
-		(at 638.81 171.45 180)
+		(at 711.2 171.45 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "fa92c8fc-8812-aacf-b723-63ef1cd80d44"))
 	(wire
 		(pts
-			(xy 641.35 176.53)
-			(xy 638.81 176.53))
+			(xy 713.74 176.53)
+			(xy 711.2 176.53))
 		(stroke (width 0) (type default))
 		(uuid "b2399ed6-2047-90e1-d9b8-27e9928da911"))
 	(label "G_A_TXD0_N"
-		(at 638.81 176.53 180)
+		(at 711.2 176.53 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "5869e7c8-44b7-298b-379a-51fea1859749"))
 	(wire
 		(pts
-			(xy 654.05 186.69)
-			(xy 654.05 189.23))
+			(xy 726.44 186.69)
+			(xy 726.44 189.23))
 		(stroke (width 0) (type default))
 		(uuid "2c37f261-5dd7-6914-b9a6-cdc1fb9a41e0"))
 	(label "G_GND"
-		(at 654.05 189.23 270)
+		(at 726.44 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "ab7c1f1f-2796-fa47-538f-8252c0772131"))
 	(wire
 		(pts
-			(xy 666.75 171.45)
-			(xy 669.29 171.45))
+			(xy 739.14 171.45)
+			(xy 741.68 171.45))
 		(stroke (width 0) (type default))
 		(uuid "95a9eb47-624b-bbde-45d9-44ee09e63b66"))
 	(label "G_B_ADCD0_P"
-		(at 669.29 171.45 0)
+		(at 741.68 171.45 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "cef5f39a-e035-f245-17b1-494481f3a1d2"))
 	(wire
 		(pts
-			(xy 666.75 176.53)
-			(xy 669.29 176.53))
+			(xy 739.14 176.53)
+			(xy 741.68 176.53))
 		(stroke (width 0) (type default))
 		(uuid "9a638088-7373-108b-76ac-5526b19140c3"))
 	(label "G_B_ADCD0_N"
-		(at 669.29 176.53 0)
+		(at 741.68 176.53 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "3946688b-67f0-6915-0870-5bfa9be2a4d5"))
 	(wire
 		(pts
-			(xy 666.75 181.61)
-			(xy 669.29 181.61))
+			(xy 739.14 181.61)
+			(xy 741.68 181.61))
 		(stroke (width 0) (type default))
 		(uuid "f4900935-9989-6cfb-9ea4-6b8774edd40e"))
 	(no_connect
-		(at 669.29 181.61)
+		(at 741.68 181.61)
 		(uuid "d2744759-3cb9-491a-1e94-75b2169b1a35"))
 	(wire
 		(pts
-			(xy 666.75 166.37)
-			(xy 669.29 166.37))
+			(xy 739.14 166.37)
+			(xy 741.68 166.37))
 		(stroke (width 0) (type default))
 		(uuid "937d1318-a186-82bd-68d1-b2f347772e05"))
 	(no_connect
-		(at 669.29 166.37)
+		(at 741.68 166.37)
 		(uuid "e20e7ffc-146d-3d8b-11c5-3a02149d82c2"))
 	(wire
 		(pts
-			(xy 654.05 186.69)
-			(xy 654.05 189.23))
+			(xy 726.44 186.69)
+			(xy 726.44 189.23))
 		(stroke (width 0) (type default))
 		(uuid "4db44f97-83a4-8ecb-f436-2ac8d046f138"))
 	(label "G_GND"
-		(at 654.05 189.23 270)
+		(at 726.44 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "935ab38c-c945-0feb-55da-9dcf34b0a528"))
 	(wire
 		(pts
-			(xy 641.35 181.61)
-			(xy 638.81 181.61))
+			(xy 713.74 181.61)
+			(xy 711.2 181.61))
 		(stroke (width 0) (type default))
 		(uuid "8b95f094-583d-765c-bb61-97e70a0720dc"))
 	(no_connect
-		(at 638.81 181.61)
+		(at 711.2 181.61)
 		(uuid "c1f6bbb5-b8f4-fa2c-8061-ac8b2aaeeeb5"))
 	(wire
 		(pts
-			(xy 641.35 166.37)
-			(xy 638.81 166.37))
+			(xy 713.74 166.37)
+			(xy 711.2 166.37))
 		(stroke (width 0) (type default))
 		(uuid "7117a99d-767c-b5fc-91c9-8fdbb0fa34ee"))
 	(no_connect
-		(at 638.81 166.37)
+		(at 711.2 166.37)
 		(uuid "2a013ce4-e90f-c9f0-ed18-b473437db560"))
 	(symbol
 		(lib_id "gowin-bridge:TPD4E05U06DQA")
-		(at 751.84 173.99 0)
+		(at 825.5 173.99 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6564,25 +6801,25 @@
 		(dnp no)
 		(uuid "d0629e6b-48d0-e839-6ae5-259bdef925dd")
 		(property "Reference" "D105"
-			(at 751.84 162.37 0)
+			(at 825.5 162.37 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TPD4E05U06"
-			(at 751.84 164.87 0)
+			(at 825.5 164.87 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
-			(at 751.84 173.99 0)
+			(at 825.5 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "LCSC" "C138714"
-			(at 751.84 173.99 0)
+			(at 825.5 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "MFR" "TPD4E05U06DQAR"
-			(at 751.84 173.99 0)
+			(at 825.5 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Note" "PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS."
-			(at 751.84 173.99 0)
+			(at 825.5 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad 0.5 pF ESD array, 5.5 V, USON-10"
-			(at 751.84 173.99 0)
+			(at 825.5 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "3ba2e466-820d-ea0c-e030-d36e97e00b67"))
@@ -6611,103 +6848,103 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 739.14 171.45)
-			(xy 736.6 171.45))
+			(xy 812.8 171.45)
+			(xy 810.26 171.45))
 		(stroke (width 0) (type default))
 		(uuid "a015d905-4b0a-0103-1564-44b65d18c72e"))
 	(label "G_A_TXD1_P"
-		(at 736.6 171.45 180)
+		(at 810.26 171.45 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "ac5135f7-6f16-b320-c53a-9e28c41848ed"))
 	(wire
 		(pts
-			(xy 739.14 176.53)
-			(xy 736.6 176.53))
+			(xy 812.8 176.53)
+			(xy 810.26 176.53))
 		(stroke (width 0) (type default))
 		(uuid "2e1ac488-b46b-03c0-126c-faeb6b45fb32"))
 	(label "G_A_TXD1_N"
-		(at 736.6 176.53 180)
+		(at 810.26 176.53 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "772100c2-685f-89e1-fec7-985bc6f0a72c"))
 	(wire
 		(pts
-			(xy 751.84 186.69)
-			(xy 751.84 189.23))
+			(xy 825.5 186.69)
+			(xy 825.5 189.23))
 		(stroke (width 0) (type default))
 		(uuid "894c2813-9af1-9fdf-87bb-a5e6d6dddc38"))
 	(label "G_GND"
-		(at 751.84 189.23 270)
+		(at 825.5 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "6b5c1e38-f74e-3803-cabf-789f166087ed"))
 	(wire
 		(pts
-			(xy 764.54 171.45)
-			(xy 767.08 171.45))
+			(xy 838.2 171.45)
+			(xy 840.74 171.45))
 		(stroke (width 0) (type default))
 		(uuid "b97f6ade-ceb7-71b7-47a3-ea010204f14c"))
 	(label "G_B_ADCD1_P"
-		(at 767.08 171.45 0)
+		(at 840.74 171.45 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "0ada9d26-8b0a-4c5d-9f86-07484d16dadf"))
 	(wire
 		(pts
-			(xy 764.54 176.53)
-			(xy 767.08 176.53))
+			(xy 838.2 176.53)
+			(xy 840.74 176.53))
 		(stroke (width 0) (type default))
 		(uuid "bf210117-49a4-ebf4-ac88-0740321934aa"))
 	(label "G_B_ADCD1_N"
-		(at 767.08 176.53 0)
+		(at 840.74 176.53 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "550350f6-63fe-650e-7c8a-e86130375294"))
 	(wire
 		(pts
-			(xy 764.54 181.61)
-			(xy 767.08 181.61))
+			(xy 838.2 181.61)
+			(xy 840.74 181.61))
 		(stroke (width 0) (type default))
 		(uuid "451c1a1c-de7b-5f26-fb1a-fd0358e32491"))
 	(no_connect
-		(at 767.08 181.61)
+		(at 840.74 181.61)
 		(uuid "c766fac9-c748-1cbe-7e2d-07332a80b43d"))
 	(wire
 		(pts
-			(xy 764.54 166.37)
-			(xy 767.08 166.37))
+			(xy 838.2 166.37)
+			(xy 840.74 166.37))
 		(stroke (width 0) (type default))
 		(uuid "3594da97-70e6-8441-55d5-485aac6b97e1"))
 	(no_connect
-		(at 767.08 166.37)
+		(at 840.74 166.37)
 		(uuid "54aac96a-56df-4467-d3b2-9b7438c13816"))
 	(wire
 		(pts
-			(xy 751.84 186.69)
-			(xy 751.84 189.23))
+			(xy 825.5 186.69)
+			(xy 825.5 189.23))
 		(stroke (width 0) (type default))
 		(uuid "542fcd76-1a82-c8f4-e6df-20ec48053c25"))
 	(label "G_GND"
-		(at 751.84 189.23 270)
+		(at 825.5 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "f08fe2b5-4ccd-c94d-ead6-ab23e8bd25b9"))
 	(wire
 		(pts
-			(xy 739.14 181.61)
-			(xy 736.6 181.61))
+			(xy 812.8 181.61)
+			(xy 810.26 181.61))
 		(stroke (width 0) (type default))
 		(uuid "90809a50-058c-ed52-964f-78520bc39ebe"))
 	(no_connect
-		(at 736.6 181.61)
+		(at 810.26 181.61)
 		(uuid "74981dd0-1de8-132f-9c25-8b2528ab3693"))
 	(wire
 		(pts
-			(xy 739.14 166.37)
-			(xy 736.6 166.37))
+			(xy 812.8 166.37)
+			(xy 810.26 166.37))
 		(stroke (width 0) (type default))
 		(uuid "5c16da8f-d6a4-a693-3454-ea1efef5970a"))
 	(no_connect
-		(at 736.6 166.37)
+		(at 810.26 166.37)
 		(uuid "976b6c01-e436-c814-bfdc-3a0b61670512"))
 	(symbol
 		(lib_id "gowin-bridge:TPD4E05U06DQA")
-		(at 850.9 173.99 0)
+		(at 923.29 173.99 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6715,25 +6952,25 @@
 		(dnp no)
 		(uuid "330cf7d8-cc74-fb63-3b64-83eb245be8e1")
 		(property "Reference" "D106"
-			(at 850.9 162.37 0)
+			(at 923.29 162.37 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TPD4E05U06"
-			(at 850.9 164.87 0)
+			(at 923.29 164.87 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
-			(at 850.9 173.99 0)
+			(at 923.29 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "LCSC" "C138714"
-			(at 850.9 173.99 0)
+			(at 923.29 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "MFR" "TPD4E05U06DQAR"
-			(at 850.9 173.99 0)
+			(at 923.29 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Note" "PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS."
-			(at 850.9 173.99 0)
+			(at 923.29 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad 0.5 pF ESD array, 5.5 V, USON-10"
-			(at 850.9 173.99 0)
+			(at 923.29 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "cbb8d564-4d7e-9868-785f-79c7d70107b6"))
@@ -6762,103 +6999,103 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 838.2 171.45)
-			(xy 835.66 171.45))
+			(xy 910.59 171.45)
+			(xy 908.05 171.45))
 		(stroke (width 0) (type default))
 		(uuid "92e5ab7e-58cb-2f51-6b52-a56187a6ba6f"))
 	(label "G_A_TXD2_P"
-		(at 835.66 171.45 180)
+		(at 908.05 171.45 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "ae8a53f2-1387-b1e3-2e7c-543b36c2bc29"))
 	(wire
 		(pts
-			(xy 838.2 176.53)
-			(xy 835.66 176.53))
+			(xy 910.59 176.53)
+			(xy 908.05 176.53))
 		(stroke (width 0) (type default))
 		(uuid "daf721f4-09f6-cfa8-ac4f-4cab1a537080"))
 	(label "G_A_TXD2_N"
-		(at 835.66 176.53 180)
+		(at 908.05 176.53 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "111b63c2-9198-4277-623c-2540886d8f33"))
 	(wire
 		(pts
-			(xy 850.9 186.69)
-			(xy 850.9 189.23))
+			(xy 923.29 186.69)
+			(xy 923.29 189.23))
 		(stroke (width 0) (type default))
 		(uuid "c8fa3bc8-5140-e813-5658-eff7e6599aab"))
 	(label "G_GND"
-		(at 850.9 189.23 270)
+		(at 923.29 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "e5444509-207b-002b-87b2-6438e51262ad"))
 	(wire
 		(pts
-			(xy 863.6 171.45)
-			(xy 866.14 171.45))
+			(xy 935.99 171.45)
+			(xy 938.53 171.45))
 		(stroke (width 0) (type default))
 		(uuid "0eef39f8-8b77-8f90-ec65-b565537d454d"))
 	(label "G_B_ADCD2_P"
-		(at 866.14 171.45 0)
+		(at 938.53 171.45 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "3485267d-b532-9a4d-7618-0389ae6e9018"))
 	(wire
 		(pts
-			(xy 863.6 176.53)
-			(xy 866.14 176.53))
+			(xy 935.99 176.53)
+			(xy 938.53 176.53))
 		(stroke (width 0) (type default))
 		(uuid "4aa68e7e-3e85-e135-533e-713b213387a6"))
 	(label "G_B_ADCD2_N"
-		(at 866.14 176.53 0)
+		(at 938.53 176.53 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "71c68f00-230a-f4e7-e571-e410e9f931ef"))
 	(wire
 		(pts
-			(xy 863.6 181.61)
-			(xy 866.14 181.61))
+			(xy 935.99 181.61)
+			(xy 938.53 181.61))
 		(stroke (width 0) (type default))
 		(uuid "9ca9e971-f66f-73a7-2a2d-2fead9bd9f7d"))
 	(no_connect
-		(at 866.14 181.61)
+		(at 938.53 181.61)
 		(uuid "1ee987c3-0dac-80a3-0f92-eff492877181"))
 	(wire
 		(pts
-			(xy 863.6 166.37)
-			(xy 866.14 166.37))
+			(xy 935.99 166.37)
+			(xy 938.53 166.37))
 		(stroke (width 0) (type default))
 		(uuid "1da911ef-7028-3380-492b-2b608012443d"))
 	(no_connect
-		(at 866.14 166.37)
+		(at 938.53 166.37)
 		(uuid "87ad9ba3-48a8-5d9a-c017-bdc625129d24"))
 	(wire
 		(pts
-			(xy 850.9 186.69)
-			(xy 850.9 189.23))
+			(xy 923.29 186.69)
+			(xy 923.29 189.23))
 		(stroke (width 0) (type default))
 		(uuid "489d2f4c-5f07-5be4-e640-66936b01ab08"))
 	(label "G_GND"
-		(at 850.9 189.23 270)
+		(at 923.29 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "dd78d7a8-7592-987d-8204-cd7622cd01ab"))
 	(wire
 		(pts
-			(xy 838.2 181.61)
-			(xy 835.66 181.61))
+			(xy 910.59 181.61)
+			(xy 908.05 181.61))
 		(stroke (width 0) (type default))
 		(uuid "9893f1f9-13a9-d77a-2577-4a209d38ff86"))
 	(no_connect
-		(at 835.66 181.61)
+		(at 908.05 181.61)
 		(uuid "0ccf8dff-9962-abbf-a62d-1a3fcd444a5d"))
 	(wire
 		(pts
-			(xy 838.2 166.37)
-			(xy 835.66 166.37))
+			(xy 910.59 166.37)
+			(xy 908.05 166.37))
 		(stroke (width 0) (type default))
 		(uuid "804117f2-95ab-ed44-b92f-a0e5c222d8e1"))
 	(no_connect
-		(at 835.66 166.37)
+		(at 908.05 166.37)
 		(uuid "50066b48-76b0-4373-c7ab-695c8e19b639"))
 	(symbol
 		(lib_id "gowin-bridge:TPD4E05U06DQA")
-		(at 948.69 173.99 0)
+		(at 1022.35 173.99 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6866,25 +7103,25 @@
 		(dnp no)
 		(uuid "00e1a245-d5a8-a563-2ea7-74ecf1254347")
 		(property "Reference" "D107"
-			(at 948.69 162.37 0)
+			(at 1022.35 162.37 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TPD4E05U06"
-			(at 948.69 164.87 0)
+			(at 1022.35 164.87 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
-			(at 948.69 173.99 0)
+			(at 1022.35 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "LCSC" "C138714"
-			(at 948.69 173.99 0)
+			(at 1022.35 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "MFR" "TPD4E05U06DQAR"
-			(at 948.69 173.99 0)
+			(at 1022.35 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Note" "PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS."
-			(at 948.69 173.99 0)
+			(at 1022.35 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad 0.5 pF ESD array, 5.5 V, USON-10"
-			(at 948.69 173.99 0)
+			(at 1022.35 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "9297f6d7-dc0b-befa-6a8c-949118bc1b50"))
@@ -6913,103 +7150,103 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 935.99 171.45)
-			(xy 933.45 171.45))
+			(xy 1009.65 171.45)
+			(xy 1007.11 171.45))
 		(stroke (width 0) (type default))
 		(uuid "8684d32f-4695-82e3-3795-a347e3556488"))
 	(label "G_A_DUPCLK_P"
-		(at 933.45 171.45 180)
+		(at 1007.11 171.45 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "aaa90a99-f534-84d4-00bf-7a7876707594"))
 	(wire
 		(pts
-			(xy 935.99 176.53)
-			(xy 933.45 176.53))
+			(xy 1009.65 176.53)
+			(xy 1007.11 176.53))
 		(stroke (width 0) (type default))
 		(uuid "8dc3995c-5b10-bdd9-a753-d840ddb02241"))
 	(label "G_A_DUPCLK_N"
-		(at 933.45 176.53 180)
+		(at 1007.11 176.53 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "11f255cb-7236-d3dd-28df-1113f03d03a0"))
 	(wire
 		(pts
-			(xy 948.69 186.69)
-			(xy 948.69 189.23))
+			(xy 1022.35 186.69)
+			(xy 1022.35 189.23))
 		(stroke (width 0) (type default))
 		(uuid "5309d252-f16c-dd12-bf04-e312c575f67a"))
 	(label "G_GND"
-		(at 948.69 189.23 270)
+		(at 1022.35 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "9a79e637-d276-0d2e-0945-21476fd1399b"))
 	(wire
 		(pts
-			(xy 961.39 171.45)
-			(xy 963.93 171.45))
+			(xy 1035.05 171.45)
+			(xy 1037.59 171.45))
 		(stroke (width 0) (type default))
 		(uuid "6e713532-3ed4-5159-284f-cd2626c53972"))
 	(label "G_B_DUPCLK_P"
-		(at 963.93 171.45 0)
+		(at 1037.59 171.45 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "3be5536f-b173-0df5-7a08-73d00e44fdfc"))
 	(wire
 		(pts
-			(xy 961.39 176.53)
-			(xy 963.93 176.53))
+			(xy 1035.05 176.53)
+			(xy 1037.59 176.53))
 		(stroke (width 0) (type default))
 		(uuid "ea810e14-9d60-50d7-db83-74712e0ea084"))
 	(label "G_B_DUPCLK_N"
-		(at 963.93 176.53 0)
+		(at 1037.59 176.53 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "32ad3bda-f972-7c95-e280-7ab294372927"))
 	(wire
 		(pts
-			(xy 961.39 181.61)
-			(xy 963.93 181.61))
+			(xy 1035.05 181.61)
+			(xy 1037.59 181.61))
 		(stroke (width 0) (type default))
 		(uuid "eb0330af-ca4a-474c-3fac-1a23f5f358fe"))
 	(no_connect
-		(at 963.93 181.61)
+		(at 1037.59 181.61)
 		(uuid "37b4c2ef-536c-b5ae-afe2-c8dc35f280d0"))
 	(wire
 		(pts
-			(xy 961.39 166.37)
-			(xy 963.93 166.37))
+			(xy 1035.05 166.37)
+			(xy 1037.59 166.37))
 		(stroke (width 0) (type default))
 		(uuid "4d659c7d-2899-9c4c-6e28-28cd99fae9ce"))
 	(no_connect
-		(at 963.93 166.37)
+		(at 1037.59 166.37)
 		(uuid "917105c2-04e2-e621-991a-fd365cd321f7"))
 	(wire
 		(pts
-			(xy 948.69 186.69)
-			(xy 948.69 189.23))
+			(xy 1022.35 186.69)
+			(xy 1022.35 189.23))
 		(stroke (width 0) (type default))
 		(uuid "5a34af27-a19e-6904-92b8-0280d963b473"))
 	(label "G_GND"
-		(at 948.69 189.23 270)
+		(at 1022.35 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "3fc53efa-3df5-153c-e675-276cbc6734ca"))
 	(wire
 		(pts
-			(xy 935.99 181.61)
-			(xy 933.45 181.61))
+			(xy 1009.65 181.61)
+			(xy 1007.11 181.61))
 		(stroke (width 0) (type default))
 		(uuid "6550bf23-3a25-f90b-4192-473a0841d534"))
 	(no_connect
-		(at 933.45 181.61)
+		(at 1007.11 181.61)
 		(uuid "4dd5e1e3-1904-da83-ca48-f5288e2df581"))
 	(wire
 		(pts
-			(xy 935.99 166.37)
-			(xy 933.45 166.37))
+			(xy 1009.65 166.37)
+			(xy 1007.11 166.37))
 		(stroke (width 0) (type default))
 		(uuid "27726313-6d80-d9d2-4617-79f50014624b"))
 	(no_connect
-		(at 933.45 166.37)
+		(at 1007.11 166.37)
 		(uuid "3fc24747-f7fb-bd69-5d63-5ce533af2117"))
 	(symbol
 		(lib_id "gowin-bridge:TPD4E05U06DQA")
-		(at 1047.75 173.99 0)
+		(at 1120.14 173.99 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7017,25 +7254,25 @@
 		(dnp no)
 		(uuid "6689d4b9-ec84-5318-44eb-18668a3bb134")
 		(property "Reference" "D108"
-			(at 1047.75 162.37 0)
+			(at 1120.14 162.37 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TPD4E05U06"
-			(at 1047.75 164.87 0)
+			(at 1120.14 164.87 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:USON-10_2.5x1.0mm_P0.5mm"
-			(at 1047.75 173.99 0)
+			(at 1120.14 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "LCSC" "C138714"
-			(at 1047.75 173.99 0)
+			(at 1120.14 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "MFR" "TPD4E05U06DQAR"
-			(at 1047.75 173.99 0)
+			(at 1120.14 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Note" "PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS."
-			(at 1047.75 173.99 0)
+			(at 1120.14 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad 0.5 pF ESD array, 5.5 V, USON-10"
-			(at 1047.75 173.99 0)
+			(at 1120.14 173.99 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "ad6347bb-ded8-03a3-aab2-f93d3955f7e7"))
@@ -7064,99 +7301,99 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 1035.05 171.45)
-			(xy 1032.51 171.45))
+			(xy 1107.44 171.45)
+			(xy 1104.9 171.45))
 		(stroke (width 0) (type default))
 		(uuid "098568cc-35ba-bc9d-5cb8-12db67718ee0"))
 	(label "G_A_SPARE_P"
-		(at 1032.51 171.45 180)
+		(at 1104.9 171.45 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "802b1eeb-fae6-b034-af41-92857b3c335f"))
 	(wire
 		(pts
-			(xy 1035.05 176.53)
-			(xy 1032.51 176.53))
+			(xy 1107.44 176.53)
+			(xy 1104.9 176.53))
 		(stroke (width 0) (type default))
 		(uuid "430f1c6b-7802-c35b-44ef-687580c1c7b2"))
 	(label "G_A_SPARE_N"
-		(at 1032.51 176.53 180)
+		(at 1104.9 176.53 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "b0141e57-2a9c-4e98-77de-9f8b4b38206a"))
 	(wire
 		(pts
-			(xy 1047.75 186.69)
-			(xy 1047.75 189.23))
+			(xy 1120.14 186.69)
+			(xy 1120.14 189.23))
 		(stroke (width 0) (type default))
 		(uuid "e1d04942-4751-ec5d-ee3b-913e86ca2781"))
 	(label "G_GND"
-		(at 1047.75 189.23 270)
+		(at 1120.14 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "7eb270be-b86e-a05d-dcd6-3d5b2aa43eca"))
 	(wire
 		(pts
-			(xy 1060.45 171.45)
-			(xy 1062.99 171.45))
+			(xy 1132.84 171.45)
+			(xy 1135.38 171.45))
 		(stroke (width 0) (type default))
 		(uuid "263353d4-d0b1-6197-7a29-dc0aec0e5310"))
 	(label "G_B_SPARE_P"
-		(at 1062.99 171.45 0)
+		(at 1135.38 171.45 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "7dde348a-fe58-3f0c-86cf-1d947f42ddb1"))
 	(wire
 		(pts
-			(xy 1060.45 176.53)
-			(xy 1062.99 176.53))
+			(xy 1132.84 176.53)
+			(xy 1135.38 176.53))
 		(stroke (width 0) (type default))
 		(uuid "304d2b4d-069b-2cc9-8bc5-aaddcc16b9dc"))
 	(label "G_B_SPARE_N"
-		(at 1062.99 176.53 0)
+		(at 1135.38 176.53 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "1e6964e9-66b0-2e46-d14e-d4c9695ddfe8"))
 	(wire
 		(pts
-			(xy 1060.45 181.61)
-			(xy 1062.99 181.61))
+			(xy 1132.84 181.61)
+			(xy 1135.38 181.61))
 		(stroke (width 0) (type default))
 		(uuid "d9cbe0a1-322f-6ccb-282d-063f049746ea"))
 	(no_connect
-		(at 1062.99 181.61)
+		(at 1135.38 181.61)
 		(uuid "e879ec36-9149-5c8b-640b-4a0312675a41"))
 	(wire
 		(pts
-			(xy 1060.45 166.37)
-			(xy 1062.99 166.37))
+			(xy 1132.84 166.37)
+			(xy 1135.38 166.37))
 		(stroke (width 0) (type default))
 		(uuid "176c756e-9cd6-541e-913a-d86a7b0e011a"))
 	(no_connect
-		(at 1062.99 166.37)
+		(at 1135.38 166.37)
 		(uuid "80d628b2-7e41-2359-857c-99872557f57d"))
 	(wire
 		(pts
-			(xy 1047.75 186.69)
-			(xy 1047.75 189.23))
+			(xy 1120.14 186.69)
+			(xy 1120.14 189.23))
 		(stroke (width 0) (type default))
 		(uuid "dec2e9b1-2d18-4342-9f09-50a3d14dc28c"))
 	(label "G_GND"
-		(at 1047.75 189.23 270)
+		(at 1120.14 189.23 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "2c957669-3ac3-4c63-4717-02f9b2c71442"))
 	(wire
 		(pts
-			(xy 1035.05 181.61)
-			(xy 1032.51 181.61))
+			(xy 1107.44 181.61)
+			(xy 1104.9 181.61))
 		(stroke (width 0) (type default))
 		(uuid "fad01e1b-2d68-7f66-229b-b5abb7f40928"))
 	(no_connect
-		(at 1032.51 181.61)
+		(at 1104.9 181.61)
 		(uuid "3abcc229-b388-1bff-16cf-604d707c894d"))
 	(wire
 		(pts
-			(xy 1035.05 166.37)
-			(xy 1032.51 166.37))
+			(xy 1107.44 166.37)
+			(xy 1104.9 166.37))
 		(stroke (width 0) (type default))
 		(uuid "b9f927c9-853f-50cc-2fe5-6f28905c2669"))
 	(no_connect
-		(at 1032.51 166.37)
+		(at 1104.9 166.37)
 		(uuid "2ec588b6-e7f7-989a-86a0-c989b528db76"))
 	(symbol
 		(lib_id "gowin-bridge:TPD4E05U06DQA")
@@ -9769,7 +10006,7 @@
 		(property "MFR" "SN74AVC4T245PWR"
 			(at 165.1 358.14 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Note" "Both DIR to VCCA (A->B), both OE* to GND. The two enable channels are static levels, not signals. Each enable is pulled UP at BOTH ends - to +2V5 on the HL2 side and to +3V3 on the logic side - so a missing part, an unpowered part, an unconfigured FPGA or an open HL2 jumper J25 all leave the feature DISABLED."
+		(property "Note" "Both DIR to VCCA (A->B), both OE* to GND. The two enable channels are static levels, not signals. Neither reaches its buffer directly any more: JTAG_EN_RAW_N passes Q3 and AUXIO_EN_N passes Q4 and Q1, both gated by LINK_ALIVE, because stock HL2 gateware drives FPGA pins 72 and 80 LOW. Each enable is pulled UP at BOTH ends - to +2V5 on the HL2 side and to +3V3 on the logic side - so a missing part, an unpowered part, an unconfigured FPGA or an open HL2 jumper J25 all leave the feature DISABLED."
 			(at 165.1 358.14 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "4-bit dual-supply translator, VCCA 2.5 V / VCCB 3.3 V. Port 1 is the auxiliary transmit pair - clock and data in one port so they share a skew. Port 2 carries the two ENABLE LEVELS the gateware controls: JTAG over the cable and the AUXIO drive direction, both active LOW, both DC"
@@ -9918,7 +10155,7 @@
 			(xy 180.34 365.76))
 		(stroke (width 0) (type default))
 		(uuid "5dfd89a4-4dcc-3846-725f-19dc8aa168c9"))
-	(label "JTAG_EN_N"
+	(label "JTAG_EN_RAW_N"
 		(at 180.34 365.76 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "6b3a49ce-f7e6-51a1-c558-afa1bf49f5ca"))
@@ -9996,7 +10233,7 @@
 		(property "MFR" "SN74AVC4T245PWR"
 			(at 262.89 358.14 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Note" "Both DIR to VCCA (A->B), both OE* to GND. The duplicate clock output goes nowhere unless R_CLKSEL_B is fitted and R_CLKSEL_A removed; driving an open pad is harmless."
+		(property "Note" "Both DIR to VCCA (A->B). Both OE* = RX_EN_N: its B outputs drive FPGA pins 88, 89 and 87, and pin 87 is an OUTPUT in stock gateware, so they are high-impedance unless the forward clock is running and a far end is present (LINK_ALIVE, Q2). OE* is referenced to VCCA = 3.3 V. The duplicate clock output goes nowhere unless R_CLKSEL_B is fitted and R_CLKSEL_A removed; driving an open pad is harmless."
 			(at 262.89 358.14 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "4-bit dual-supply translator, VCCA 3.3 V / VCCB 2.5 V. Port 1 carries the two candidate reverse clocks - the primary and the duplicate - so whichever is selected has the same delay. Port 2 carries the auxiliary receive pair, clock and data together"
@@ -10175,7 +10412,7 @@
 			(xy 247.65 350.52))
 		(stroke (width 0) (type default))
 		(uuid "54122d73-3d64-2a74-f05d-4ab4c394c7b9"))
-	(label "GND"
+	(label "RX_EN_N"
 		(at 247.65 350.52 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "a0261a4d-18d7-8f9d-d56f-710aa899f425"))
@@ -10185,7 +10422,7 @@
 			(xy 247.65 347.98))
 		(stroke (width 0) (type default))
 		(uuid "eb04aa03-f5d3-e17b-6112-1df787e4f5c4"))
-	(label "GND"
+	(label "RX_EN_N"
 		(at 247.65 347.98 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "f371e5b2-9711-afa9-6b42-add1baf858c1"))
@@ -10223,7 +10460,7 @@
 		(property "MFR" "DS90LV047ATMX/NOPB"
 			(at 364.49 356.87 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Note" "EN = DRV_EN, EN* = GND. DRV_EN is tied to +3V3 through the fitted link R_DRVEN_ON, so the drivers are always on. Move the link to R_DRVEN_PRSNT to gate them on the far end being present and powered instead, which saves about 60 mA with no cable - but only if your cable actually wires the sidebands, because the no-sideband cable variant exists and would leave the link dead."
+		(property "Note" "EN = DRV_EN, EN* = GND. DRV_EN is SB_PRSNT_IN through the FITTED link R_DRVEN_PRSNT, so the drivers run only while a powered, configured far end asserts presence: a radio on with the Tang off pushes no LVDS current into the dead Gowin. REQUIRES the sideband cable (CAB-8654/8654-8i-P); the no-sideband variant leaves the link dead. R_DRVEN_ON (not fitted) forces them on for bench tests."
 			(at 364.49 356.87 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad LVDS driver, 400 Mbps, SOIC-16. THE FORWARD GROUP: 153.6 MHz forward clock plus ADC data lanes 0, 1 and 2 at 307.2 Mbit/s each. Three lanes DDR at 153.6 MHz is 921.6 Mbit/s, the complete raw 12-bit 76.8 MSPS stream. All four channels used, none spare"
@@ -10450,7 +10687,7 @@
 		(property "MFR" "DS90LV047ATMX/NOPB"
 			(at 467.36 356.87 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Note" "EN = DRV_EN, EN* = GND. DRV_EN is tied to +3V3 through the fitted link R_DRVEN_ON, so the drivers are always on. Move the link to R_DRVEN_PRSNT to gate them on the far end being present and powered instead, which saves about 60 mA with no cable - but only if your cable actually wires the sidebands, because the no-sideband cable variant exists and would leave the link dead."
+		(property "Note" "EN = DRV_EN, EN* = GND. DRV_EN is SB_PRSNT_IN through the FITTED link R_DRVEN_PRSNT, so the drivers run only while a powered, configured far end asserts presence: a radio on with the Tang off pushes no LVDS current into the dead Gowin. REQUIRES the sideband cable (CAB-8654/8654-8i-P); the no-sideband variant leaves the link dead. R_DRVEN_ON (not fitted) forces them on for bench tests."
 			(at 467.36 356.87 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad LVDS driver, 400 Mbps, SOIC-16. Channel 1 is the DUPLICATE forward clock, fed from the same translated net as the primary: the forward clock is the single point of failure for the whole receive path, the far end has spare pins and trains whichever lane works, and this costs one trace. Channels 2 and 3 are the auxiliary transmit pair, channel 4 is a spare driver channel with its input held low"
@@ -10677,7 +10914,7 @@
 		(property "MFR" "DS90LV048ATMTCX/NOPB"
 			(at 571.5 356.87 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Note" "EN tied to +3V3 and EN* to GND: always enabled. A receiver input is high impedance, so there is nothing to gate."
+		(property "Note" "EN tied to +3V3, EN* = RX_EN_N. TI SNLS045C Table 1: outputs are enabled only for EN HIGH with EN* LOW or open, and TRI-STATE for every other combination (IOZ 10 uA max). RX_EN_N is pulled up to +3V3 and pulled low only by Q2 while LINK_ALIVE is high, so with stock gateware, no gateware, no far end or no cable these outputs cannot fight the radio FPGA."
 			(at 571.5 356.87 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad LVDS receiver, 400 Mbps, TSSOP-16. The reverse group: reverse clock plus transmit data lanes 0, 1 and 2 at 307.2 Mbit/s, received simultaneously with the forward group. All four channels used"
@@ -10806,7 +11043,7 @@
 			(xy 589.28 347.98))
 		(stroke (width 0) (type default))
 		(uuid "59e3eadb-a965-d4cb-56c9-eaeda71538bb"))
-	(label "GND"
+	(label "RX_EN_N"
 		(at 589.28 347.98 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "122fd74d-dd48-dabc-f690-5dc26a571367"))
@@ -10904,7 +11141,7 @@
 		(property "MFR" "DS90LV048ATMTCX/NOPB"
 			(at 674.37 356.87 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Note" "EN tied to +3V3 and EN* to GND: always enabled. A receiver input is high impedance, so there is nothing to gate."
+		(property "Note" "EN tied to +3V3, EN* = RX_EN_N. TI SNLS045C Table 1: outputs are enabled only for EN HIGH with EN* LOW or open, and TRI-STATE for every other combination (IOZ 10 uA max). RX_EN_N is pulled up to +3V3 and pulled low only by Q2 while LINK_ALIVE is high, so with stock gateware, no gateware, no far end or no cable these outputs cannot fight the radio FPGA."
 			(at 674.37 356.87 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Quad LVDS receiver, 400 Mbps, TSSOP-16. Channel 1 receives the far end's DUPLICATE forward clock, which is what makes the duplicate symmetric: fit R_CLKSEL_B instead of R_CLKSEL_A and FPGA pin 88 is fed from this channel instead. Channels 2 and 3 are the auxiliary receive pair, channel 4 a spare whose output is left unconnected"
@@ -11033,7 +11270,7 @@
 			(xy 692.15 347.98))
 		(stroke (width 0) (type default))
 		(uuid "edbe4f3b-d2f7-9ee5-c3c4-1f3418706d74"))
-	(label "GND"
+	(label "RX_EN_N"
 		(at 692.15 347.98 0)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "4152e4fa-d78e-5eba-fc90-db794a8a6305"))
@@ -11342,10 +11579,10 @@
 		(property "MFR" "SN74AVC4T245PWR"
 			(at 1068.07 358.14 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Note" "DIR = GND on both ports, OE* = GND on both ports. This is the default and only path that is live without gateware."
+		(property "Note" "DIR = +3V3 on both ports, OE* = PRSNT_OE_N on both ports. rev D as first built had both DIR on GND, which is B to A: it drove the radio CW key, PTT and clock-chip I2C pins from floating cable wires, always on. Fixed 13 Sep 2026; check_netlist.py derives every channel direction from the truth table."
 			(at 1068.07 358.14 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Description" "AUXIO READ path, all four lines. Both rails 3.3 V, both DIR LOW so the direction is B->A: the HL2 side is a high-impedance input and the cable side is the output. ALWAYS ON, and physically incapable of driving an HL2 pin"
+		(property "Description" "AUXIO READ path, all four lines. Both rails 3.3 V. A side = the radio (AUXIOn_T), B side = the cable (SB_AUXIOn_OUT). Both DIR HIGH, so A data to B bus (TI SCES576I Table 7-1): the radio side is a high-impedance input and only the cable side is driven. Enabled only while a powered far end asserts presence (PRSNT_OE_N)"
 			(at 1068.07 358.14 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
@@ -11401,7 +11638,7 @@
 			(xy 1052.83 353.06))
 		(stroke (width 0) (type default))
 		(uuid "bd71338b-b62d-2de3-916b-7fe548406e93"))
-	(label "GND"
+	(label "+3V3"
 		(at 1052.83 353.06 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "4c0d606c-bb22-3f6a-3bb5-05c32e645796"))
@@ -11411,7 +11648,7 @@
 			(xy 1052.83 355.6))
 		(stroke (width 0) (type default))
 		(uuid "e6f34f2f-9ed1-f7e1-168a-d82dd23a4906"))
-	(label "GND"
+	(label "+3V3"
 		(at 1052.83 355.6 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "e0ff9f39-5f82-1203-dd29-543ed8ab744f"))
@@ -11521,7 +11758,7 @@
 			(xy 1052.83 350.52))
 		(stroke (width 0) (type default))
 		(uuid "dbd4fb61-bd28-7f0b-b535-45c77e61a8f7"))
-	(label "GND"
+	(label "PRSNT_OE_N"
 		(at 1052.83 350.52 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "f1de2dcd-386f-0b53-27ec-73a5a3e7acca"))
@@ -11531,7 +11768,7 @@
 			(xy 1052.83 347.98))
 		(stroke (width 0) (type default))
 		(uuid "9941b3fb-fe29-ae4c-d8de-8ca2e0dd3ae6"))
-	(label "GND"
+	(label "PRSNT_OE_N"
 		(at 1052.83 347.98 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "4f935533-d58c-f390-228f-b4ce05faa6ef"))
@@ -11799,7 +12036,7 @@
 		(property "Note" "JLCPCB Basic. With the cable unplugged or the far end unpowered the gate is held at 0 V and the AUXIO drive path is tri-stated whatever the gateware does."
 			(at 157.48 408.94 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Description" "AUXIO drive presence interlock: the drive buffer can be enabled only while the gateware enables AND a powered far end asserts presence. N-MOSFET, gate SB_PRSNT_IN, source AUXIO_EN_N, drain AUXIO_OE_N"
+		(property "Description" "AUXIO drive presence interlock: the drive buffer can be enabled only while the gateware enables AND a powered far end asserts presence. N-MOSFET, gate SB_PRSNT_IN, source AUXIO_EN_LA_N (the enable after the link-alive gate Q4), drain AUXIO_OE_N"
 			(at 157.48 408.94 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
@@ -11829,7 +12066,7 @@
 			(xy 160.02 416.56))
 		(stroke (width 0) (type default))
 		(uuid "fe99d8a2-944f-b7c9-35d9-226a80bbb948"))
-	(label "AUXIO_EN_N"
+	(label "AUXIO_EN_LA_N"
 		(at 160.02 416.56 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "24c7c87c-07d3-3fad-8bad-68227d90da8f"))
@@ -12079,10 +12316,10 @@
 		(property "MFR" "SN74AVC4T245PWR"
 			(at 537.21 419.1 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Note" "Port 1: 1DIR = GND (B->A), 1OE* = GND. Port 2: 2DIR = +3V3 (A->B), 2OE* = JTAG_EN_N. Reading TDO is unconditional and harmless; driving TCK and TMS is not, and is off until the gateware says otherwise."
+		(property "Note" "Port 1: 1DIR = +3V3 (A->B), 1OE* = PRSNT_OE_N. rev D as first built had 1DIR on GND (B->A), which drove the FPGA TDO pin from the cable permanently; fixed 13 Sep 2026. Port 2: 2DIR = +3V3 (A->B), 2OE* = JTAG_EN_N, which is off unless the gateware enables AND the forward clock runs AND a far end is present."
 			(at 537.21 419.1 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Description" "JTAG buffers, part 1. Port 1 is B->A and ALWAYS ON: it reads TDO out of CN1 and drives it onto the cable. Port 2 is A->B and GATED by JTAG_EN_N: TCK and TMS from the cable into CN1"
+		(property "Description" "JTAG buffers, part 1. Port 1 is A->B (1A1 = J_TDO_T from CN1, 1B1 = SB_TDO_OUT on the cable): it reads TDO and drives only the cable, enabled while a powered far end is present. Port 2 is A->B and GATED by JTAG_EN_N: TCK and TMS from the cable into CN1"
 			(at 537.21 419.1 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
@@ -12138,7 +12375,7 @@
 			(xy 521.97 414.02))
 		(stroke (width 0) (type default))
 		(uuid "220db4b8-7c1a-4644-0eec-45dedd5d7ea8"))
-	(label "GND"
+	(label "+3V3"
 		(at 521.97 414.02 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "238aeba0-c9da-7e55-2f66-403d0f4ebe6f"))
@@ -12267,7 +12504,7 @@
 			(xy 521.97 408.94))
 		(stroke (width 0) (type default))
 		(uuid "cc0f9aa7-9eec-79d5-60fb-d1064dcc6776"))
-	(label "GND"
+	(label "PRSNT_OE_N"
 		(at 521.97 408.94 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "f9e8953f-2a02-fd1b-fdb3-4a753caec85b"))
@@ -12305,10 +12542,10 @@
 		(property "MFR" "SN74AVC4T245PWR"
 			(at 636.27 419.1 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Note" "Port 1: 2 channels, DIR = +3V3 (A->B), OE* = JTAG_EN_N; only channel 1 is used and channel 2 has its input grounded. Port 2 is disabled (2OE* to +3V3) with both inputs grounded and both outputs unconnected. Three spare gated 3.3 V channels are available here if a future revision needs them."
+		(property "Note" "Port 1: DIR = +3V3 (A->B), OE* = JTAG_EN_N; channel 2 input grounded. Port 2: DIR = +3V3 (A->B), OE* = GND; channel 1 DI_FWDCLK -> LA_CLK, channel 2 input grounded, output unconnected. Adds one CMOS input to the forward clock net, as U5 does, so keep the stub short: within 5 mm of U1."
 			(at 636.27 419.1 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Description" "JTAG buffers, part 2. Port 1 channel 1 is TDI from the cable into CN1, gated by the same JTAG_EN_N. The other three channels are spare"
+		(property "Description" "JTAG buffer part 2, and the clock buffer of the link-alive detector. Port 1 channel 1 is TDI from the cable into CN1, gated by JTAG_EN_N. Port 2 channel 1 buffers a copy of the translated forward clock DI_FWDCLK into the detector pump, always on, so the detector loads neither FPGA pin 98 nor its divider. PLACE BESIDE U1"
 			(at 636.27 419.1 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
@@ -12404,7 +12641,7 @@
 			(xy 621.03 426.72))
 		(stroke (width 0) (type default))
 		(uuid "6a53e5be-12d0-4a61-335b-bb06f3a70cbe"))
-	(label "GND"
+	(label "DI_FWDCLK"
 		(at 621.03 426.72 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "31101618-2a16-6719-54c5-6af9f04044c5"))
@@ -12453,9 +12690,10 @@
 			(xy 651.51 426.72))
 		(stroke (width 0) (type default))
 		(uuid "b4f0b934-54fc-2423-4ac8-1fb54e665f67"))
-	(no_connect
-		(at 651.51 426.72)
-		(uuid "a5669c4a-9fa7-afe5-1949-da9aebb19e9b"))
+	(label "LA_CLK"
+		(at 651.51 426.72 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "6e96491a-d778-3b38-0b0a-95015d1e8040"))
 	(wire
 		(pts
 			(xy 648.97 424.18)
@@ -12481,7 +12719,7 @@
 			(xy 621.03 411.48))
 		(stroke (width 0) (type default))
 		(uuid "b264c6e9-e1e0-94d9-0144-8239a690e78f"))
-	(label "+3V3"
+	(label "GND"
 		(at 621.03 411.48 180)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "c0cc841f-94e6-8c31-0274-06c139795a66"))
@@ -12648,7 +12886,7 @@
 			(xy 810.26 414.02))
 		(stroke (width 0) (type default))
 		(uuid "e816ddc1-0e68-5405-8c5b-4940e3fa593b"))
-	(label "+3V3"
+	(label "P3V3_FB"
 		(at 810.26 414.02 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "a5e992c0-0b22-2b00-7b0a-c45ab79f1482"))
@@ -13371,7 +13609,7 @@
 		(property "Note" "NOT FITTED. This is the recovery path for a radio whose gateware will not run: without it, remote reflashing depends on the gateware you are trying to replace."
 			(at 711.2 468.63 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Description" "JTAG_FORCE: fit to enable JTAG over the cable WITHOUT working HL2 gateware, which is the case you most want it in. 1 k beats the 10 k pull-up (0.23 V) and costs the FPGA only 2.5 mA if the gateware drives the pin high anyway"
+		(property "Description" "JTAG_FORCE: fit to enable JTAG over the cable WITHOUT working HL2 gateware, which is the case you most want it in. On the buffer side of the link-alive gate Q3, because a radio with no link gateware makes no forward clock. 1 k beats the 10 k pull-up (0.30 V); U2 cannot fight it because Q3 is off whenever its source is HIGH"
 			(at 711.2 468.63 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
@@ -13389,7 +13627,7 @@
 			(xy 711.2 462.28))
 		(stroke (width 0) (type default))
 		(uuid "dee03525-989a-1db9-3f34-af6435dde3db"))
-	(label "HL2_JTAG_EN"
+	(label "JTAG_EN_N"
 		(at 711.2 462.28 90)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "0e5b759c-8c19-7847-dca0-6cbb7b2aabff"))
@@ -14738,7 +14976,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "6fa8a8be-489c-70c5-0078-34f842288861")
 		(property "Reference" "R_DRVEN_ON"
 			(at 419.1 535.75 0)
@@ -14752,7 +14990,10 @@
 		(property "LCSC" "C17168"
 			(at 419.1 543.56 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Description" "LVDS drivers always enabled. FITTED by default"
+		(property "Note" "NOT FITTED. FIT AT MOST ONE OF R_DRVEN_ON AND R_DRVEN_PRSNT."
+			(at 419.1 543.56 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "LVDS drivers always enabled. NOT FITTED since 13 Sep 2026: bench use only, with no far end to protect"
 			(at 419.1 543.56 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
@@ -14791,7 +15032,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(uuid "f48b0e9f-bac4-2308-0f22-7a289af2bfdf")
 		(property "Reference" "R_DRVEN_PRSNT"
 			(at 491.49 535.75 0)
@@ -14805,10 +15046,10 @@
 		(property "LCSC" "C17168"
 			(at 491.49 543.56 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Note" "NOT FITTED. FIT AT MOST ONE OF R_DRVEN_ON AND R_DRVEN_PRSNT. Saves about 60 mA with no cable, but depends on the cable wiring its sidebands - and 10Gtek sell a no-sideband variant that would leave the link dead with no clue why."
+		(property "Note" "FITTED. FIT AT MOST ONE OF R_DRVEN_ON AND R_DRVEN_PRSNT. Needs the sideband cable CAB-8654/8654-8i-P: the no-sideband variant would leave the link dead."
 			(at 491.49 543.56 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Description" "LVDS drivers enabled only while the far end is present and powered"
+		(property "Description" "LVDS drivers enabled only while the far end is present, powered and (at the Gowin end) configured. FITTED since 13 Sep 2026 so a powered radio pushes no LVDS current into an unpowered Tang"
 			(at 491.49 543.56 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
@@ -18140,8 +18381,1214 @@
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "ffe3e72c-b734-208e-b7d6-e5a725c5e7cf"))
 	(symbol
+		(lib_id "gowin-bridge:C")
+		(at 419.1 681.99 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d22ae19f-00ea-2b84-70b4-78730a224cc8")
+		(property "Reference" "C27"
+			(at 419.1 674.18 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "10pF"
+			(at 419.1 676.68 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:C_0402_1005Metric"
+			(at 419.1 681.99 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C32949"
+			(at 419.1 681.99 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Link-alive detector pump capacitor, 10 pF C0G. PLACE WITHIN 3 mm OF U11"
+			(at 419.1 681.99 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "8b10db68-a72b-08a9-ceb0-19e6478bfef7"))
+		(pin "2"
+			(uuid "c9455d72-10c9-1cd2-2ee7-4465217a6879"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "C27")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 419.1 678.18)
+			(xy 419.1 675.64))
+		(stroke (width 0) (type default))
+		(uuid "a68d83a4-90f9-6074-6404-6288584496cb"))
+	(label "LA_CLK"
+		(at 419.1 675.64 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "2b8a7b8d-237d-2ed5-5210-5109fe567eaf"))
+	(wire
+		(pts
+			(xy 419.1 685.8)
+			(xy 419.1 688.34))
+		(stroke (width 0) (type default))
+		(uuid "97f80ff8-3d78-dfe9-1e8d-1ed8ec9a1213"))
+	(label "LA_PUMP"
+		(at 419.1 688.34 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "38507c6c-fc3a-a77c-db13-ba66c8f70f34"))
+	(symbol
+		(lib_id "gowin-bridge:D_Schottky")
+		(at 495.3 678.18 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "684a870c-f364-7783-0317-4d6195ae5a0e")
+		(property "Reference" "D13"
+			(at 495.3 674.18 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "RB751V-40"
+			(at 495.3 676.68 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:D_SOD-323"
+			(at 495.3 678.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C7502691"
+			(at 495.3 678.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "MFR" "RB751V-40"
+			(at 495.3 678.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Link-alive detector clamp diode: cathode LA_PUMP, anode GND. PLACE WITHIN 3 mm OF U11"
+			(at 495.3 678.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "6f0e6ccc-f353-3117-4b1f-77ceab709176"))
+		(pin "2"
+			(uuid "9d723999-032d-0837-bc74-d7efe04d4a4b"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "D13")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 491.49 678.18)
+			(xy 488.95 678.18))
+		(stroke (width 0) (type default))
+		(uuid "73c82a24-0630-f3c7-92b2-77eb1aacce84"))
+	(label "LA_PUMP"
+		(at 488.95 678.18 180)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "efd5d54c-cca8-d66f-85b4-4d80d4becfb6"))
+	(wire
+		(pts
+			(xy 499.11 678.18)
+			(xy 501.65 678.18))
+		(stroke (width 0) (type default))
+		(uuid "b652328b-1143-cbe4-7137-9218edf09ca2"))
+	(label "GND"
+		(at 501.65 678.18 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "2e00c131-5aca-a653-260a-0993be7b2495"))
+	(symbol
+		(lib_id "gowin-bridge:D_Schottky")
+		(at 576.58 678.18 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a062e3f6-bf4b-30c2-44fc-22c3acb23ad3")
+		(property "Reference" "D14"
+			(at 576.58 674.18 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "RB751V-40"
+			(at 576.58 676.68 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:D_SOD-323"
+			(at 576.58 678.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C7502691"
+			(at 576.58 678.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "MFR" "RB751V-40"
+			(at 576.58 678.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Link-alive detector rectifier: anode LA_PUMP, cathode LINK_ALIVE. PLACE WITHIN 3 mm OF U11"
+			(at 576.58 678.18 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "9543e9a9-21a8-2655-2068-46996ffa500f"))
+		(pin "2"
+			(uuid "26ba7b57-2191-d939-f867-c4a361695e83"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "D14")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 572.77 678.18)
+			(xy 570.23 678.18))
+		(stroke (width 0) (type default))
+		(uuid "fb1f99e1-a26f-d3bb-e973-26e9b411fabd"))
+	(label "LINK_ALIVE"
+		(at 570.23 678.18 180)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "b4a41617-f5bc-ae18-a481-9417bbcce9cc"))
+	(wire
+		(pts
+			(xy 580.39 678.18)
+			(xy 582.93 678.18))
+		(stroke (width 0) (type default))
+		(uuid "e3611abf-a969-a1fb-d174-20bdb4893d74"))
+	(label "LA_PUMP"
+		(at 582.93 678.18 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "3d0d6a42-83cd-505e-af41-a7addc82ea42"))
+	(symbol
+		(lib_id "gowin-bridge:C")
+		(at 652.78 681.99 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "fcd98c6f-43a2-2a63-5a5b-7980fb317aa3")
+		(property "Reference" "C28"
+			(at 652.78 674.18 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "10nF"
+			(at 652.78 676.68 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:C_0402_1005Metric"
+			(at 652.78 681.99 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C15195"
+			(at 652.78 681.99 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Link-alive detector hold capacitor, 10 nF"
+			(at 652.78 681.99 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "bab9fb14-f00b-cc76-970a-d60dd01fcdf3"))
+		(pin "2"
+			(uuid "35b0c011-a53c-0e9c-0a00-e44c50fa30db"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "C28")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 652.78 678.18)
+			(xy 652.78 675.64))
+		(stroke (width 0) (type default))
+		(uuid "2847a569-b1e2-a4b4-7fc3-eb2deb298ce0"))
+	(label "LINK_ALIVE"
+		(at 652.78 675.64 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "b039927d-6e99-a706-14f9-7c41b5457696"))
+	(wire
+		(pts
+			(xy 652.78 685.8)
+			(xy 652.78 688.34))
+		(stroke (width 0) (type default))
+		(uuid "f810047b-eb55-4f4d-c48e-1f97968f719a"))
+	(label "GND"
+		(at 652.78 688.34 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "31ac3240-b8ca-25f7-43bc-eda94d46a169"))
+	(symbol
+		(lib_id "gowin-bridge:R")
+		(at 726.44 681.99 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "3350835c-8f4f-b7aa-bc9d-18fdd61dc25d")
+		(property "Reference" "R45"
+			(at 726.44 674.18 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "100k"
+			(at 726.44 676.68 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:R_0402_1005Metric"
+			(at 726.44 681.99 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C25741"
+			(at 726.44 681.99 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Link-alive detector discharge, 100 k: with the 10 nF a 1 ms time constant, so LINK_ALIVE falls within a few ms of the forward clock stopping"
+			(at 726.44 681.99 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "847b0b06-e711-66f6-9aea-65ede1620a6f"))
+		(pin "2"
+			(uuid "3561ebeb-0bb6-91a3-5f83-85fee4162e9a"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "R45")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 726.44 678.18)
+			(xy 726.44 675.64))
+		(stroke (width 0) (type default))
+		(uuid "0122037d-c820-9923-b828-972b4910aabe"))
+	(label "LINK_ALIVE"
+		(at 726.44 675.64 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "75df0375-e8fd-e7a6-e96a-fe466f7e040f"))
+	(wire
+		(pts
+			(xy 726.44 685.8)
+			(xy 726.44 688.34))
+		(stroke (width 0) (type default))
+		(uuid "dda04c7e-40b9-4117-ecba-301dcd429420"))
+	(label "GND"
+		(at 726.44 688.34 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "6fd01cfa-29a6-dbcc-0995-8de1c4ced793"))
+	(symbol
+		(lib_id "gowin-bridge:AO3400A")
+		(at 803.91 683.26 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e3cf2e39-3e49-caec-ea9d-433c83be312b")
+		(property "Reference" "Q2"
+			(at 803.91 674.18 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "AO3400A"
+			(at 803.91 676.68 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:SOT-23"
+			(at 803.91 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C20917"
+			(at 803.91 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "MFR" "AO3400A"
+			(at 803.91 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Receiver output enable: gate LINK_ALIVE, source GND, drain RX_EN_N. RX_EN_N drives EN* of U6 and U7 and OE* of U3; every output that can drive a radio FPGA pin is high-impedance unless this is on"
+			(at 803.91 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "813cdfce-ba7a-1079-65ff-ecf17a6171a1"))
+		(pin "2"
+			(uuid "24f0e444-c129-7197-f7ba-0aae56024318"))
+		(pin "3"
+			(uuid "62cc9112-5410-fa64-547f-fff4353f543e"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "Q2")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 798.83 683.26)
+			(xy 796.29 683.26))
+		(stroke (width 0) (type default))
+		(uuid "a3ca9bc2-fd32-3e83-1a4e-eb9da62c7275"))
+	(label "LINK_ALIVE"
+		(at 796.29 683.26 180)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "62206763-ad2d-1c78-340c-803722f9ddc5"))
+	(wire
+		(pts
+			(xy 806.45 688.34)
+			(xy 806.45 690.88))
+		(stroke (width 0) (type default))
+		(uuid "3147d1ac-72cd-cb82-c9e4-ef647fbc01f4"))
+	(label "GND"
+		(at 806.45 690.88 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "a8b006fa-652b-623d-06fd-599dcab183fe"))
+	(wire
+		(pts
+			(xy 806.45 678.18)
+			(xy 806.45 675.64))
+		(stroke (width 0) (type default))
+		(uuid "f826d1b3-b25b-00a0-d52f-0f6359980eb6"))
+	(label "RX_EN_N"
+		(at 806.45 675.64 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "96cc328f-20a1-42b2-a506-ed94b355ab06"))
+	(symbol
+		(lib_id "gowin-bridge:AO3400A")
+		(at 885.19 683.26 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a59d71c6-dbbe-3057-8997-b7495bec1c05")
+		(property "Reference" "Q3"
+			(at 885.19 674.18 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "AO3400A"
+			(at 885.19 676.68 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:SOT-23"
+			(at 885.19 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C20917"
+			(at 885.19 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "MFR" "AO3400A"
+			(at 885.19 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "JTAG enable gate: gate LINK_ALIVE, source JTAG_EN_RAW_N (U2 output from FPGA pin 80), drain JTAG_EN_N. Stock gateware drives pin 80 LOW, which alone would enable the JTAG buffers"
+			(at 885.19 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "cfd17fb4-25e1-d0b0-1840-777b7f0a98e8"))
+		(pin "2"
+			(uuid "248199b0-3c13-deb7-2b27-2718f045b076"))
+		(pin "3"
+			(uuid "a794fd10-e351-84fe-89e8-e1b64cccfb9d"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "Q3")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 880.11 683.26)
+			(xy 877.57 683.26))
+		(stroke (width 0) (type default))
+		(uuid "b02862b0-44fc-9f00-0c0b-ae83d4cba584"))
+	(label "LINK_ALIVE"
+		(at 877.57 683.26 180)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "f9cfc608-48d9-27e7-d7a0-7e37f92bd090"))
+	(wire
+		(pts
+			(xy 887.73 688.34)
+			(xy 887.73 690.88))
+		(stroke (width 0) (type default))
+		(uuid "7b6b419e-e970-8274-daaa-c36a72b17ade"))
+	(label "JTAG_EN_RAW_N"
+		(at 887.73 690.88 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "74a6bb6b-6cc3-3683-9775-8e89f02f09cc"))
+	(wire
+		(pts
+			(xy 887.73 678.18)
+			(xy 887.73 675.64))
+		(stroke (width 0) (type default))
+		(uuid "e784524f-c808-b9e7-80bf-8e732a47d8da"))
+	(label "JTAG_EN_N"
+		(at 887.73 675.64 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "126a2529-48ad-ea7c-e9df-883c275a70e4"))
+	(symbol
+		(lib_id "gowin-bridge:AO3400A")
+		(at 965.2 683.26 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "81d3f453-de09-6637-6025-b0057e6aee62")
+		(property "Reference" "Q4"
+			(at 965.2 674.18 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "AO3400A"
+			(at 965.2 676.68 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:SOT-23"
+			(at 965.2 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C20917"
+			(at 965.2 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "MFR" "AO3400A"
+			(at 965.2 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "AUXIO enable gate, in series with Q1: gate LINK_ALIVE, source AUXIO_EN_N (U2 output from FPGA pin 72), drain AUXIO_EN_LA_N. Stock gateware drives pin 72 LOW"
+			(at 965.2 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "9c9d54fc-2175-2fed-1902-31ef709e0bb0"))
+		(pin "2"
+			(uuid "c9955459-3f46-c7a0-a4cb-ca3225718ae3"))
+		(pin "3"
+			(uuid "d06f1f1d-9113-17ff-ea15-8854ed5f9412"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "Q4")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 960.12 683.26)
+			(xy 957.58 683.26))
+		(stroke (width 0) (type default))
+		(uuid "4cdfb81e-d476-6338-4483-20ac35c0f7b5"))
+	(label "LINK_ALIVE"
+		(at 957.58 683.26 180)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "bf0c47e8-1d9e-ceca-9296-0867599a9bcd"))
+	(wire
+		(pts
+			(xy 967.74 688.34)
+			(xy 967.74 690.88))
+		(stroke (width 0) (type default))
+		(uuid "cc7c21f2-0a0f-1db4-ae6b-704b8d485bc3"))
+	(label "AUXIO_EN_N"
+		(at 967.74 690.88 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "26818bfd-c10d-7086-2edd-c60875dad3db"))
+	(wire
+		(pts
+			(xy 967.74 678.18)
+			(xy 967.74 675.64))
+		(stroke (width 0) (type default))
+		(uuid "24adafa2-6b2d-c7ae-90fc-2bb389ec4ef2"))
+	(label "AUXIO_EN_LA_N"
+		(at 967.74 675.64 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "2e046599-3e9c-a4a2-4ae1-e08e8c0f1c6e"))
+	(symbol
+		(lib_id "gowin-bridge:AO3400A")
+		(at 1046.48 683.26 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "eea617d9-31d0-cbee-89f6-777c916a9f95")
+		(property "Reference" "Q5"
+			(at 1046.48 674.18 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "AO3400A"
+			(at 1046.48 676.68 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:SOT-23"
+			(at 1046.48 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C20917"
+			(at 1046.48 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "MFR" "AO3400A"
+			(at 1046.48 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Presence output enable: gate SB_PRSNT_IN, source GND, drain PRSNT_OE_N, which drives OE* of U8 (both ports) and U10 port 1. Far end absent or unpowered: gate held at 0 V by 10 k, PRSNT_OE_N pulled HIGH, both buffers off"
+			(at 1046.48 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "ea601d10-ee8a-9100-9e31-28e94a88ac60"))
+		(pin "2"
+			(uuid "9e33ce79-52f5-7582-baba-359ff21c07b6"))
+		(pin "3"
+			(uuid "a933a5ea-e217-4e53-7aa5-f4d498c4b2c3"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "Q5")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 1041.4 683.26)
+			(xy 1038.86 683.26))
+		(stroke (width 0) (type default))
+		(uuid "6c764812-eddf-78d9-45fc-a7c5f2ad135b"))
+	(label "SB_PRSNT_IN"
+		(at 1038.86 683.26 180)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "2c576322-aacd-0d8c-ca1d-022468243e94"))
+	(wire
+		(pts
+			(xy 1049.02 688.34)
+			(xy 1049.02 690.88))
+		(stroke (width 0) (type default))
+		(uuid "3cd6034b-1ffa-625a-cce2-5ee81bfe1676"))
+	(label "GND"
+		(at 1049.02 690.88 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "e58c0ba8-dc8a-2290-515e-ce2164c1007a"))
+	(wire
+		(pts
+			(xy 1049.02 678.18)
+			(xy 1049.02 675.64))
+		(stroke (width 0) (type default))
+		(uuid "020cdee7-ab4b-a0d4-9892-5b03d0a49f35"))
+	(label "PRSNT_OE_N"
+		(at 1049.02 675.64 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "47a07966-d393-60a3-193b-ac1c79b75af5"))
+	(symbol
+		(lib_id "gowin-bridge:AO3400A")
+		(at 1126.49 683.26 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ca169be3-58ef-4b9c-9c73-fa317663fa4f")
+		(property "Reference" "Q6"
+			(at 1126.49 674.18 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "AO3400A"
+			(at 1126.49 676.68 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:SOT-23"
+			(at 1126.49 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C20917"
+			(at 1126.49 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "MFR" "AO3400A"
+			(at 1126.49 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Link-alive clamp: gate PRSNT_OE_N, source GND, drain LINK_ALIVE. No far end present -> LINK_ALIVE held LOW"
+			(at 1126.49 683.26 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "85bfa6c1-40b2-fbb1-b960-d0d31e577868"))
+		(pin "2"
+			(uuid "343e00ec-7fb5-dfff-2f26-9972e8fe6ce6"))
+		(pin "3"
+			(uuid "1268bf8f-0135-ed42-583f-2fb12eb906e2"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "Q6")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 1121.41 683.26)
+			(xy 1118.87 683.26))
+		(stroke (width 0) (type default))
+		(uuid "b0dc1463-be49-9927-1d3a-cccbf341a12b"))
+	(label "PRSNT_OE_N"
+		(at 1118.87 683.26 180)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "af7e8c7d-2c45-e59b-42e8-d8e4b271e121"))
+	(wire
+		(pts
+			(xy 1129.03 688.34)
+			(xy 1129.03 690.88))
+		(stroke (width 0) (type default))
+		(uuid "8234304c-f81f-7e4a-59b0-fc1f93247c11"))
+	(label "GND"
+		(at 1129.03 690.88 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "88f23cae-577d-a555-54df-521cc3a584dc"))
+	(wire
+		(pts
+			(xy 1129.03 678.18)
+			(xy 1129.03 675.64))
+		(stroke (width 0) (type default))
+		(uuid "d1cffec4-1ee5-abaa-dc4b-f4ed7776ff5a"))
+	(label "LINK_ALIVE"
+		(at 1129.03 675.64 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "5fba4e53-8624-7c9e-1921-8d51ce1a71f0"))
+	(symbol
+		(lib_id "gowin-bridge:R")
+		(at 54.61 721.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c3a5ea3b-9326-05e4-a153-11bad7792935")
+		(property "Reference" "R46"
+			(at 54.61 713.55 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "10k"
+			(at 54.61 716.05 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:R_0402_1005Metric"
+			(at 54.61 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C25744"
+			(at 54.61 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Receiver enable pull-UP: U3, U6 and U7 outputs high-impedance unless Q2 pulls it low"
+			(at 54.61 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "ea0fed4b-e821-6ac4-e1be-b43202136c6a"))
+		(pin "2"
+			(uuid "a1405ca3-4042-0ccc-ba27-4296e48fc577"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "R46")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 54.61 717.55)
+			(xy 54.61 715.01))
+		(stroke (width 0) (type default))
+		(uuid "7d1842b7-690a-ae60-468d-4ed900f26f2a"))
+	(label "RX_EN_N"
+		(at 54.61 715.01 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "31786d2d-16d3-72bc-15cd-02b506372f5a"))
+	(wire
+		(pts
+			(xy 54.61 725.17)
+			(xy 54.61 727.71))
+		(stroke (width 0) (type default))
+		(uuid "0b037044-7bb6-f011-edf3-6d6bf4956e99"))
+	(label "+3V3"
+		(at 54.61 727.71 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "ad991b6a-8627-ac06-636e-36324377a441"))
+	(symbol
+		(lib_id "gowin-bridge:R")
+		(at 127 721.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c87e43a6-1cda-1066-f3bd-a84f734a2d74")
+		(property "Reference" "R47"
+			(at 127 713.55 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "10k"
+			(at 127 716.05 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:R_0402_1005Metric"
+			(at 127 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C25744"
+			(at 127 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Presence output-enable pull-UP: U8 and U10 port 1 off unless a powered far end is present"
+			(at 127 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "acca782f-f963-1a8d-811b-60619be54893"))
+		(pin "2"
+			(uuid "2d546bc7-cdf7-2f5b-75fc-91839451f931"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "R47")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 127 717.55)
+			(xy 127 715.01))
+		(stroke (width 0) (type default))
+		(uuid "3d182f3f-6221-24a5-9f4c-a35fa06003ff"))
+	(label "PRSNT_OE_N"
+		(at 127 715.01 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "401fbcca-8ff5-0611-02cb-24462af9035a"))
+	(wire
+		(pts
+			(xy 127 725.17)
+			(xy 127 727.71))
+		(stroke (width 0) (type default))
+		(uuid "fd3a6f00-6d6a-8991-75db-9e37de0bf68c"))
+	(label "+3V3"
+		(at 127 727.71 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "8c1fe5e3-4940-b0c9-baaf-9647a8d3ba5a"))
+	(symbol
+		(lib_id "gowin-bridge:R")
+		(at 199.39 721.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ac4be49d-29e3-3efb-5b11-d5b0b425cd4b")
+		(property "Reference" "R48"
+			(at 199.39 713.55 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "10k"
+			(at 199.39 716.05 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:R_0402_1005Metric"
+			(at 199.39 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C25744"
+			(at 199.39 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "TDO pull-UP on the buffer input: the FPGA TDO pin floats when not shifting, and a floating CMOS input is not allowed (TI SCES576I, note to 5.3)"
+			(at 199.39 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "07ff542e-5da4-2ef3-e0fb-a3621e84b9ee"))
+		(pin "2"
+			(uuid "764de992-7d36-4b27-e94a-fbf6918d7cca"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "R48")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 199.39 717.55)
+			(xy 199.39 715.01))
+		(stroke (width 0) (type default))
+		(uuid "1a4474dc-a050-a103-1a63-762c051f6365"))
+	(label "J_TDO_T"
+		(at 199.39 715.01 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "4183da1c-2621-0b96-e147-c8e727bd75bb"))
+	(wire
+		(pts
+			(xy 199.39 725.17)
+			(xy 199.39 727.71))
+		(stroke (width 0) (type default))
+		(uuid "b1d764bb-cf29-f4c5-0cc2-5d5b6c13850e"))
+	(label "+3V3"
+		(at 199.39 727.71 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "34091d53-e8e1-a64d-360d-49ea00ebaa80"))
+	(symbol
+		(lib_id "gowin-bridge:R")
+		(at 273.05 721.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "1478bbee-3131-2700-effa-1f125aaf37fe")
+		(property "Reference" "R49"
+			(at 273.05 713.55 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "10k"
+			(at 273.05 716.05 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:R_0402_1005Metric"
+			(at 273.05 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C25744"
+			(at 273.05 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Defines RX_REVCLK, a U3 input, while the receivers are tri-stated"
+			(at 273.05 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "ec75d1ac-0647-e28e-8402-6b58f22d9554"))
+		(pin "2"
+			(uuid "5b72dc1d-06c2-1815-a894-04fbb33d51d3"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "R49")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 273.05 717.55)
+			(xy 273.05 715.01))
+		(stroke (width 0) (type default))
+		(uuid "672cc79e-b286-e3ad-24d5-f0c150166f94"))
+	(label "RX_REVCLK"
+		(at 273.05 715.01 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "d4f394b1-eec5-0824-d9e7-25389185e318"))
+	(wire
+		(pts
+			(xy 273.05 725.17)
+			(xy 273.05 727.71))
+		(stroke (width 0) (type default))
+		(uuid "d09c04f7-0b8c-66c6-d77e-56a106900cba"))
+	(label "GND"
+		(at 273.05 727.71 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "46574789-c545-a7c3-8654-2760b25e91ee"))
+	(symbol
+		(lib_id "gowin-bridge:R")
+		(at 345.44 721.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "83b3248e-ec56-14a3-18f0-2474c037d0a0")
+		(property "Reference" "R50"
+			(at 345.44 713.55 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "10k"
+			(at 345.44 716.05 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:R_0402_1005Metric"
+			(at 345.44 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C25744"
+			(at 345.44 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Defines RX_DUPCLK, a U3 input, while the receivers are tri-stated"
+			(at 345.44 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "7ca2ee46-7378-4884-7374-af58221d9dfa"))
+		(pin "2"
+			(uuid "a54a0526-432c-da7a-38f3-10714591da38"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "R50")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 345.44 717.55)
+			(xy 345.44 715.01))
+		(stroke (width 0) (type default))
+		(uuid "59681002-8a2a-d67c-cde1-c9feb5b9c19f"))
+	(label "RX_DUPCLK"
+		(at 345.44 715.01 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "2073522a-024e-e188-a5f4-cb3fd08e9cb6"))
+	(wire
+		(pts
+			(xy 345.44 725.17)
+			(xy 345.44 727.71))
+		(stroke (width 0) (type default))
+		(uuid "d6813d72-1e8b-2d44-ccf0-b4b74fa8e4f2"))
+	(label "GND"
+		(at 345.44 727.71 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "a9705f8e-8eb9-1de0-e7d8-b87bcf7ef68c"))
+	(symbol
+		(lib_id "gowin-bridge:R")
+		(at 419.1 721.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f9ecdc09-6fee-0eb0-3c3a-fffd8dfd588d")
+		(property "Reference" "R51"
+			(at 419.1 713.55 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "10k"
+			(at 419.1 716.05 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:R_0402_1005Metric"
+			(at 419.1 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C25744"
+			(at 419.1 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Defines RX_AUXCLK, a U3 input, while the receivers are tri-stated"
+			(at 419.1 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "faad56a7-4d99-b361-6ac4-744e4c3be4bf"))
+		(pin "2"
+			(uuid "c1b2917c-a590-aff2-d5d9-ca9c16fd8300"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "R51")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 419.1 717.55)
+			(xy 419.1 715.01))
+		(stroke (width 0) (type default))
+		(uuid "154d6890-c0ae-27b8-9b1c-0d0edb94b9d8"))
+	(label "RX_AUXCLK"
+		(at 419.1 715.01 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "b2486bcd-d1a4-b37e-d4c0-6b0265673b66"))
+	(wire
+		(pts
+			(xy 419.1 725.17)
+			(xy 419.1 727.71))
+		(stroke (width 0) (type default))
+		(uuid "caf5eb81-3a59-c684-a239-c22f795d74d5"))
+	(label "GND"
+		(at 419.1 727.71 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "8de615ba-133c-4839-dfee-657964bebe22"))
+	(symbol
+		(lib_id "gowin-bridge:R")
+		(at 491.49 721.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "764dba79-bc66-6ce0-91ac-98ebe9af9ac9")
+		(property "Reference" "R52"
+			(at 491.49 713.55 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "10k"
+			(at 491.49 716.05 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:R_0402_1005Metric"
+			(at 491.49 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C25744"
+			(at 491.49 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Defines RX_AUXDAT, a U3 input, while the receivers are tri-stated"
+			(at 491.49 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "ce9dbe12-42d3-e839-7a21-fe515d1d86f9"))
+		(pin "2"
+			(uuid "bd5e8251-bf38-4f98-e2a2-971406b83de6"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "R52")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 491.49 717.55)
+			(xy 491.49 715.01))
+		(stroke (width 0) (type default))
+		(uuid "e01c155e-ab05-e0c5-48c5-7503ded372b8"))
+	(label "RX_AUXDAT"
+		(at 491.49 715.01 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "31fbea29-1ee4-e934-4fe0-7ff6dcc2b164"))
+	(wire
+		(pts
+			(xy 491.49 725.17)
+			(xy 491.49 727.71))
+		(stroke (width 0) (type default))
+		(uuid "dba3680b-8d05-deac-4445-1f954c84b074"))
+	(label "GND"
+		(at 491.49 727.71 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "4f7bcb1c-60b3-04ed-e965-0e81d0eb8d98"))
+	(symbol
+		(lib_id "gowin-bridge:L")
+		(at 565.15 721.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "911c4769-8026-76bb-0ac0-158b8bcd762d")
+		(property "Reference" "L1"
+			(at 565.15 713.55 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "4.7uH"
+			(at 565.15 716.05 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:L_Sunlord_SWPA4030S"
+			(at 565.15 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C193025"
+			(at 565.15 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "MFR" "SWPA4030S4R7NT"
+			(at 565.15 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "3.3 V input filter inductor, 4.7 uH 2 A 78 mOhm shielded 4 x 4 mm, after FB1. PLACE WITHIN 8 mm OF J2 PINS 19/20"
+			(at 565.15 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "5b8454d4-32cd-a715-7206-d41181ba99eb"))
+		(pin "2"
+			(uuid "96e53702-6cc2-8cc1-349d-826f9684153d"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "L1")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 565.15 717.55)
+			(xy 565.15 715.01))
+		(stroke (width 0) (type default))
+		(uuid "6183eec8-5252-5822-256f-fb1c61058f96"))
+	(label "P3V3_FB"
+		(at 565.15 715.01 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "4d57e597-f80f-daa8-3ffc-d8ccfcd2613a"))
+	(wire
+		(pts
+			(xy 565.15 725.17)
+			(xy 565.15 727.71))
+		(stroke (width 0) (type default))
+		(uuid "061df002-ab1a-0c33-40b9-396ecf131a9a"))
+	(label "+3V3"
+		(at 565.15 727.71 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "513152e3-c080-80c9-b5d8-974b89ef5456"))
+	(symbol
+		(lib_id "gowin-bridge:C_Polarized")
+		(at 637.54 721.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "39a7a4f2-33c5-b9d5-1af3-ddacdddfa706")
+		(property "Reference" "C29"
+			(at 637.54 713.55 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "100uF"
+			(at 637.54 716.05 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:CP_EIA-3528-21_Kemet-B"
+			(at 637.54 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C16133"
+			(at 637.54 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "MFR" "TAJB107K006RNJ"
+			(at 637.54 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "3.3 V input filter capacitor, 100 uF 6.3 V tantalum, ESR 1.7 ohm, which damps the LC. Return it to ground beside DB1 pins 13/14. PLACE WITHIN 8 mm OF J2 PINS 19/20"
+			(at 637.54 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "2ca7f6e5-f68c-bb26-4e38-c3cd8a0ecd94"))
+		(pin "2"
+			(uuid "a84beaa6-a337-b3dc-d99f-99e53c040fb0"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "C29")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 637.54 717.55)
+			(xy 637.54 715.01))
+		(stroke (width 0) (type default))
+		(uuid "7b349532-d28e-c152-c60d-7b636acff268"))
+	(label "+3V3"
+		(at 637.54 715.01 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "44df123b-dff2-8131-3734-d154c3a1d2d5"))
+	(wire
+		(pts
+			(xy 637.54 725.17)
+			(xy 637.54 727.71))
+		(stroke (width 0) (type default))
+		(uuid "f8d04412-e7e6-b627-7ebf-1e719d71b4c3"))
+	(label "GND"
+		(at 637.54 727.71 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "5a0bcb80-9060-ca06-be43-3dfb94d713e0"))
+	(symbol
+		(lib_id "gowin-bridge:R")
+		(at 711.2 721.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(uuid "d0d3c336-f10c-4b6f-2530-39468dea4040")
+		(property "Reference" "R_LBYP"
+			(at 711.2 713.55 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "0R"
+			(at 711.2 716.05 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:R_0805_2012Metric"
+			(at 711.2 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C17477"
+			(at 711.2 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Note" "NOT FITTED. Fit only to compare the noise floor with the LC filter bypassed."
+			(at 711.2 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Bypass across L1 for the bring-up noise comparison"
+			(at 711.2 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "df46fe39-ca7c-47b0-e965-80d0730d4dbe"))
+		(pin "2"
+			(uuid "16ebdf05-0044-b8a2-c2a8-693881a1c2b5"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "R_LBYP")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 711.2 717.55)
+			(xy 711.2 715.01))
+		(stroke (width 0) (type default))
+		(uuid "8fd15807-2757-70f8-bbf9-8799dac3509c"))
+	(label "P3V3_FB"
+		(at 711.2 715.01 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "30313da4-139b-ee0e-9e4c-c7ac45549edc"))
+	(wire
+		(pts
+			(xy 711.2 725.17)
+			(xy 711.2 727.71))
+		(stroke (width 0) (type default))
+		(uuid "141d20b0-aead-711b-f939-4203e5527299"))
+	(label "+3V3"
+		(at 711.2 727.71 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "516072e1-6e4e-867f-f66e-23ce56839ddb"))
+	(symbol
+		(lib_id "gowin-bridge:C")
+		(at 783.59 721.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(uuid "b51bcb1d-5332-936c-bbcf-2ecdaa078dbf")
+		(property "Reference" "C30"
+			(at 783.59 713.55 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "10nF"
+			(at 783.59 716.05 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:C_0805_2012Metric"
+			(at 783.59 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "LCSC" "C1710"
+			(at 783.59 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Note" "NOT FITTED. Bring-up trial: lift R_SHELL and fit this, so the shell is DC-open but RF-bonded to ground."
+			(at 783.59 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "Shell RF bond, 10 nF 0805, beside R_SHELL. PLACE WITHIN 3 mm OF R_SHELL"
+			(at 783.59 721.36 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "8532d947-53b3-75ee-9a1c-e73e46a9498c"))
+		(pin "2"
+			(uuid "4bd06a24-d5ce-0133-645f-f6908a97a664"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "C30")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 783.59 717.55)
+			(xy 783.59 715.01))
+		(stroke (width 0) (type default))
+		(uuid "68cd69b4-346b-4bca-386e-ab7b133b0909"))
+	(label "SHELL"
+		(at 783.59 715.01 90)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "3c6c72f8-cfec-af9a-03ba-1c0f63b8d955"))
+	(wire
+		(pts
+			(xy 783.59 725.17)
+			(xy 783.59 727.71))
+		(stroke (width 0) (type default))
+		(uuid "27fffe1c-5cb0-287f-3451-06bdf7d530d8"))
+	(label "GND"
+		(at 783.59 727.71 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "388abc06-438b-4a0b-07e5-e38f1daf52f8"))
+	(symbol
 		(lib_id "gowin-bridge:TestPoint")
-		(at 419.1 678.18 0)
+		(at 857.25 717.55 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18149,13 +19596,13 @@
 		(dnp no)
 		(uuid "956bfb4d-89e6-7f32-2e50-25088bdd338f")
 		(property "Reference" "TP1"
-			(at 419.1 674.18 0)
+			(at 857.25 713.55 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TP_+3V3"
-			(at 419.1 676.68 0)
+			(at 857.25 716.05 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:TestPoint_Pad_D1.5mm"
-			(at 419.1 678.18 0)
+			(at 857.25 717.55 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "9f12887e-78c9-4dd2-6db6-185b3938ec8b"))
@@ -18166,17 +19613,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 419.1 678.18)
-			(xy 419.1 680.72))
+			(xy 857.25 717.55)
+			(xy 857.25 720.09))
 		(stroke (width 0) (type default))
 		(uuid "075a22df-1506-0fd4-58e2-e64fe54477a8"))
 	(label "+3V3"
-		(at 419.1 680.72 270)
+		(at 857.25 720.09 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "46439ac3-8b0d-1145-59a3-40643f651d32"))
 	(symbol
 		(lib_id "gowin-bridge:TestPoint")
-		(at 491.49 678.18 0)
+		(at 929.64 717.55 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18184,13 +19631,13 @@
 		(dnp no)
 		(uuid "b23e9f4a-f9d2-933e-8ab7-90b1017f33aa")
 		(property "Reference" "TP2"
-			(at 491.49 674.18 0)
+			(at 929.64 713.55 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TP_+2V5"
-			(at 491.49 676.68 0)
+			(at 929.64 716.05 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:TestPoint_Pad_D1.5mm"
-			(at 491.49 678.18 0)
+			(at 929.64 717.55 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "80e57a28-b6cf-ee6e-a2e7-893ec3e643f8"))
@@ -18201,17 +19648,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 491.49 678.18)
-			(xy 491.49 680.72))
+			(xy 929.64 717.55)
+			(xy 929.64 720.09))
 		(stroke (width 0) (type default))
 		(uuid "3f925767-3b47-c4ca-bd73-a68cf2a43afc"))
 	(label "+2V5"
-		(at 491.49 680.72 270)
+		(at 929.64 720.09 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "4cb94757-e296-472a-3b74-1cf8c8cc56bb"))
 	(symbol
 		(lib_id "gowin-bridge:TestPoint")
-		(at 565.15 678.18 0)
+		(at 1003.3 717.55 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18219,13 +19666,13 @@
 		(dnp no)
 		(uuid "4abef555-cc5e-6883-04f3-03841641a64f")
 		(property "Reference" "TP3"
-			(at 565.15 674.18 0)
+			(at 1003.3 713.55 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TP_SB_PRSNT_IN"
-			(at 565.15 676.68 0)
+			(at 1003.3 716.05 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:TestPoint_Pad_D1.5mm"
-			(at 565.15 678.18 0)
+			(at 1003.3 717.55 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "a6ca8055-78c2-cadf-0584-dc7e1daf7988"))
@@ -18236,17 +19683,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 565.15 678.18)
-			(xy 565.15 680.72))
+			(xy 1003.3 717.55)
+			(xy 1003.3 720.09))
 		(stroke (width 0) (type default))
 		(uuid "d3139344-2704-bfd6-9fb7-50f999a3a8ab"))
 	(label "SB_PRSNT_IN"
-		(at 565.15 680.72 270)
+		(at 1003.3 720.09 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "e2b4806a-28e5-c06f-f16b-9166d47042db"))
 	(symbol
 		(lib_id "gowin-bridge:TestPoint")
-		(at 637.54 678.18 0)
+		(at 1075.69 717.55 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18254,13 +19701,13 @@
 		(dnp no)
 		(uuid "b8d998a6-559d-2e5f-92db-8d26c2a6014d")
 		(property "Reference" "TP4"
-			(at 637.54 674.18 0)
+			(at 1075.69 713.55 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TP_JTAG_EN_N"
-			(at 637.54 676.68 0)
+			(at 1075.69 716.05 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:TestPoint_Pad_D1.5mm"
-			(at 637.54 678.18 0)
+			(at 1075.69 717.55 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "ffc79aaf-92d0-574f-09d2-e360004f484f"))
@@ -18271,17 +19718,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 637.54 678.18)
-			(xy 637.54 680.72))
+			(xy 1075.69 717.55)
+			(xy 1075.69 720.09))
 		(stroke (width 0) (type default))
 		(uuid "db49dfc2-0fa8-1176-f37a-23225f766327"))
 	(label "JTAG_EN_N"
-		(at 637.54 680.72 270)
+		(at 1075.69 720.09 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "ba713f73-720d-8240-7dc8-4aafaa7f62cf"))
 	(symbol
 		(lib_id "gowin-bridge:TestPoint")
-		(at 711.2 678.18 0)
+		(at 54.61 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18289,13 +19736,13 @@
 		(dnp no)
 		(uuid "8ece60a5-f78b-a1c7-1d97-20736a928019")
 		(property "Reference" "TP5"
-			(at 711.2 674.18 0)
+			(at 54.61 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TP_AUXIO_EN_N"
-			(at 711.2 676.68 0)
+			(at 54.61 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:TestPoint_Pad_D1.5mm"
-			(at 711.2 678.18 0)
+			(at 54.61 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "bef625bd-4680-1108-7dc0-bb6e221c1d4a"))
@@ -18306,17 +19753,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 711.2 678.18)
-			(xy 711.2 680.72))
+			(xy 54.61 755.65)
+			(xy 54.61 758.19))
 		(stroke (width 0) (type default))
 		(uuid "6e334ab7-6983-1da4-ae47-0322475c0a66"))
 	(label "AUXIO_EN_N"
-		(at 711.2 680.72 270)
+		(at 54.61 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "f170bd46-7e45-3385-1650-594c40daa4a4"))
 	(symbol
 		(lib_id "gowin-bridge:TestPoint")
-		(at 783.59 678.18 0)
+		(at 127 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18324,13 +19771,13 @@
 		(dnp no)
 		(uuid "41e43a85-e044-c6a6-77ca-a4be3c1650eb")
 		(property "Reference" "TP6"
-			(at 783.59 674.18 0)
+			(at 127 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TP_AUXIO_OE_N"
-			(at 783.59 676.68 0)
+			(at 127 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:TestPoint_Pad_D1.5mm"
-			(at 783.59 678.18 0)
+			(at 127 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "f787ae83-5d64-62dc-c8e8-0800acc09f82"))
@@ -18341,17 +19788,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 783.59 678.18)
-			(xy 783.59 680.72))
+			(xy 127 755.65)
+			(xy 127 758.19))
 		(stroke (width 0) (type default))
 		(uuid "abdf36c9-6ee0-d0a8-3949-e727c0b02eff"))
 	(label "AUXIO_OE_N"
-		(at 783.59 680.72 270)
+		(at 127 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "fd4ca095-0b91-ac6a-7a5c-379c233bf173"))
 	(symbol
 		(lib_id "gowin-bridge:TestPoint")
-		(at 857.25 678.18 0)
+		(at 199.39 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18359,13 +19806,13 @@
 		(dnp no)
 		(uuid "5b499ef2-aa84-b5a8-52f4-67f87e02b231")
 		(property "Reference" "TP7"
-			(at 857.25 674.18 0)
+			(at 199.39 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TP_HL2_FWD_CLK"
-			(at 857.25 676.68 0)
+			(at 199.39 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:TestPoint_Pad_D1.5mm"
-			(at 857.25 678.18 0)
+			(at 199.39 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "308ea996-f029-cc1f-a557-7c84cdbb2e8f"))
@@ -18376,17 +19823,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 857.25 678.18)
-			(xy 857.25 680.72))
+			(xy 199.39 755.65)
+			(xy 199.39 758.19))
 		(stroke (width 0) (type default))
 		(uuid "ede75874-22c8-1693-f15d-44213cc35d41"))
 	(label "HL2_FWD_CLK"
-		(at 857.25 680.72 270)
+		(at 199.39 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "760669e5-4591-f924-d0a0-c25354796469"))
 	(symbol
 		(lib_id "gowin-bridge:TestPoint")
-		(at 929.64 678.18 0)
+		(at 273.05 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18394,13 +19841,13 @@
 		(dnp no)
 		(uuid "7abeaa11-9680-296a-c1cd-05d7e8eb6f68")
 		(property "Reference" "TP8"
-			(at 929.64 674.18 0)
+			(at 273.05 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TP_HL2_REV_CLK"
-			(at 929.64 676.68 0)
+			(at 273.05 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:TestPoint_Pad_D1.5mm"
-			(at 929.64 678.18 0)
+			(at 273.05 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "20c331b5-4fc8-83ed-7ad5-02a8a9486b80"))
@@ -18411,17 +19858,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 929.64 678.18)
-			(xy 929.64 680.72))
+			(xy 273.05 755.65)
+			(xy 273.05 758.19))
 		(stroke (width 0) (type default))
 		(uuid "2c8ed0b3-dc98-ca9d-18c9-6066e4388208"))
 	(label "HL2_REV_CLK"
-		(at 929.64 680.72 270)
+		(at 273.05 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "1eb477f0-b54d-bc91-5bc9-7abf2e47fe68"))
 	(symbol
 		(lib_id "gowin-bridge:TestPoint")
-		(at 1003.3 678.18 0)
+		(at 345.44 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18429,13 +19876,13 @@
 		(dnp no)
 		(uuid "5c812af4-f5f2-cdca-5b02-dafe936dd380")
 		(property "Reference" "TP9"
-			(at 1003.3 674.18 0)
+			(at 345.44 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "TP_GND"
-			(at 1003.3 676.68 0)
+			(at 345.44 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:TestPoint_THTPad_D2.0mm_Drill1.0mm"
-			(at 1003.3 678.18 0)
+			(at 345.44 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "6acb4fb1-b416-48d0-77f4-d9e41a069b38"))
@@ -18446,17 +19893,52 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 1003.3 678.18)
-			(xy 1003.3 680.72))
+			(xy 345.44 755.65)
+			(xy 345.44 758.19))
 		(stroke (width 0) (type default))
 		(uuid "1648223b-ab70-1465-4232-7d1ec5c1d822"))
 	(label "GND"
-		(at 1003.3 680.72 270)
+		(at 345.44 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "1309fe0d-17cd-3913-13d6-92bc156dcf3d"))
 	(symbol
+		(lib_id "gowin-bridge:TestPoint")
+		(at 419.1 755.65 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "1586f8aa-8ab0-1689-b348-9e70cb85c830")
+		(property "Reference" "TP10"
+			(at 419.1 751.65 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "TP_LINK_ALIVE"
+			(at 419.1 754.15 0)
+			(effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "gowin-bridge:TestPoint_Pad_D1.5mm"
+			(at 419.1 755.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(pin "1"
+			(uuid "376f4586-6dc8-ad00-6cc0-378877ca95d7"))
+		(instances
+			(project "bridge"
+				(path "/e1209005-9b04-63e6-edbf-fadb19722046"
+					(reference "TP10")
+					(unit 1)))))
+	(wire
+		(pts
+			(xy 419.1 755.65)
+			(xy 419.1 758.19))
+		(stroke (width 0) (type default))
+		(uuid "dfc619ef-5694-b261-f2ec-fa4ec2c24639"))
+	(label "LINK_ALIVE"
+		(at 419.1 758.19 270)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "068801df-8a96-9bca-55e5-98eb3d58d92a"))
+	(symbol
 		(lib_id "gowin-bridge:PWR_FLAG")
-		(at 1075.69 678.18 0)
+		(at 491.49 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18464,13 +19946,13 @@
 		(dnp no)
 		(uuid "6e08cac4-e828-d9cd-1a63-ac7c4924e56c")
 		(property "Reference" "#FLG_GND"
-			(at 1075.69 674.18 0)
+			(at 491.49 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "PWR_FLAG"
-			(at 1075.69 676.68 0)
+			(at 491.49 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" ""
-			(at 1075.69 678.18 0)
+			(at 491.49 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "571526a7-ea23-9cb9-e7ed-07b3af17c7a4"))
@@ -18481,17 +19963,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 1075.69 678.18)
-			(xy 1075.69 680.72))
+			(xy 491.49 755.65)
+			(xy 491.49 758.19))
 		(stroke (width 0) (type default))
 		(uuid "9c5b3d2e-a63c-3761-4a2e-674397b12b72"))
 	(label "GND"
-		(at 1075.69 680.72 270)
+		(at 491.49 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "5e33151b-3a63-8fd4-7d63-808cbce04d33"))
 	(symbol
 		(lib_id "gowin-bridge:PWR_FLAG")
-		(at 54.61 715.01 0)
+		(at 565.15 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18499,13 +19981,13 @@
 		(dnp no)
 		(uuid "9b3c7993-4eff-add9-8b29-3a059e940963")
 		(property "Reference" "#FLG_P3V3"
-			(at 54.61 711.01 0)
+			(at 565.15 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "PWR_FLAG"
-			(at 54.61 713.51 0)
+			(at 565.15 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" ""
-			(at 54.61 715.01 0)
+			(at 565.15 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "1525c414-d801-ded0-4752-b706de8b29bb"))
@@ -18516,17 +19998,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 54.61 715.01)
-			(xy 54.61 717.55))
+			(xy 565.15 755.65)
+			(xy 565.15 758.19))
 		(stroke (width 0) (type default))
 		(uuid "6a2d6e16-0a8f-c3b9-4369-6c7181f669ac"))
 	(label "+3V3"
-		(at 54.61 717.55 270)
+		(at 565.15 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "bb89a5c5-eb2e-b822-4a2a-bba503eabd98"))
 	(symbol
 		(lib_id "gowin-bridge:PWR_FLAG")
-		(at 127 715.01 0)
+		(at 637.54 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18534,13 +20016,13 @@
 		(dnp no)
 		(uuid "def9b672-220f-b9f2-0ca2-54a438d2bca3")
 		(property "Reference" "#FLG_DB1_3V3"
-			(at 127 711.01 0)
+			(at 637.54 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "PWR_FLAG"
-			(at 127 713.51 0)
+			(at 637.54 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" ""
-			(at 127 715.01 0)
+			(at 637.54 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "adb717a0-dae1-b3c1-7456-c66d4f13ed6e"))
@@ -18551,17 +20033,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 127 715.01)
-			(xy 127 717.55))
+			(xy 637.54 755.65)
+			(xy 637.54 758.19))
 		(stroke (width 0) (type default))
 		(uuid "284eeae4-05a5-d694-a17b-07fbbd55f4de"))
 	(label "DB1_3V3"
-		(at 127 717.55 270)
+		(at 637.54 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "2ee42d3e-919a-c89e-f3a0-64604848398f"))
 	(symbol
 		(lib_id "gowin-bridge:PWR_FLAG")
-		(at 199.39 715.01 0)
+		(at 711.2 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18569,13 +20051,13 @@
 		(dnp no)
 		(uuid "68a82765-25a6-6c73-450a-8d310e23c002")
 		(property "Reference" "#FLG_VLVDS"
-			(at 199.39 711.01 0)
+			(at 711.2 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "PWR_FLAG"
-			(at 199.39 713.51 0)
+			(at 711.2 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" ""
-			(at 199.39 715.01 0)
+			(at 711.2 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "f9e1312b-a03e-288d-cad9-5138d319a8dc"))
@@ -18586,17 +20068,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 199.39 715.01)
-			(xy 199.39 717.55))
+			(xy 711.2 755.65)
+			(xy 711.2 758.19))
 		(stroke (width 0) (type default))
 		(uuid "48d1c27c-7aa9-7031-7b90-2f290ee0e53a"))
 	(label "VLVDS"
-		(at 199.39 717.55 270)
+		(at 711.2 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "62ef734c-0243-d047-fe01-b1a363d63943"))
 	(symbol
 		(lib_id "gowin-bridge:PWR_FLAG")
-		(at 273.05 715.01 0)
+		(at 783.59 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18604,13 +20086,13 @@
 		(dnp no)
 		(uuid "d61911f9-8aaf-0647-3170-825828dd6b51")
 		(property "Reference" "#FLG_VLVDS_F"
-			(at 273.05 711.01 0)
+			(at 783.59 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "PWR_FLAG"
-			(at 273.05 713.51 0)
+			(at 783.59 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" ""
-			(at 273.05 715.01 0)
+			(at 783.59 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "73b10a82-bebc-f8f5-7788-0445b1daa4e4"))
@@ -18621,17 +20103,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 273.05 715.01)
-			(xy 273.05 717.55))
+			(xy 783.59 755.65)
+			(xy 783.59 758.19))
 		(stroke (width 0) (type default))
 		(uuid "ba8b779c-7d6e-4ccb-ea13-37c5ccb0f40b"))
 	(label "VLVDS_F"
-		(at 273.05 717.55 270)
+		(at 783.59 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "b9234e91-8f5b-3427-4765-3c8c06ccdb90"))
 	(symbol
 		(lib_id "gowin-bridge:PWR_FLAG")
-		(at 345.44 715.01 0)
+		(at 857.25 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18639,13 +20121,13 @@
 		(dnp no)
 		(uuid "691c0756-a410-f261-c6ef-120ffb396d99")
 		(property "Reference" "#FLG_CN1_VTREF"
-			(at 345.44 711.01 0)
+			(at 857.25 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "PWR_FLAG"
-			(at 345.44 713.51 0)
+			(at 857.25 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" ""
-			(at 345.44 715.01 0)
+			(at 857.25 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "5cc2de16-6003-9030-d920-244c62028e32"))
@@ -18656,17 +20138,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 345.44 715.01)
-			(xy 345.44 717.55))
+			(xy 857.25 755.65)
+			(xy 857.25 758.19))
 		(stroke (width 0) (type default))
 		(uuid "2d045200-2d18-1597-ae64-d45f45545fa1"))
 	(label "CN1_VTREF"
-		(at 345.44 717.55 270)
+		(at 857.25 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "2cb5b20a-8b1e-f6a2-f5c8-639a405827f2"))
 	(symbol
 		(lib_id "gowin-bridge:PWR_FLAG")
-		(at 419.1 715.01 0)
+		(at 929.64 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18674,13 +20156,13 @@
 		(dnp no)
 		(uuid "6c96888a-a9f9-56db-ac74-374378027097")
 		(property "Reference" "#FLG_SHELL"
-			(at 419.1 711.01 0)
+			(at 929.64 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "PWR_FLAG"
-			(at 419.1 713.51 0)
+			(at 929.64 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" ""
-			(at 419.1 715.01 0)
+			(at 929.64 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(pin "1"
 			(uuid "f87f7dfa-29ec-c09a-26bf-5d4deca96fb5"))
@@ -18691,17 +20173,17 @@
 					(unit 1)))))
 	(wire
 		(pts
-			(xy 419.1 715.01)
-			(xy 419.1 717.55))
+			(xy 929.64 755.65)
+			(xy 929.64 758.19))
 		(stroke (width 0) (type default))
 		(uuid "9df48614-93dd-1a59-6b4a-61e2808809bc"))
 	(label "SHELL"
-		(at 419.1 717.55 270)
+		(at 929.64 758.19 270)
 		(effects (font (size 1 1)) (justify left bottom))
 		(uuid "c78adb5d-e41c-e4db-0d6e-488d9dfb8e16"))
 	(symbol
 		(lib_id "gowin-bridge:Fiducial")
-		(at 491.49 715.01 0)
+		(at 1003.3 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18709,16 +20191,16 @@
 		(dnp no)
 		(uuid "08526504-19ad-2a6c-0e16-36639d51a01a")
 		(property "Reference" "FID1"
-			(at 491.49 711.01 0)
+			(at 1003.3 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "Fiducial"
-			(at 491.49 713.51 0)
+			(at 1003.3 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:Fiducial_1mm_Mask2mm"
-			(at 491.49 715.01 0)
+			(at 1003.3 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Fiducial, 1 mm copper, 2 mm mask opening"
-			(at 491.49 715.01 0)
+			(at 1003.3 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(instances
 			(project "bridge"
@@ -18727,7 +20209,7 @@
 					(unit 1)))))
 	(symbol
 		(lib_id "gowin-bridge:Fiducial")
-		(at 506.73 715.01 0)
+		(at 1018.54 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18735,16 +20217,16 @@
 		(dnp no)
 		(uuid "26331308-6fac-ead0-4d59-3332079dbb82")
 		(property "Reference" "FID2"
-			(at 506.73 711.01 0)
+			(at 1018.54 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "Fiducial"
-			(at 506.73 713.51 0)
+			(at 1018.54 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:Fiducial_1mm_Mask2mm"
-			(at 506.73 715.01 0)
+			(at 1018.54 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Fiducial, 1 mm copper, 2 mm mask opening"
-			(at 506.73 715.01 0)
+			(at 1018.54 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(instances
 			(project "bridge"
@@ -18753,7 +20235,7 @@
 					(unit 1)))))
 	(symbol
 		(lib_id "gowin-bridge:Fiducial")
-		(at 521.97 715.01 0)
+		(at 1032.51 755.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18761,16 +20243,16 @@
 		(dnp no)
 		(uuid "9dd7e884-c125-9133-fe46-6d9485756b6f")
 		(property "Reference" "FID3"
-			(at 521.97 711.01 0)
+			(at 1032.51 751.65 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Value" "Fiducial"
-			(at 521.97 713.51 0)
+			(at 1032.51 754.15 0)
 			(effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "gowin-bridge:Fiducial_1mm_Mask2mm"
-			(at 521.97 715.01 0)
+			(at 1032.51 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Fiducial, 1 mm copper, 2 mm mask opening"
-			(at 521.97 715.01 0)
+			(at 1032.51 755.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(instances
 			(project "bridge"
