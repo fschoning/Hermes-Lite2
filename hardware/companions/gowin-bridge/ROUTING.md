@@ -1,5 +1,9 @@
 # gowin-bridge routing guide, rev D
 
+**Routing by hand in EasyEDA Pro and ordering from JLCPCB: see
+`ROUTING_EASYEDA.md` instead — that is the procedural, step-by-step guide.
+This file is the KiCad-era background it was built from.**
+
 For whoever lays this board out. The schematic and the placement are
 generated and validated; the routing is not done and is not done here.
 
