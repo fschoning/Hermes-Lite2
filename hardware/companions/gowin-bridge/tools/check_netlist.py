@@ -1,35 +1,54 @@
 #!/usr/bin/env python3
-"""Netlist self-check for the generated gowin-bridge boards.
+"""Netlist self-check for the generated gowin-bridge board, rev D.
 
 Run:   python tools/check_netlist.py
 
-Exports each schematic's netlist with kicad-cli and checks four things that
-the generator could get wrong without ERC noticing:
+Exports the schematic's netlist with kicad-cli and asserts the things the
+generator could get wrong without ERC noticing:
 
- 1. every one of the six HDMI sockets maps HDMI signals onto link roles the
-    SAME way - that is the symmetry requirement, and it is what lets one
-    board A design sit at both ends of a two-radio link;
- 2. a straight pin-1-to-pin-1 mini-to-mini cable joining board A's OUT to
-    another board A's IN lands every signal on its counterpart, and the same
-    for the two mini-to-full-size cables, across the Type C / Type A pin-order
-    difference;
- 3. the auxiliary cable is SELF-COMPLEMENTARY: AUX to AUX maps group G1 to
-    group G1 and G2 to G2, so a ROLE A board and a ROLE B board fit together
-    whichever two boards they are;
- 4. THE STRAP CANNOT PRODUCE CONTENTION.  This is the important one.  For
-    each auxiliary group, the LVDS driver's active-HIGH enable and the
-    buffer/translator port that drives that group toward the host must be
-    controlled by the SAME NET, so the group is either driven onto the cable
-    or driven toward the host and never both - for any level on that net,
-    including a stuck or floating one.  The check also proves that the two
-    groups are controlled by a complementary pair produced by ONE inverter
-    from ONE strap net, that the complement carries a pull-UP so a dead
-    inverter disables a port rather than enabling one, and that no auxiliary
-    enable is tied to a constant.
+ 1. THE HEADER PIN MAPS.  Every pin of HL2 DB1, DB12 and CN1, against the
+    table in PINMAP.md rev D - including the one that has been wrong before:
+    DB12 pin 5 is FPGA PIN_89 and pin 6 is PIN_88, NOT the other way round.
 
-The HDMI standard pin tables and the header pin maps are retyped here from
-the specification and from PINMAP.md rather than imported from the generator,
-so the two can disagree and be caught.
+ 2. THE CONNECTOR PIN MAP.  Every one of the 74 SlimSAS contacts: the 26
+    grounds are grounded, the 16 pairs carry the right net legs with P on the
+    lower-numbered contact, and the 16 sideband contacts carry what the
+    sideband table says.
+
+ 3. THE CROSSOVER, WALKED.  Two of these identical boards joined by one
+    SFF-8654 8i cable.  The cable maps A(n) at one end to B(n) at the other,
+    so the check walks every driven contact through to the far board's contact
+    at the same number in the other row and asserts that what arrives is the
+    input that wants it.  This is what makes radio-to-radio work, and it is
+    asserted rather than believed.
+
+ 4. THE FUNCTION MIRRORING, as a contract rather than a hope.  For every lane
+    the net this board drives and the net it receives at the same position
+    must be functional counterparts: forward clock faces reverse clock, ADC
+    data k faces transmit data k, aux clock faces aux clock, aux data faces
+    aux data, and the duplicate forward clock faces a receiver rather than
+    nothing.
+
+ 5. NO JTAG PATH BETWEEN TWO RADIOS.  The sideband positions whose far-end
+    inputs are TCK and TMS must have NOTHING on this board driving their
+    outputs, so one radio physically cannot clock or steer another radio's
+    JTAG state machine whatever the enable does.
+
+ 6. EVERY REMOTE-DRIVE FEATURE IS OFF UNTIL SOMETHING TURNS IT ON.  Both
+    enable nets are active LOW and must carry a pull-UP at both ends of their
+    translator - one to the 2.5 V rail on the HL2 side, one to 3.3 V on the
+    logic side - and no fitted pull-down anywhere.  That is the whole safety
+    argument for an unprogrammed board, and it replaces rev C's strap,
+    inverter and contention proof.
+
+ 7. EVERY CONDUCTOR THAT LEAVES THE BOARD IS CLAMPED.  Each of the 32 pair
+    conductors and each wired sideband conductor must appear on an ESD array.
+
+ 8. NOTHING CALLS ITSELF BOARD A OR BOARD B.  rev D is one design.
+
+The tables below are retyped here from PINMAP.md and from the specifications
+rather than imported from the generator, so the two can disagree and be
+caught.
 """
 
 import os
@@ -41,6 +60,8 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 import kisexp as K
 
+BOARD = 'bridge'
+
 KICAD_CLI_CANDIDATES = [
     os.environ.get('KICAD_CLI', ''),
     r'C:/Users/franz/AppData/Local/Programs/KiCad/10.0/bin/kicad-cli.exe',
@@ -49,110 +70,119 @@ KICAD_CLI_CANDIDATES = [
     'kicad-cli',
 ]
 
-# HDMI receptacle pinouts.  signal -> (Type A pin, Type C pin).
-# Type C differs from Type A in exactly four ways: every pair's + leg swaps
-# with its shield, DDC/CEC ground moves from 17 to 13, CEC from 13 to 14, and
-# Reserved/Utility from 14 to 17.  SCL, SDA, +5 V and HPD do not move.
-STD = {
-    'D2+': (1, 2),   'D2S': (2, 1),   'D2-': (3, 3),
-    'D1+': (4, 5),   'D1S': (5, 4),   'D1-': (6, 6),
-    'D0+': (7, 8),   'D0S': (8, 7),   'D0-': (9, 9),
-    'CK+': (10, 11), 'CKS': (11, 10), 'CK-': (12, 12),
-    'CEC': (13, 14), 'UTIL': (14, 17),
-    'SCL': (15, 15), 'SDA': (16, 16),
-    'DDCGND': (17, 13), 'P5V': (18, 18), 'HPD': (19, 19),
-}
-LANES = (('CK', 'CLK'), ('D0', 'D0'), ('D1', 'D1'), ('D2', 'D2'))
-
-# Which HDMI pairs make up each auxiliary group.  PINMAP.md 2.3: G1 is the
-# clock pair plus the data 0 pair, G2 is the data 1 pair plus the data 2 pair,
-# and each group carries its own clock, so the two directions are independent.
-AUX_G1 = ('CLK', 'D0')
-AUX_G2 = ('D1', 'D2')
-
-
-# ----------------------------------------------------------------------------
-# The header pin maps, retyped from PINMAP.md rev C.  These are the contract
+# --------------------------------------------------------------------------
+# The header pin maps, retyped from PINMAP.md rev D.  These are the contract
 # with the FPGA gateware, so they get asserted rather than trusted.
-# ----------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
-# board A, socket J1 on HL2 DB1.  pin -> (net, FPGA pin, what it is)
 DB1 = {
-    1:  ('HL2_AX_G2CLK_HDR', '72',  'AUX G2 clock, BIDIRECTIONAL, via HL2 '
-                                    'jumper J25 and sharing uFL pad CL8'),
-    2:  ('HL2_O_D0',      '76',  'OUT lane 0'),
-    3:  ('HL2_O_D1',      '77',  'OUT lane 1'),
-    4:  ('HL2_AX_G2DAT',  '80',  'AUX G2 data, BIDIRECTIONAL, the 21 pF '
-                                 'VREF pin'),
-    5:  ('HL2_O_D2',      '83',  'OUT lane 2'),
-    6:  ('HL2_AX_G1CLK',  '85',  'AUX G1 clock, BIDIRECTIONAL'),
-    7:  ('VLVDS',         '-',   'HL2 2.5 V rail, breakout only'),
-    8:  ('VLVDS',         '-',   'same net as pin 7'),
-    9:  ('HL2_CLK_RAW',   '98',  'OUT clock, before the divider'),
-    10: ('<open>',        '90',  'CW/PTT ring, deliberately not connected'),
-    11: ('HL2_I_D0',      '99',  'IN lane 0'),
-    12: ('<open>',        '91',  'CW/PTT tip, deliberately not connected'),
-    13: ('GND',           '-',   'ground'),
-    14: ('GND',           '-',   'ground'),
-    15: ('HL2_I_D1',      '100', 'IN lane 1'),
-    16: ('SCL1',          '103', 'breakout only'),
-    17: ('HL2_I_D2',      '101', 'IN lane 2'),
-    18: ('SDA1',          '104', 'breakout only'),
-    19: ('DB1_3V3',       '-',   'board supply'),
-    20: ('DB1_3V3',       '-',   'same net as pin 19'),
+    1:  ('HL2_AUXIO_EN', '72', 'AUXIO drive enable, active LOW, DC only. '
+                               'Reaches the FPGA only through HL2 solder '
+                               'jumper J25'),
+    2:  ('HL2_ADC_D0', '76', 'ADC sample data 0 out'),
+    3:  ('HL2_ADC_D1', '77', 'ADC sample data 1 out'),
+    4:  ('HL2_JTAG_EN', '80', 'JTAG-over-cable enable, active LOW, DC only. '
+                              'The 21 pF VREF pin, irrelevant for a DC level'),
+    5:  ('HL2_ADC_D2', '83', 'ADC sample data 2 out'),
+    6:  ('HL2_AUX_CLK_OUT', '85', 'auxiliary clock out'),
+    7:  ('VLVDS', '-', 'HL2 2.5 V rail, tap only, unused by default'),
+    8:  ('VLVDS', '-', 'same net as pin 7'),
+    9:  ('HL2_FWD_CLK_RAW', '98', 'forward clock 153.6 MHz out, before the '
+                                  'divider. Carries LED D2 through R71'),
+    10: ('HL2_CWR', '90', 'CW/PTT ring - AUXIO line 0, NOT an LED pin'),
+    11: ('HL2_TX_D0', '99', 'transmit data 0 in. Carries LED D3 through R72'),
+    12: ('HL2_CWT', '91', 'CW/PTT tip - AUXIO line 1, NOT an LED pin'),
+    13: ('GND', '-', 'ground'),
+    14: ('GND', '-', 'ground'),
+    15: ('HL2_TX_D1', '100', 'transmit data 1 in. Carries LED D4 through R73'),
+    16: ('HL2_SCL1', '103', 'I2C1 SCL - AUXIO line 2, NOT an LED pin'),
+    17: ('HL2_TX_D2', '101', 'transmit data 2 in. Carries LED D5 through R74'),
+    18: ('HL2_SDA1', '104', 'I2C1 SDA - AUXIO line 3, NOT an LED pin'),
+    19: ('DB1_3V3', '-', 'board supply, before FB1'),
+    20: ('DB1_3V3', '-', 'same net as pin 19'),
 }
-# board A, socket J2 on HL2 DB12.  NOTE pins 5 and 6: DB12 pin 5 is FPGA
-# PIN_89 and pin 6 is PIN_88, per hardware/hl/hermeslite.net.  rev A of
-# PINMAP.md had these two swapped.
+# NOTE pins 5 and 6.  DB12 pin 5 is FPGA PIN_89 and pin 6 is PIN_88, per
+# hardware/hl/hermeslite.net.  rev A of PINMAP.md had these two swapped and
+# this is the assertion that stops it happening again.
 DB12 = {
-    1: ('HL2_SLOW_OUT', '86', 'status UART out'),
-    2: ('HL2_AX_G1DAT', '87', 'AUX G1 data, BIDIRECTIONAL'),
-    3: ('GND',          '-',  'ground'),
-    4: ('GND',          '-',  'ground'),
-    5: ('HL2_ROLE_IN',  '89', 'the ROLE strap, read locally. INPUT ONLY'),
-    6: ('HL2_INCLK',    '88', 'IN clock, a dedicated clock input. INPUT ONLY'),
+    1: ('HL2_AUX_DAT_OUT', '86', 'auxiliary data out'),
+    2: ('HL2_AUX_DAT_IN', '87', 'auxiliary data in, 2.5 V bank'),
+    3: ('GND', '-', 'ground'),
+    4: ('GND', '-', 'ground'),
+    5: ('HL2_AUX_CLK_IN', '89', 'auxiliary clock in. INPUT ONLY, 2.5 V bank'),
+    6: ('HL2_REV_CLK', '88', 'reverse clock in, a dedicated clock input. '
+                             'INPUT ONLY, 2.5 V bank'),
 }
-# board B, socket J1 on Tang dock J14.  Only the pins PINMAP.md uses; pin 36
-# (ball U17) is the one spare and must be open.
-J14 = {
-    9:  ('LINK_R0',          'W17', 'OUT lane 0'),
-    10: ('LINK_D0',          'V17', 'IN lane 0'),
-    11: ('P5V_J14',          '-',   '5V_Peripheral'),
-    12: ('GND',              '-',   'the only ground pin on J14'),
-    13: ('LINK_R1',          'W22', 'OUT lane 1'),
-    14: ('LINK_D1',          'W21', 'IN lane 1'),
-    15: ('LINK_R2',          'P17', 'OUT lane 2'),
-    16: ('LINK_D2',          'N17', 'IN lane 2'),
-    17: ('LINK_AUX_G2_CLK',  'N14', 'AUX G2 clock'),
-    18: ('LINK_AUX_G1_DAT',  'N13', 'AUX G1 data'),
-    19: ('LINK_SLOW_IN',     'V20', 'status UART in, must be LVTTL33'),
-    20: ('LINK_CLK',         'U20', 'IN clock = the PLL reference, '
-                                    'SGCLKT_5 / BPLL2+3 CLKIN0'),
-    31: ('LINK_AUX_G2_DAT',  'Y19', 'AUX G2 data'),
-    32: ('LINK_AUX_G1_CLK',  'Y18', 'AUX G1 clock received, MGCLKT_4'),
-    33: ('LINK_PRESENT',     'T20', 'IN cable detect'),
-    34: ('LINK_ROLE',        'N15', 'the ROLE strap, read locally'),
-    35: ('LINK_REVCLK',      'U18', 'OUT clock, PLL-derived'),
+# CN1, the USB-Blaster JTAG header, confirmed from hardware/hl/hermeslite.net.
+CN1 = {
+    1:  ('J_TCK', '16', 'TCK'),
+    2:  ('GND', '-', 'ground'),
+    3:  ('J_TDO', '20', 'TDO'),
+    4:  ('CN1_VTREF', '-', '+3V3, the programmer VTREF sense line'),
+    5:  ('J_TMS', '18', 'TMS'),
+    6:  ('CN1_NC6', '-', 'unconnected on the HL2 - nCE in Active Serial mode'),
+    7:  ('CN1_NC7', '-', 'unconnected on the HL2 - nCS'),
+    8:  ('CN1_NC8', '-', 'unconnected on the HL2 - nCONFIG'),
+    9:  ('J_TDI', '15', 'TDI'),
+    10: ('GND', '-', 'ground'),
 }
 
+# --------------------------------------------------------------------------
+# SFF-8654 8X, retyped from SFF-9402 Rev 1.1 Tables 6-2 and 6-3.
+# --------------------------------------------------------------------------
+SS_GND = (1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37)
+SS_PAIR_POS = (2, 5, 14, 17, 20, 23, 32, 35)
+SS_SIDEBAND = (8, 9, 11, 12, 26, 27, 29, 30)
+SS_NPOS = 37
 
-def check_header(nets, ref, table, label, open_ok=()):
-    print('=== %s ===' % label)
-    prob = []
-    for pin in sorted(table):
-        want, fpga, what = table[pin]
-        got = nets.get((ref, str(pin)), '<open>')
-        if got != want:
-            prob.append('%s pin %d = %s, PINMAP.md says %s (%s)'
-                        % (label, pin, got, want, what))
-        else:
-            print('  pin %-2d  %-18s  FPGA %-4s  %s' % (pin, got, fpga, what))
-    # every pin the table does not mention must be electrically open
-    for pin in open_ok:
-        got = nets.get((ref, str(pin)), '<open>')
-        if got != '<open>':
-            prob.append('%s pin %d should be open, is %s' % (label, pin, got))
-    return prob
+# The lane map, retyped from PINMAP.md rev D section 3.
+#   position -> (net this board DRIVES on row A, net it RECEIVES on row B)
+LANES = {
+    2:  ('AUXCLK', 'AUXCLK'),
+    5:  ('AUXDAT', 'AUXDAT'),
+    14: ('FWDCLK', 'REVCLK'),
+    17: ('ADCD0', 'TXD0'),
+    20: ('ADCD1', 'TXD1'),
+    23: ('ADCD2', 'TXD2'),
+    32: ('DUPCLK', 'DUPCLK'),
+    35: ('SPARE', 'SPARE'),
+}
+# The function-mirroring contract.
+MIRROR = {
+    'FWDCLK': ('REVCLK', 'FPGA 98 out faces FPGA 88 in'),
+    'ADCD0': ('TXD0', 'FPGA 76 out faces FPGA 99 in'),
+    'ADCD1': ('TXD1', 'FPGA 77 out faces FPGA 100 in'),
+    'ADCD2': ('TXD2', 'FPGA 83 out faces FPGA 101 in'),
+    'AUXCLK': ('AUXCLK', 'FPGA 85 out faces FPGA 89 in'),
+    'AUXDAT': ('AUXDAT', 'FPGA 86 out faces FPGA 87 in'),
+    'DUPCLK': ('DUPCLK', 'the duplicate forward clock faces a receiver, so '
+                         'its mirrored position is not left unwired'),
+    'SPARE': ('SPARE', 'a spare driver channel faces a spare receiver'),
+}
+# The sideband map, retyped from PINMAP.md rev D section 4.
+#   position -> (net driven on row A or None, net received on row B)
+SIDEBANDS = {
+    8:  ('SB_PRSNT_OUT', 'SB_PRSNT_IN'),
+    9:  (None, 'SB_TCK_IN'),
+    11: ('SB_AUXIO0_OUT', 'SB_AUXIO0_IN'),
+    12: ('SB_AUXIO1_OUT', 'SB_AUXIO1_IN'),
+    26: ('SB_AUXIO2_OUT', 'SB_AUXIO2_IN'),
+    27: ('SB_AUXIO3_OUT', 'SB_AUXIO3_IN'),
+    29: (None, 'SB_TMS_IN'),
+    30: ('SB_TDO_OUT', 'SB_TDI_IN'),
+}
+# The two sideband inputs that MUST have no driver at the mirrored position.
+NO_REMOTE_JTAG = {9: 'TCK', 29: 'TMS'}
+
+# The two enable nets, and the rail each pull-up must go to.
+ENABLES = {
+    'HL2_JTAG_EN': '+2V5',
+    'JTAG_EN_N': '+3V3',
+    'HL2_AUXIO_EN': '+2V5',
+    'AUXIO_EN_N': '+3V3',
+}
+
+SLIMSAS_REF = 'J1'
 
 
 def find_cli():
@@ -162,23 +192,19 @@ def find_cli():
     raise SystemExit('kicad-cli not found; set KICAD_CLI.')
 
 
-def export(board):
-    out = os.path.join(ROOT, board, board + '.net')
+def export():
+    out = os.path.join(ROOT, BOARD, BOARD + '.net')
     subprocess.run([find_cli(), 'sch', 'export', 'netlist',
                     '--format', 'kicadsexpr', '-o', out,
-                    os.path.join(ROOT, board, board + '.kicad_sch')],
+                    os.path.join(ROOT, BOARD, BOARD + '.kicad_sch')],
                    check=True, capture_output=True)
     return out
 
 
 def load(path):
-    """-> (pin map, value map).  pin map is (ref, pad) -> net name; value map
-    is ref -> the part's Value field, which is how the strap check finds the
-    inverter, the drivers and the translators without being told their
-    reference designators."""
+    """-> (pin map, value map, net map, part-pin map)."""
     root = K.parse(open(path, encoding='utf-8').read())[0]
-    out = {}
-    vals = {}
+    pins, vals, bynet, byref = {}, {}, {}, {}
     for comps in K.kids(root, 'components'):
         for comp in K.kids(comps, 'comp'):
             r = K.atoms(K.kid(comp, 'ref'))[0]
@@ -187,382 +213,271 @@ def load(path):
     for n in K.kids(root, 'nets'):
         for net in K.kids(n, 'net'):
             nm = K.atoms(K.kid(net, 'name'))[0]
-            # KiCad prefixes net names with the sheet path and invents a name
-            # for every unconnected pin; normalise both away so the comparison
-            # is against the schematic's own labels.
             if nm.startswith('/'):
                 nm = nm[1:]
             if nm.startswith('unconnected-'):
                 nm = '<open>'
             for node in K.kids(net, 'node'):
-                out[(K.atoms(K.kid(node, 'ref'))[0],
-                     K.atoms(K.kid(node, 'pin'))[0])] = nm
-    return out, vals
+                r = K.atoms(K.kid(node, 'ref'))[0]
+                p = K.atoms(K.kid(node, 'pin'))[0]
+                pins[(r, p)] = nm
+                bynet.setdefault(nm, []).append((r, p))
+                byref.setdefault(r, []).append(p)
+    return pins, vals, bynet, byref
 
 
-def role(net, pfx):
-    """Strip a socket prefix, so AX_D2_P and I_D2_P both give D2_P."""
-    p = pfx + '_'
-    return net[len(p):] if net.startswith(p) else None
-
-
-def check_sockets(nets, kind, sockets):
-    idx = 0 if kind == 'A' else 1
+def check_header(pins, ref, table, label):
+    print('=== %s ===' % label)
     prob = []
-    for ref, pfx in sorted(sockets.items()):
-        row = {s: nets.get((ref, str(v[idx])), '<open>')
-               for s, v in STD.items()}
-        for l, nm in LANES:
-            for leg, suf in (('+', '_P'), ('-', '_N')):
-                want = '%s_%s%s' % (pfx, nm, suf)
-                if row[l + leg] != want:
-                    prob.append('%s %s%s = %s, expected %s'
-                                % (ref, l, leg, row[l + leg], want))
-            if row[l + 'S'] != 'GND':
-                prob.append('%s %s shield = %s' % (ref, l, row[l + 'S']))
-        if row['DDCGND'] != 'GND':
-            prob.append('%s DDC/CEC ground = %s' % (ref, row['DDCGND']))
-        if row['SCL'] != '%s_SLOW' % pfx:
-            prob.append('%s SCL = %s' % (ref, row['SCL']))
-        if row['HPD'] != '%s_HPD' % pfx:
-            prob.append('%s HPD = %s' % (ref, row['HPD']))
-        if row['P5V'] != '%s_5V_PIN' % pfx:
-            prob.append('%s +5 V = %s' % (ref, row['P5V']))
-        for s in ('CEC', 'UTIL', 'SDA'):
-            if row[s] != '<open>':
-                prob.append('%s %s should be open, is %s' % (ref, s, row[s]))
-        print('  %-3s %-3s clk=%-11s d0=%-10s d1=%-10s d2=%-10s slow=%-9s '
-              'hpd=%-8s 5V=%s'
-              % (ref, pfx, row['CK+'], row['D0+'], row['D1+'], row['D2+'],
-                 row['SCL'], row['HPD'], row['P5V']))
+    for pin in sorted(table):
+        want, fpga, what = table[pin]
+        got = pins.get((ref, str(pin)), '<open>')
+        if got != want:
+            prob.append('%s pin %d = %s, PINMAP.md says %s (%s)'
+                        % (label, pin, got, want, what))
+        else:
+            print('  pin %-2d  %-18s  FPGA %-4s  %s' % (pin, got, fpga, what))
     return prob
 
 
-def check_cable(label, na, a_ref, a_pfx, a_kind, nb, b_ref, b_pfx, b_kind):
-    """Walk a cable signal by signal.  A real HDMI cable wires signal to
-    signal, so for a mini-to-full-size cable the pin numbers differ at the two
-    ends and the comparison has to be by role, not by pin number."""
-    print()
-    print('--- %s ---' % label)
-    ia = 0 if a_kind == 'A' else 1
-    ib = 0 if b_kind == 'A' else 1
+def check_connector(pins):
+    print('=== SlimSAS %s: all 74 contacts plus 4 shell tails ==='
+          % SLIMSAS_REF)
     prob = []
-    for s, pins in sorted(STD.items(), key=lambda kv: kv[1][ia]):
-        pa, pb = str(pins[ia]), str(pins[ib])
-        a = na.get((a_ref, pa), '<open>')
-        b = nb.get((b_ref, pb), '<open>')
-        ra, rb = role(a, a_pfx), role(b, b_pfx)
-        if ra is not None and rb is not None:
-            if ra == rb:
-                mark = 'OK'
+    want = {}
+    for i in SS_GND:
+        want['A%d' % i] = 'GND'
+        want['B%d' % i] = 'GND'
+    for pos in SS_PAIR_POS:
+        onet, inet = LANES[pos]
+        want['A%d' % pos] = 'A_%s_P' % onet
+        want['A%d' % (pos + 1)] = 'A_%s_N' % onet
+        want['B%d' % pos] = 'B_%s_P' % inet
+        want['B%d' % (pos + 1)] = 'B_%s_N' % inet
+    for pos in SS_SIDEBAND:
+        onet, inet = SIDEBANDS[pos]
+        want['A%d' % pos] = onet if onet else 'SB_NC%d' % pos
+        want['B%d' % pos] = inet
+    if len(want) != 2 * SS_NPOS:
+        prob.append('the connector table covers %d of 74 contacts, so the '
+                    'ground, pair and sideband position sets do not partition '
+                    'the connector' % len(want))
+    for pad in sorted(want, key=lambda s: (s[0], int(s[1:]))):
+        got = pins.get((SLIMSAS_REF, pad), '<open>')
+        if got != want[pad]:
+            prob.append('%s pad %s = %s, expected %s'
+                        % (SLIMSAS_REF, pad, got, want[pad]))
+    for k in range(1, 5):
+        got = pins.get((SLIMSAS_REF, 'SH%d' % k), '<open>')
+        if got != 'SHELL':
+            prob.append('%s shell tail SH%d = %s, expected SHELL'
+                        % (SLIMSAS_REF, k, got))
+    print('  %d grounds, %d pair legs, %d sidebands, 4 shell tails on SHELL'
+          % (sum(1 for v in want.values() if v == 'GND'),
+             4 * len(SS_PAIR_POS), 2 * len(SS_SIDEBAND)))
+    return prob
+
+
+def check_crossover(pins):
+    """Walk the cable.  Row A contact n at one end reaches row B contact n at
+    the other, n = 1..37, per SFF-9402 Rev 1.1 note 16 and Tables 6-2/6-3.
+    Both ends are the same design, so the far board's map is this map."""
+    print('=== the crossover, walked: two identical boards, one cable ===')
+    prob = []
+    for pos in SS_PAIR_POS:
+        onet, inet = LANES[pos]
+        dp = pins.get((SLIMSAS_REF, 'A%d' % pos))
+        dn = pins.get((SLIMSAS_REF, 'A%d' % (pos + 1)))
+        rp = pins.get((SLIMSAS_REF, 'B%d' % pos))
+        rn = pins.get((SLIMSAS_REF, 'B%d' % (pos + 1)))
+        if dp != 'A_%s_P' % onet or dn != 'A_%s_N' % onet:
+            prob.append('position %d row A does not carry the %s pair'
+                        % (pos, onet))
+            continue
+        if rp != 'B_%s_P' % inet or rn != 'B_%s_N' % inet:
+            prob.append('position %d row B does not carry the %s pair'
+                        % (pos, inet))
+            continue
+        exp, why = MIRROR[onet]
+        if inet != exp:
+            prob.append('position %d: this board drives %s and receives %s, '
+                        'but the mirroring contract says %s must face %s (%s)'
+                        % (pos, onet, inet, onet, exp, why))
+        else:
+            print('  pos %-2d  A drives %-7s -> far B receives %-7s  %s'
+                  % (pos, onet, inet, why))
+    for pos in SS_PAIR_POS:
+        a = pins.get((SLIMSAS_REF, 'A%d' % pos), '')
+        bv = pins.get((SLIMSAS_REF, 'B%d' % pos), '')
+        if not (a.endswith('_P') and bv.endswith('_P')):
+            prob.append('position %d: the lower-numbered contact of the pair '
+                        'is not the P leg in both rows, so P would meet N'
+                        % pos)
+    return prob
+
+
+def check_sideband_crossover(pins, bynet):
+    print('=== sidebands, walked, and the radio-to-radio JTAG proof ===')
+    prob = []
+    for pos in sorted(SIDEBANDS):
+        onet, inet = SIDEBANDS[pos]
+        a = pins.get((SLIMSAS_REF, 'A%d' % pos), '<open>')
+        bv = pins.get((SLIMSAS_REF, 'B%d' % pos), '<open>')
+        print('  pos %-2d  A = %-16s -> far B = %-16s' % (pos, a, bv))
+        if bv != inet:
+            prob.append('sideband position %d row B = %s, expected %s'
+                        % (pos, bv, inet))
+        if pos in NO_REMOTE_JTAG:
+            others = [r for (r, _) in bynet.get(a, []) if r != SLIMSAS_REF]
+            bad = [r for r in others
+                   if not (r.startswith('D') or r.startswith('TP'))]
+            if bad:
+                prob.append('sideband position %d carries %s toward the far '
+                            "end's %s input, and %s is also on that net - a "
+                            "radio could then reach another radio's JTAG"
+                            % (pos, a, NO_REMOTE_JTAG[pos], ', '.join(bad)))
             else:
-                mark = 'MISMATCH'
-                prob.append('%s: %s -> %s' % (s, a, b))
-        elif a == b == 'GND':
-            mark = 'ok (ground)'
-        elif a == '<open>' and b == '<open>':
-            mark = 'unused at both ends'
-        elif a == '<open>' or b == '<open>':
-            mark = 'open at one end, by design'
-        else:
-            mark = 'UNEXPECTED'
-            prob.append('%s: %s -> %s' % (s, a, b))
-        print('  %-7s pin %-2s -> pin %-2s   %-12s -> %-13s %s'
-              % (s, pa, pb, a, b, mark))
+                print('         nothing on this board drives it, so no radio '
+                      "can reach another radio's %s" % NO_REMOTE_JTAG[pos])
+        elif onet is None:
+            prob.append('sideband position %d has no driven output but is not '
+                        'one of the deliberately dead ones' % pos)
+        elif a != onet:
+            prob.append('sideband position %d row A = %s, expected %s'
+                        % (pos, a, onet))
     return prob
 
 
-# ----------------------------------------------------------------------------
-#  4. The strap, and the contention case it has to make impossible
-# ----------------------------------------------------------------------------
-#
-# Pad numbers, from the same datasheets the generator uses.
-# The ROLE_N inverter is one N-channel MOSFET (AO3400A in SOT-23), not a
-# logic gate: gate on ROLE, source to ground, drain on ROLE_N loaded by the
-# 10 k pull-up.  Pin 1 gate / 2 source / 3 drain.
-INV_G, INV_S, INV_D = '1', '2', '3'
-DRV_EN, DRV_ENB = '1', '8'                            # DS90LV047A
-DRV_P = {'ch1': '15', 'ch2': '14', 'ch3': '11', 'ch4': '10'}
-RCV_P = {'ch1': '2', 'ch2': '3', 'ch3': '6', 'ch4': '7'}
-RCV_OUT = {'ch1': '15', 'ch2': '14', 'ch3': '11', 'ch4': '10'}
-# SN74AVC4T245PW: port 1 = 1A1/1A2 pads 4,5 -> 1B1/1B2 pads 13,12, 1OE* 15.
-#                 port 2 = 2A1/2A2 pads 6,7 -> 2B1/2B2 pads 11,10, 2OE* 14.
-X4_PORTS = {1: (('4', '5'), ('13', '12'), '15'),
-            2: (('6', '7'), ('11', '10'), '14')}
-
-INV_VALUE = 'AO3400A'
-DRV_VALUE = 'DS90LV047A'
-RCV_VALUE = 'DS90LV048A'
-X4_VALUE = 'SN74AVC4T245PW'
-
-
-def _pairs_driven(nets, ref, pfx):
-    """Which AUX pairs an LVDS driver actually drives, by looking at which of
-    its four + outputs land on an AUX pair net."""
-    out = set()
-    for ch, pad in sorted(DRV_P.items()):
-        n = nets.get((ref, pad), '<open>')
-        r = role(n, pfx)
-        if r and r.endswith('_P'):
-            out.add(r[:-2])
-    return out
-
-
-def check_strap(nets, vals, label, aux_pfx, v3, gnd='GND'):
-    """Prove that no level on the strap net can make a translator/buffer port
-    drive an auxiliary pin at the same time as the host drives it."""
-    print()
-    print('=== %s: the ROLE strap and the contention case ===' % label)
+def check_enables(pins, vals, bynet, byref):
+    """Both remote-drive features must be OFF with no gateware, no far end, an
+    unconfigured FPGA and a missing translator: four pull-UPs, no fitted
+    pull-down."""
+    print('=== the enables: an unprogrammed board must be safe ===')
     prob = []
-
-    invs = [r for r, v in vals.items() if v == INV_VALUE]
-    if len(invs) != 1:
-        prob.append('%s: expected exactly ONE inverting device, found %d '
-                    '%s. The whole safety argument rests on the complement '
-                    'being produced by one device from one net.'
-                    % (label, len(invs), sorted(invs)))
-        return prob
-    inv = invs[0]
-    R_ = nets.get((inv, INV_G), '<open>')
-    RN = nets.get((inv, INV_D), '<open>')
-    if nets.get((inv, INV_S)) != gnd:
-        prob.append('%s: inverter %s source is on %s, not %s. A MOSFET '
-                    'inverter only inverts with its source grounded.'
-                    % (label, inv, nets.get((inv, INV_S)), gnd))
-    if R_ == '<open>' or RN == '<open>' or R_ == RN:
-        prob.append('%s: inverter %s gate/drain nets are %s / %s'
-                    % (label, inv, R_, RN))
-        return prob
-    print('  inverter %s (one N-MOSFET): gate %s -> drain %s (NOT), '
-          'source on %s' % (inv, R_, RN, gnd))
-
-    # (a) the strap net must come from ONE three-pin header spanning the rails
-    strap_hdrs = set()
-    for (ref, pad), n in nets.items():
-        if n == R_ and ref.startswith('J'):
-            strap_hdrs.add(ref)
-    if len(strap_hdrs) != 1:
-        prob.append('%s: %s is touched by %d connectors %s; it must be one '
-                    '1x3 header with ONE shunt' % (label, R_,
-                                                   len(strap_hdrs),
-                                                   sorted(strap_hdrs)))
-    else:
-        hdr = sorted(strap_hdrs)[0]
-        hp = {nets.get((hdr, p), '<open>') for p in ('1', '2', '3')}
-        if hp != {v3, R_, gnd}:
-            prob.append('%s: strap header %s pins are %s, expected exactly '
-                        '{%s, %s, %s}' % (label, hdr, sorted(hp), v3, R_,
-                                          gnd))
+    for net in sorted(ENABLES):
+        rail = ENABLES[net]
+        ups, downs = [], []
+        for (r, pad) in bynet.get(net, []):
+            if not r.startswith('R'):
+                continue
+            for p in byref.get(r, []):
+                if p == pad:
+                    continue
+                dest = pins.get((r, p))
+                if dest == rail:
+                    ups.append('%s=%s' % (r, vals.get(r, '')))
+                elif dest == 'GND':
+                    downs.append('%s=%s' % (r, vals.get(r, '')))
+        if not ups:
+            prob.append('%s has no pull-up to %s, so a missing or unpowered '
+                        'part would leave it floating and the feature could '
+                        'come up ENABLED' % (net, rail))
         else:
-            print('  strap header %s: pin 1 = %s, pin 2 = %s, pin 3 = %s - '
-                  'ONE shunt, so the two levels have ONE control point'
-                  % (hdr, v3, R_, gnd))
+            print('  %-14s pulled UP to %-5s by %s'
+                  % (net, rail, ', '.join(sorted(set(ups)))))
+        if downs:
+            # Only tolerable as the deliberately not-fitted JTAG recovery
+            # link, which is a 1k on HL2_JTAG_EN.
+            ok = (net == 'HL2_JTAG_EN'
+                  and all(d.endswith('=1k') for d in downs))
+            if ok:
+                print('         plus the NOT-FITTED 1k recovery link (%s), '
+                      'which is how you enable JTAG when the gateware that '
+                      'would otherwise enable it will not run'
+                      % ', '.join(sorted(set(downs))))
+            else:
+                prob.append('%s carries a pull-down (%s). The direction is '
+                            'the whole safety argument: pulled up is disabled'
+                            % (net, ', '.join(sorted(set(downs)))))
+    return prob
 
-    # (b) the complement must carry a pull-UP, not a pull-down: a dead
-    #     inverter has to DISABLE a port, never enable one.
-    up = down = 0
-    for (ref, pad), n in nets.items():
-        if n != RN or not ref.startswith('R'):
+
+def check_esd(pins, vals, bynet):
+    print('=== ESD: every conductor that leaves the enclosure ===')
+    prob = []
+    esd_refs = {r for r, v in vals.items() if v.startswith('TPD4E')}
+    clamped = set()
+    for nm, nodes in bynet.items():
+        if nm == 'GND':
             continue
-        other = nets.get((ref, '2' if pad == '1' else '1'), '<open>')
-        if other == v3:
-            up += 1
-        elif other == gnd:
-            down += 1
-    if up < 1 or down:
-        prob.append('%s: %s has %d pull-up(s) to %s and %d pull-down(s) to '
-                    '%s. It MUST be pulled UP: a missing or dead inverter '
-                    'then reads high, which disables the G2 port toward the '
-                    'host instead of enabling it.'
-                    % (label, RN, up, v3, down, gnd))
+        if any(r in esd_refs for r, _ in nodes):
+            clamped.add(nm)
+    need = []
+    for pos in SS_PAIR_POS:
+        onet, inet = LANES[pos]
+        need += ['A_%s_P' % onet, 'A_%s_N' % onet,
+                 'B_%s_P' % inet, 'B_%s_N' % inet]
+    for pos in sorted(SIDEBANDS):
+        onet, inet = SIDEBANDS[pos]
+        # the two deliberately undriven positions leave the enclosure too
+        need.append(onet if onet else 'SB_NC%d' % pos)
+        need.append(inet)
+    missing = [n for n in need if n not in clamped]
+    if missing:
+        prob.append('%d conductors leave the board unclamped: %s'
+                    % (len(missing), ', '.join(missing)))
     else:
-        print('  %s pulled UP to %s (%d resistor(s)), no pull-down. That '
-              'resistor is BOTH the load the MOSFET needs - without it the '
-              'drain has no high state at all - and the fail-safe: a '
-              'dead or missing device leaves %s high, which DISABLES a '
-              'host-facing port and can never enable one.' % (RN, v3, up, RN))
+        print('  %d arrays at 0.5 pF per channel clamp all %d conductors '
+              '(%d pair legs + %d sidebands)'
+              % (len(esd_refs), len(need), 4 * len(SS_PAIR_POS),
+                 len(need) - 4 * len(SS_PAIR_POS)))
+    return prob
 
-    # (c) classify every LVDS driver by its enable net
-    by_en = {}
-    for r, v in sorted(vals.items()):
-        if v != DRV_VALUE:
-            continue
-        en = nets.get((r, DRV_EN), '<open>')
-        enb = nets.get((r, DRV_ENB), '<open>')
-        if enb != gnd:
-            prob.append('%s: driver %s EN* = %s, expected %s'
-                        % (label, r, enb, gnd))
-        by_en.setdefault(en, []).append(r)
-    for want, what in ((v3, 'the always-driven socket'),
-                       (R_, 'auxiliary group G1'),
-                       (RN, 'auxiliary group G2')):
-        if len(by_en.get(want, [])) != 1:
-            prob.append('%s: expected exactly one LVDS driver with EN = %s '
-                        '(%s), found %s'
-                        % (label, want, what, by_en.get(want, [])))
-    stray = set(by_en) - {v3, R_, RN}
-    if stray:
-        prob.append('%s: LVDS driver enable(s) on unexpected net(s) %s'
-                    % (label, sorted(stray)))
-    if prob:
-        return prob
 
-    g1_drv = by_en[R_][0]
-    g2_drv = by_en[RN][0]
-    grp = {R_: _pairs_driven(nets, g1_drv, aux_pfx),
-           RN: _pairs_driven(nets, g2_drv, aux_pfx)}
-    if grp[R_] != set(AUX_G1) or grp[RN] != set(AUX_G2):
-        prob.append('%s: driver %s (EN=%s) drives pairs %s and %s (EN=%s) '
-                    'drives %s; PINMAP.md 2.3 says G1 = %s and G2 = %s'
-                    % (label, g1_drv, R_, sorted(grp[R_]), g2_drv, RN,
-                       sorted(grp[RN]), list(AUX_G1), list(AUX_G2)))
-        return prob
-    print('  driver %s EN=%-7s drives AUX %s   (group G1)'
-          % (g1_drv, R_, sorted(grp[R_])))
-    print('  driver %s EN=%-7s drives AUX %s   (group G2)'
-          % (g2_drv, RN, sorted(grp[RN])))
-
-    # (d) map the AUX receiver's outputs back to the pair they came from, so
-    #     a buffer port's inputs can be turned into a set of pair names.
-    rcv_out_pair = {}
-    for r, v in sorted(vals.items()):
-        if v != RCV_VALUE:
-            continue
-        for ch in sorted(RCV_P):
-            pin = role(nets.get((r, RCV_P[ch]), '<open>'), aux_pfx)
-            if not pin or not pin.endswith('_P'):
-                continue
-            o = nets.get((r, RCV_OUT[ch]), '<open>')
-            if o != '<open>':
-                rcv_out_pair[o] = pin[:-2]
-    if set(rcv_out_pair.values()) != set(AUX_G1) | set(AUX_G2):
-        prob.append('%s: the AUX receiver covers pairs %s, not all four. '
-                    'Both groups must have a receive path in both roles or '
-                    'the board is not role-switchable.'
-                    % (label, sorted(set(rcv_out_pair.values()))))
-        return prob
-
-    # (e) every buffer/translator port whose inputs are AUX receiver outputs
-    #     must be enabled by the strap, never by a constant - and by the SAME
-    #     net as the driver for that group.
-    seen = {}
-    for r, v in sorted(vals.items()):
-        if v != X4_VALUE:
-            continue
-        for port, (a_pads, b_pads, oe_pad) in sorted(X4_PORTS.items()):
-            src = [nets.get((r, p), '<open>') for p in a_pads]
-            pairs = {rcv_out_pair[x] for x in src if x in rcv_out_pair}
-            oe = nets.get((r, oe_pad), '<open>')
-            if not pairs:
-                # not an auxiliary port; a constant enable is fine there
-                continue
-            if oe in (v3, gnd):
-                prob.append('%s: %s port %d carries AUX pairs %s toward the '
-                            'host but its OE* is tied to the constant %s. '
-                            'That is the contention case: the host drives '
-                            'those pins in one role.'
-                            % (label, r, port, sorted(pairs), oe))
-                continue
-            if oe not in (R_, RN):
-                prob.append('%s: %s port %d carries AUX pairs %s and its OE* '
-                            'is on %s, which is neither %s nor %s'
-                            % (label, r, port, sorted(pairs), oe, R_, RN))
-                continue
-            seen.setdefault(oe, set()).update(pairs)
-            print('  buffer %s port %d OE*=%-7s carries AUX %s toward the '
-                  'host' % (r, port, oe, sorted(pairs)))
-    for netname in (R_, RN):
-        if netname not in seen:
-            prob.append('%s: no buffer port toward the host is enabled by '
-                        '%s, so one auxiliary direction can never be '
-                        'received' % (label, netname))
-    if prob:
-        return prob
-
-    # (f) THE INVARIANT.  For each group, the driver's active-HIGH EN and the
-    #     toward-host port's active-LOW OE* are the same net.  Enumerate both
-    #     levels of the single strap net and show that nothing contends.
-    print()
-    print('  the invariant, enumerated over every state the ONE strap net '
-          'can be in:')
-    ok = True
-    for lvl in (1, 0):
-        levels = {R_: lvl, RN: 1 - lvl}
-        rolename = 'ROLE A' if lvl else 'ROLE B'
-        for gname, gnet, drv_ref in (('G1', R_, g1_drv),
-                                     ('G2', RN, g2_drv)):
-            drives_cable = levels[gnet] == 1          # EN active high
-            # the toward-host port for this group is the one enabled by gnet
-            drives_host = levels[gnet] == 0           # OE* active low
-            if gnet not in seen or seen[gnet] != grp[gnet]:
-                prob.append('%s: group %s is driven onto the cable by %s '
-                            '(EN=%s) for pairs %s, but the port driving it '
-                            'toward the host covers %s. The two must be the '
-                            'same group.'
-                            % (label, gname, drv_ref, gnet, sorted(grp[gnet]),
-                               sorted(seen.get(gnet, set()))))
-                ok = False
-            if drives_cable and drives_host:
-                prob.append('%s: CONTENTION - in %s, group %s is driven onto '
-                            'the cable AND toward the host at once.'
-                            % (label, rolename, gname))
-                ok = False
-            print('    %s (%s=%d, %s=%d): %s driver %s, toward-host port %s'
-                  % (rolename, R_, levels[R_], RN, levels[RN], gname,
-                     'ON ' if drives_cable else 'off',
-                     'ON ' if drives_host else 'off'))
-    # the "both low" state the rejected two-shunt scheme allowed is not
-    # reachable at all, and that is the point worth stating.
-    if ok:
-        print('  %s = NOT %s by construction, so the state that enabled a '
-              'host-facing port while the host drove the same pins - the '
-              'one a two-shunt changeover allowed - is UNREACHABLE.'
-              % (RN, R_))
+def check_one_design(vals, byref):
+    """The owner is explicit: ONE design.  Nothing may call itself board A or
+    board B, and there must be exactly one SlimSAS receptacle."""
+    prob = []
+    bad = [k for k, v in vals.items() if 'board A' in v or 'board B' in v]
+    if bad:
+        prob.append('these parts describe themselves as a board A or a board '
+                    'B, and rev D is one design: %s' % ', '.join(bad))
+    conn = [r for r, v in vals.items() if 'SlimSAS' in v]
+    if len(conn) != 1:
+        prob.append('found %d SlimSAS receptacles, expected exactly 1: %s'
+                    % (len(conn), ', '.join(conn)))
     return prob
 
 
 def main():
-    hl2, hl2v = load(export('hl2-bridge'))
-    tang, tangv = load(export('tang-bridge'))
+    pins, vals, bynet, byref = load(export())
     prob = []
 
-    prob += check_header(hl2, 'J1', DB1, 'board A J1 on HL2 DB1')
-    prob += check_header(hl2, 'J2', DB12, 'board A J2 on HL2 DB12')
-    prob += check_header(tang, 'J1', J14, 'board B J1 on Tang dock J14',
-                         open_ok=[n for n in range(1, 41) if n not in J14])
-    print('=== hl2-bridge, three mini HDMI (Type C) sockets ===')
-    prob += check_sockets(hl2, 'C', {'J3': 'O', 'J4': 'AX', 'J5': 'I'})
-    print('=== tang-bridge, three full-size HDMI (Type A) sockets ===')
-    prob += check_sockets(tang, 'A', {'J2': 'I', 'J3': 'AX', 'J4': 'O'})
+    prob += check_header(pins, 'J2', DB1, 'J2 on HL2 DB1')
+    prob += check_header(pins, 'J3', DB12, 'J3 on HL2 DB12')
+    prob += check_header(pins, 'J4', CN1, 'J4 on HL2 CN1, the JTAG header')
 
-    prob += check_cable(
-        'straight mini-to-mini: board A OUT -> another board A IN '
-        '(the two-radio case, 921.6 Mbit/s each way)',
-        hl2, 'J3', 'O', 'C', hl2, 'J5', 'I', 'C')
-    prob += check_cable(
-        'straight mini-to-mini: board A AUX -> another board A AUX '
-        '(self-complementary: G1 must land on G1)',
-        hl2, 'J4', 'AX', 'C', hl2, 'J4', 'AX', 'C')
-    prob += check_cable(
-        'mini-to-full-size: board A OUT -> board B IN (cable 1, forward)',
-        hl2, 'J3', 'O', 'C', tang, 'J2', 'I', 'A')
-    prob += check_cable(
-        'mini-to-full-size: board B OUT -> board A IN (cable 2, reverse)',
-        tang, 'J4', 'O', 'A', hl2, 'J5', 'I', 'C')
-    prob += check_cable(
-        'mini-to-full-size: board A AUX <-> board B AUX (cable 3, auxiliary)',
-        hl2, 'J4', 'AX', 'C', tang, 'J3', 'AX', 'A')
+    print('=== J5, the local JTAG pass-through ===')
+    bad = False
+    for pin in sorted(CN1):
+        a = pins.get(('J4', str(pin)), '<open>')
+        c = pins.get(('J5', str(pin)), '<open>')
+        if a != c:
+            prob.append('J5 pin %d = %s but J4 pin %d = %s; the pass-through '
+                        'must be straight' % (pin, c, pin, a))
+            bad = True
+    if not bad:
+        print('  all ten nets straight through from J4, so a USB Blaster '
+              'plugs in locally with the board fitted')
 
-    prob += check_strap(hl2, hl2v, 'board A (hl2-bridge)', 'AX', '+3V3')
-    prob += check_strap(tang, tangv, 'board B (tang-bridge)', 'AX', '+3V3')
+    prob += check_connector(pins)
+    prob += check_crossover(pins)
+    prob += check_sideband_crossover(pins, bynet)
+    prob += check_enables(pins, vals, bynet, byref)
+    prob += check_esd(pins, vals, bynet)
+    prob += check_one_design(vals, byref)
 
     print()
     for p in prob:
         print('  !! ' + p)
-    print('  %s' % ('OK - all six sockets share one signal-to-role mapping, '
-                    'every cable lands every signal on its counterpart, the '
-                    'auxiliary socket is self-complementary, and no state of '
-                    'either strap can produce contention'
+    print('  %s' % ('OK - the three header pin maps match PINMAP.md rev D '
+                    'including the DB12 5/6 order, all 74 connector contacts '
+                    'agree with the SFF-9402 tables and the lane map, the '
+                    'crossover lands every output on the input that wants it, '
+                    'no radio can reach another radio JTAG, both enables are '
+                    'pulled to their disabled state at both ends, every '
+                    'conductor leaving the board is clamped, and there is one '
+                    'design'
                     if not prob else '%d PROBLEMS' % len(prob)))
     return 1 if prob else 0
 

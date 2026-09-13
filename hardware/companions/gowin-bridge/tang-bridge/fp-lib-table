@@ -1,4 +1,0 @@
-(fp_lib_table
-  (version 7)
-  (lib (name "gowin-bridge")(type "KiCad")(uri "${KIPRJMOD}/gowin-bridge.pretty")(options "")(descr "gowin-bridge project footprints"))
-)

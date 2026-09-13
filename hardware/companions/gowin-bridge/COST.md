@@ -1,460 +1,226 @@
-# gowin-bridge cost analysis — why rev C costs more than rev B, and what could be cut
+# gowin-bridge cost, rev D
 
-Written 2026-09-12 in answer to a direct challenge: rev B was quoted at about
-$150 for two sets and about $200 for five; rev C at nearly $200 and $288.
-Combining the two boards onto one panel should have *reduced* cost by paying
-setup once instead of twice, and the only functional addition was the
-bidirectional third cable, which is a handful of cheap parts. A 33 % rise
-needed explaining line by line.
-
-**Every table here is produced by `tools/cost_model.py`**, which counts the
-parts, joints and unique part numbers out of the generated BOMs and PCBs
-rather than having them typed in, so the arithmetic cannot drift from the
-boards. Re-run it when a price moves:
-
-```
-REVB_DIR=<dir with rev B's files from git a15d05a> python tools/cost_model.py
-```
+**One design.** Five assembled boards, one order, one shipment.
 
 ---
 
 ## 0. The short answer
 
-**The 33 % rise is not real. It is 3.7 %.**
-
-| | two sets |
-|---|---|
-| rev C | **$196.58** |
-| rev B **as published** | $149.82 |
-| apparent rise | +$46.76 |
-| **of which rev B's own figure understated rev B's own design** | **$39.69** |
-| **rev B restated on the same basis** | **$189.51** |
-| **real rise** | **+$7.07** |
-
-rev B's $150 never counted the per-joint placement fees, the $3.58-per-order
-hand-soldering base fee, or the second shipment that two separate orders need,
-and it booked the bare boards at a promotional price that excluded the
-lead-free finish surcharge. Restated honestly, **rev B's own design costs
-$189.51 and rev C costs $7.07 more** — for a whole extra bidirectional cable.
-
-**And panelising does save money: $16.83.** The instinct behind it was right.
-
-**The bidirectional third cable cost $15.64 at two sets.** It added **no board
-area at all** — both boards are exactly the same size in rev C as in rev B —
-and, after swapping the strap inverter for a Basic-tier MOSFET, **no extra
-per-part assembly fee either.**
-
----
-
-## 1. The bare-PCB question, settled
-
-This was the one line worth chasing, and it is now answered from JLCPCB's live
-quote form (US store, 12 September 2026, 4 layer, 1.6 mm, 5 pieces, lead-free
-HASL, green, 1 oz):
-
-| Board | Designs declared | Price | What the quote panel itemised |
-|---|---|---|---|
-| 94 x 100 mm (the panel) | **1** | **$12.20** | Special Offer $7.00 + surface finish $5.20 |
-| 94 x 100 mm (the panel) | **2** | **$52.42** | Engineering fee $25.00 + **Panel $16.42** + surface finish $5.20 + board $5.80 |
-| 48 x 66 mm (board A) | 1 | **$12.10** | Special Offer $7.00 + surface finish $5.10 |
-| 90 x 46 mm (board B) | 1 | **$12.10** | Special Offer $7.00 + surface finish $5.10 |
-
-**The $40.22 gap between one design and two splits into two charges:**
-
-* **$16.42 is a PCB-side "Panel" charge**, levied for holding more than one
-  design in the file. It is flat: identical at 5 pieces and at 10.
-* **$23.80 is the loss of the flat promotional tier.** A multi-design file
-  cannot use JLCPCB's "Single PCB" delivery mode, and the flat rate only
-  exists in that mode. Forcing "Panel by Customer" delivery with *one* design
-  already costs $36.00, which isolates this half of the charge cleanly.
-
-**It is not a size effect, and shrinking the panel would save nothing.** The
-flat tier survives while both dimensions stay under 100 mm, and **94 x 100 mm
-qualifies** — quoted at $12.20 with one design. The cliff is at 100 x 100 mm,
-where the form removes "Single PCB" delivery entirely and the price becomes
-$36.40; 100 x 150 mm is $39.50. **The panel is already on the cheap side of
-that cap.** There is no dimension to give back and nothing to gain by trying.
-
-**rev B's $7.00 was real but incomplete.** The promotional price reproduces
-exactly, at $7.00 for both small boards. The $12.10 figures are that $7.00
-plus the lead-free HASL surcharge of about $5.10, which rev B's costing had
-omitted. So rev B's bare-PCB line should have been **$24.20, not $14.00** —
-and that correction alone accounts for $10.20 of the $39.69 by which rev B
-understated itself.
-
-### 1a. Two other prices worth knowing before ordering
-
-| Option | Cost | |
-|---|---|---|
-| **Impedance control** | **+$33.88** | $32.84 for the impedance-control line plus a **mandatory** $1.04 production-file check that cannot be declined. On a $52.42 board that is a 65 % surcharge. `README.md` section 7 and `ROUTING.md` both currently say to order impedance-controlled, and that advice predates knowing the price. **At $33.88 it is a decision, not a default.** See section 5, item 3. |
-| **ENIG instead of lead-free HASL** | **+$12.30** | Confirmed. Worth considering for the mini HDMI's 0.23 mm pads. |
-| **Leaded HASL instead of lead-free** | **−$5.20** | The promotional $7.00 tier is priced for leaded HASL. If leaded is acceptable the panel drops to $47.22. |
-
----
-
-## 2. Line by line, in the categories the fab actually bills
-
-Three columns, and the middle one is the honest comparator:
-
-* **rev B as published** — the figure in `STATUS.md` at the time, reproduced
-  from its own itemisation.
-* **rev B restated** — rev B's own netlist and its own two-separate-orders
-  plan, but with rev C's complete set of charge categories, today's verified
-  prices, and part numbers corrected where rev B's did not exist.
-* **rev C** — the panel, Economic assembly.
-
-**Only the restated column is a fair comparator,** for four reasons:
-
-1. It **omitted three charge categories entirely** — the per-joint SMT fee,
-   the per-joint through-hole fee, and the hand-soldering base fee.
-2. It **booked the bare boards at $7.00 each**, which is the promotional price
-   *before* the lead-free finish surcharge. The real figure is $12.10 each.
-3. It **assumed one shipment for two separate orders.**
-4. Its BOM **could not have been ordered.** Three of its LCSC part numbers do
-   not exist, and two more are real but absent from JLCPCB's assembly library.
-   The restated column substitutes the corrected numbers into the same slots.
-
-### 2a. Two assembled sets
-
-| charge category | rev B as published | rev B restated | rev C | delta (restated → rev C) |
-|---|---|---|---|---|
-| bare PCB, 5 pcs | $14.00 | $24.20 | $52.42 | **+$28.22** |
-| assembly setup | $16.36 (2 orders) | $16.36 | $8.18 | −$8.18 |
-| stencil | $3.06 (2 orders) | $3.06 | $1.53 | −$1.53 |
-| assembly panel fee (file holds >1 design) | $0.00 | $0.00 | $8.21 | **+$8.21** |
-| loading, Extended — 16 vs 11 uniques at $3.07 | $49.12 | $49.12 | $33.77 | **−$15.35** |
-| loading, Basic — free on Economic | $0.00 | $0.00 | $0.00 | $0.00 |
-| SMT joints — 655 vs 781 per set at $0.0016 | *not counted* | $2.10 | $2.50 | +$0.40 |
-| through-hole joints — 109 vs 89 per set at $0.0164 | *not counted* | $3.58 | $2.92 | −$0.66 |
-| hand-soldering base fee, per order | *not counted* | $7.16 | $3.58 | −$3.58 |
-| reel-only minimum batches | $6.50 | $8.06 | $8.73 | +$0.67 |
-| silicon and connectors, 2 sets | $32.78 | $32.78 | $47.75 | **+$14.97** |
-| sockets bought retail, 2 sets | $0.00 | $0.00 | $5.44 | +$5.44 |
-| shipping | $28.00 (1 shipment) | $43.10 (2 shipments) | $21.55 | **−$21.55** |
-| **TOTAL** | **$149.82** | **$189.51** | **$196.58** | **+$7.07** |
-
-The deltas are computed and they sum to $7.07.
-
-**A confidence check on the reconstruction.** The "as published" column is
-re-derived from rev B's own itemisation, not copied from its headline. It comes
-to **$149.82** against the "about $150" rev B claimed, and at five sets to
-**$198.99** against its "roughly $200". Both land within a dollar, so the
-reconstruction is sound and the differences that follow are real.
-
-### 2b. Five assembled sets
-
-| charge category | rev B as published | rev B restated | rev C | delta |
-|---|---|---|---|---|
-| bare PCB, 5 pcs | $14.00 | $24.20 | $52.42 | **+$28.22** |
-| assembly setup | $16.36 | $16.36 | $8.18 | −$8.18 |
-| stencil | $3.06 | $3.06 | $1.53 | −$1.53 |
-| assembly panel fee | $0.00 | $0.00 | $8.21 | +$8.21 |
-| loading, Extended, 16 vs 11 | $49.12 | $49.12 | $33.77 | −$15.35 |
-| SMT joints, 5 sets | *not counted* | $5.24 | $6.25 | +$1.01 |
-| through-hole joints, 5 sets | *not counted* | $8.94 | $7.30 | −$1.64 |
-| hand-soldering base fee | *not counted* | $7.16 | $3.58 | −$3.58 |
-| reel-only minimum batches | $6.50 | $8.06 | $8.73 | +$0.67 |
-| silicon and connectors, 5 sets | $81.95 | $81.95 | $119.39 | **+$37.43** |
-| sockets bought retail, 5 sets | $0.00 | $0.00 | $13.60 | +$13.60 |
-| shipping | $28.00 | $43.10 | $21.55 | **−$21.55** |
-| **TOTAL** | **$198.99** | **$247.19** | **$284.50** | **+$37.31** |
-
-At five sets the third cable's parts are paid five times and the fixed-fee
-savings are not, so the gap widens to $37.31 — of which **$39.10 is the third
-cable itself.** Everything else nets to slightly *less* than rev B.
-
-### 2c. Where the money went, ranked
-
-Against **rev B restated**, at two sets:
-
 | | |
 |---|---|
-| bare PCB — the two-design charge and the lost flat tier | **+$28.22** |
-| silicon and connectors — the third cable, almost entirely | **+$14.97** |
-| assembly-side panel fee for declaring two designs | +$8.21 |
-| two sockets now bought retail instead of from the fab | +$5.44 |
-| reel minimums and SMT joints | +$1.07 |
-| **increases** | **+$57.91** |
-| one shipment instead of two | **−$21.55** |
-| Extended loading fees paid once instead of twice | **−$15.35** |
-| one setup, one stencil, one hand-solder base fee instead of two | −$13.29 |
-| through-hole joints — fewer, because two sockets left the fab's BOM | −$0.66 |
-| **savings** | **−$50.85** |
-| **net** | **+$7.07** |
+| **Five assembled boards, all in, delivered to Germany** | **$132.43** |
+| Per board | **$26.49** |
+| Plus one 10Gtek CAB-8654/8654-8i-P cable, 0.5 m | **$15.00** |
+| Plus the through-hole parts the owner fits himself, for five boards | **about $5** |
+| **Total for a working radio-to-radio link with three spare boards** | **about $153** |
+
+For comparison: rev C's two assembled panels came to **$196.58** and produced
+**two** complete links from four boards of two different designs, needing six
+mini-HDMI cables. rev D produces **two** complete links from four of its five
+boards, with one spare, on **one** cable per link.
+
+**Where the money is, in order:** the components ($66.49, half of it three
+chip types), the six Extended-part loading fees ($18.42), shipping ($21.55),
+the bare boards ($12.10) and the assembly setup ($9.71). The 519 solder joints
+per board cost **83 cents**.
 
 ---
 
-## 3. Does panelising save money or cost it?
+## 1. Line by line, in the categories the fab actually bills
 
-**It saves $16.83, at both two sets and five.**
+JLCPCB, **Economic** assembly, one design, five pieces, 4 layer, 1.6 mm,
+lead-free HASL, green, 1 oz. Prices read from JLCPCB's own published schedule
+and its instant-quote form.
 
-| | ONE panel | TWO separate orders | delta |
-|---|---|---|---|
-| bare PCB, 5 pcs | $52.42 | $24.20 | **+$28.22** |
-| assembly setup | $8.18 | $16.36 | −$8.18 |
-| stencil | $1.53 | $3.06 | −$1.53 |
-| assembly panel fee (>1 design) | $8.21 | $0.00 | **+$8.21** |
-| Extended loading — 11 uniques vs 17 | $33.77 | $52.19 | **−$18.42** |
-| hand-soldering base fee | $3.58 | $7.16 | −$3.58 |
-| shipping | $21.55 | $43.10 | **−$21.55** |
-| identical on both (parts, joints, reel minimums, retail sockets) | $67.34 | $67.34 | $0.00 |
-| **TOTAL, two sets** | **$196.58** | **$213.41** | **−$16.83** |
-
-**The two things that make the panel win are not the obvious ones.**
-
-* **Duplicated per-part loading fees, −$18.42.** Two separate orders pay a
-  $3.07 fee for each Extended part *on each board*: **9 on board A plus 8 on
-  board B = 17 fees.** The panel is one order with **11** unique Extended
-  parts, because six are common to both boards. That saving alone is more than
-  twice the $8.21 assembly panel fee.
-* **One shipment instead of two, −$21.55.** **If the two separate orders can
-  be combined into one shipment — which JLCPCB will sometimes do for orders
-  placed together, but which is unverified — two orders come to $191.86 and
-  beat the panel by $4.72.** At that point it is a coin toss and either route
-  is fine. Both individual projects are kept for exactly this reason.
-
-**Both panel fees are real and separate.** There is a **$16.42 PCB-side**
-"Panel" charge (inside the $52.42 above) and an **$8.21 assembly-side** panel
-fee, confirmed on JLCPCB's own pricing page as "applicable when the number of
-panelized designs > 1". Ordering fabrication and assembly together with two
-designs pays both, once each.
-
-### 3a. The six Extended parts that two separate orders pay for twice
-
-| Extended part | LCSC | board A | board B | |
-|---|---|---|---|---|
-| quad LVDS driver | `C206491` | yes | yes | **both — paid twice** |
-| quad LVDS receiver | `C87137` | yes | yes | **both — paid twice** |
-| 4-bit gated buffer | `C81461` | yes | yes | **both — paid twice** |
-| quad ESD array | `C138714` | yes | yes | **both — paid twice** |
-| 1x3 pin header | `C52016391` | yes | yes | **both — paid twice** |
-| 1x2 pin header | `C52016390` | yes | yes | **both — paid twice** |
-| 8-bit level translator | `C465742` | yes | — | one board |
-| 2.5 V LDO | `C194395` | yes | — | one board |
-| mini HDMI socket | `C2682170` | yes | — | one board |
-| full-size HDMI socket | `C427307` | — | yes | one board |
-| 2x20 socket (Tang J14) | `C5124634` | — | yes | one board |
-
-**11 unique Extended parts on the panel at $3.07 each = $33.77. 9 + 8 = 17
-fees if ordered separately = $52.19.** The six shared parts are the whole
-difference: **$18.42**.
-
-### 3b. The rails and the coupon are not the problem
-
-| | area |
-|---|---|
-| panel, 94 x 100 | 9400 mm² |
-| board A, 48 x 66 | 3168 mm² |
-| board B, 90 x 46 | 4140 mm² |
-| **useful** | **7308 mm²** |
-| **overhead** | **2092 mm², 22.3 % of the panel** |
-| — two 5 mm rails, 2 x 94 x 5 | 940 mm² |
-| — fiducial coupon, 48 x 22 | 1056 mm² |
-| — routed separation channel, 48 x 2 | 96 mm² |
-
-The 22.3 % overhead looks like the answer and it is not, for three reasons.
-
-**The coupon costs nothing.** Board B rotated is **90 mm tall**, and two 5 mm
-rails make the panel **100 mm** whatever else happens. Board A is only **66 mm**
-tall, so the 48 x 24 mm strip beneath it is dead space the panel carries
-anyway. The coupon fills 1056 of those 1152 mm². **Deleting it would not make
-the panel one millimetre smaller.**
-
-**JLCPCB does not price this board by area.** Section 1 settles it: at one
-design the 94 x 100 panel and the 48 x 66 board cost within ten cents of each
-other. Area is simply not the variable.
-
-**And the panel is already inside the size cap**, so there is no bracket to
-duck under by shrinking.
-
----
-
-## 4. What the bidirectional third cable actually cost
-
-### 4a. Attributable to the third cable
-
-| Added | Qty per set | Unit | Per set |
-|---|---|---|---|
-| Quad LVDS drivers — board A goes 2→3, board B goes 1→3 | 3 | $1.8396 | $5.52 |
-| Quad LVDS receiver — board A gains the auxiliary receiver | 1 | $1.4348 | $1.43 |
-| 4-bit gated buffers — one per board, to tri-state the auxiliary receive path | 2 | $0.3096 | $0.62 |
-| N-MOSFET strap inverters — one per board | 2 | $0.0800 | $0.16 |
-| Quad ESD array — board A goes 8→9, for the third socket's pins | 1 | $0.0874 | $0.09 |
-| **Parts, per set** | | | **$7.82** |
-
-| | |
-|---|---|
-| **Third cable, 2 sets** | **$15.64** |
-| Third cable, 3 sets | $23.46 |
-| Third cable, 5 sets | $39.10 |
-
-**Extra unique Extended parts: zero.** The strap's inverter is a **Basic-tier
-MOSFET**, so it carries no per-part loading fee at all (section 5a).
-
-**Extra board area: zero.** Board A is 48 x 66 mm and board B is 90 x 46 mm in
-both revisions. The third socket and five extra chips fitted in the space rev B
-already had.
-
-**Extra joints: +126 surface-mount and −20 through-hole per set**, which is
-+$0.40 and −$0.66 at two sets — a net *saving* of $0.26, because two
-through-hole sockets left the fab's BOM at the same time.
-
-### 4b. NOT attributable to the third cable
-
-| Increase | At 2 sets | What it really is |
+| Charge | Basis | Cost |
 |---|---|---|
-| **Bare PCB** | **+$28.22** | The two-design declaration. Nothing to do with the third cable, and nothing to do with size. |
-| **Assembly panel fee** | **+$8.21** | Panelising. |
-| **Two sockets bought retail** | **+$5.44** | The part-number correction. rev B believed the vertical 2x3 socket and the long-tail 2x10 socket were buyable from LCSC. Neither is. |
-| **Two extra Extended parts** | **+$6.14** | The part-number correction, *not* the strap. rev B listed the pin headers as one 1x40 strip; JLCPCB's BOM matcher will not accept a 40-pin part against a 3-pin footprint, so it became two discrete parts, both Extended. |
-| **Reel minimums** | **+$0.67** | Two more minimum-order batches, for the 0805 zero-ohm link and the two header part numbers. |
-| Joint and hand-solder fees | *see 2a* | Categories rev B never counted. |
+| Bare PCB, 64.50 × 64.95 mm, 5 pcs, one design | $7.00 special-offer tier + $5.10 lead-free HASL surcharge | **$12.10** |
+| Assembly setup fee | per order | **$8.18** |
+| Stencil | per order | **$1.53** |
+| **Unique Extended part loading, 6 × $3.07** | per unique Extended part per order | **$18.42** |
+| SMT solder joints, 519 per board × 5 | at $0.0016 | **$4.15** |
+| Through-hole joints, factory | **none** — see §1.1 | **$0.00** |
+| Hand-soldering base fee | not incurred, because there are no factory through-hole joints | **$0.00** |
+| Components, 5 x $13.30 | section 2 | **$66.49** |
+| Shipping, one shipment to Germany | | **$21.55** |
+| **Total** | | **$132.43** |
+
+### 1.1 Two through-hole decisions, and what they save
+
+**The SlimSAS connector has four 2.2 mm through-hole shell tails** on an
+otherwise surface-mount part. They are the mechanical anchors that take the
+55.5 N insertion force, so they matter. Whether JLCPCB will solder them at all
+on an SMD-flagged part is **unverified** — rev C flagged the same question
+about the HDMI sockets' shell legs and never got an answer.
+
+**The costing above assumes the owner solders them.** If JLCPCB does them
+instead, add 20 joints at $0.0164 = $0.33 **plus the $3.58 hand-soldering base
+fee**, so **$3.91**. Either way the board is fine: it arrives with its 74
+surface-mount contacts reflowed and holds together; the tails are what stop the
+connector being levered off after a hundred insertions.
+
+**Every other through-hole part is hand-fitted, and that is where a real saving
+is.** Each distinct through-hole part number is an Extended part to JLCPCB —
+**no Basic 2.54 mm through-hole header or socket exists in their library at
+all** — so five hand-soldered part numbers would have cost **5 × $3.07 =
+$15.35** in loading fees alone, plus their joints, plus the base fee. They cost
+the owner about $2 of parts and half an hour instead.
+
+| Hand-fitted | LCSC | 5 boards |
+|---|---|---|
+| DB1 2×10 female socket, underside | C42431860 | $0.96 |
+| DB12 2×3 female socket, underside | **not at LCSC** — their vertical female headers start at 2×4 and the 2×3 they list (C99515) is side entry, which cannot work on a socket that plugs straight down. Buy a 2×4 and cut it down | ~$0.50 |
+| CN1 2×5 female socket, underside | C492399 | $0.43 |
+| JTAG pass-through 2×5 male header | C492422, or C2977596 for a keyed boxed header | $0.34 |
+| Ground-clip 1×2 header | C52016390 | $0.08 |
+| M3 screws and 11.04 mm standoffs | outside LCSC | ~$2.00 |
+| The connector's four shell tails | part of the connector | $0 |
+
+---
+
+## 2. The components, per board
+
+Seventeen part numbers are placed. **Eleven are Basic and six are Extended**,
+and it is the six Extended ones that carry the $18.42.
+
+| Part | LCSC | Tier | Qty | $ @10 | Line |
+|---|---|---|---|---|---|
+| **SlimSAS 8i 74P right-angle receptacle** | C5432262 | Ext | 1 | 3.17 | **3.17** |
+| **Quad LVDS driver DS90LV047A** | C206491 | Ext | 2 | 1.84 | **3.68** |
+| **Quad LVDS receiver DS90LV048A** | C87137 | Ext | 2 | 1.43 | **2.86** |
+| **Translator/buffer SN74AVC4T245** | C81461 | Ext | 7 | 0.3096 | **2.17** |
+| **ESD array TPD4E05U06, 0.5 pF** | C138714 | Ext | 12 | 0.0698 | **0.84** |
+| 10 µF 25 V 0805 | C15850 | Basic | 3 | 0.085 | 0.26 |
+| 100 nF 0402 | C1525 | Basic | 22 | 0.0046 | 0.10 |
+| **2.5 V LDO ME6211C25M5G-N** | C194395 | Ext | 1 | 0.0561 | **0.06** |
+| 10 kΩ 0402 | C25744 | Basic | 18 | 0.0031 | 0.06 |
+| 330 Ω 0402 | C25104 | Basic | 8 | 0.0044 | 0.04 |
+| 100 Ω 0402 | C25076 | Basic | 9 | 0.0029 | 0.03 |
+| 0 Ω 0402 | C17168 | Basic | 7 | 0.0028 | 0.02 |
+| Ferrite bead 120 Ω / 2 A 0603 | C14709 | Basic | 1 | 0.0159 | 0.02 |
+| 1 µF 0402 | C52923 | Basic | 1 | 0.0097 | 0.01 |
+| 0 Ω 0805 | C17477 | Basic | 1 | 0.0045 | 0.01 |
+| 470 Ω 0402, 1 kΩ 0402 | C25117, C11702 | Basic | 1 each | — | 0.01 |
+| **Per board** | | | | | **$13.30** |
+
+**The five lines in bold are 91 % of it.** Three chip types — the connector,
+the two LVDS packages — are **$9.71 of $13.30**, and there is nothing to do
+about any of them: §7 of `DESIGN_NOTES.md` records that no Basic-tier quad
+LVDS part exists in JLCPCB's library from any manufacturer, and no Basic ESD
+array of any channel count either.
+
+Nine not-fitted parts appear on the BOM as DNP lines and cost nothing: four
+sockets and headers, `R_CLKSEL_B`, `R_DRVEN_PRSNT`, `R_JTAG_FORCE`,
+`SL_VLVDS` and `FB2`.
+
+---
+
+## 3. The one part number that is a deliberate cost decision
+
+**All seven translators and gated buffers are the same SN74AVC4T245.** That is
+not tidiness; it is $4 a order.
+
+JLCPCB's assembly library contains **no Basic-tier buffer, driver, receiver or
+transceiver of any family from any manufacturer.** The whole 244 octal family,
+the 125 and 126 quad families and the entire Buffers/Drivers/Receivers/
+Transceivers category were swept twice; the complete Basic **logic** range
+turns out to be two chips — a hex Schmitt inverter and a shift register. So
+every additional logic part number costs its own $3.07.
+
+| Route | Fees | Silicon | Total |
+|---|---|---|---|
+| **7 × SN74AVC4T245 (chosen)** | **1 × $3.07** | **$2.17** | **$5.24** |
+| 74LVC244A octal + 74LVC125A quad | 2 × $3.07 | ~$0.30 | $6.44 |
+| 74LVC244A only, if the gating could be squeezed into two 4-bit groups | 1 × $3.07 | $0.17 | $3.24 |
+
+The third row is the only cheaper option and it does not fit: the design needs
+three distinct (direction, enable) groups — four always-on read channels plus
+TDO, four channels gated by the AUXIO enable, and three gated by the JTAG
+enable — which is seven ports, and an octal 244's two 4-bit groups cannot
+express it. Two 244s would cost the same fee as seven '245s and more silicon,
+in bigger packages.
+
+The same argument retires rev C's AO3400A MOSFET inverter: there is no longer
+a complementary level to generate, so the part is gone along with the strap
+that needed it.
+
+---
+
+## 4. What rev D removed, and what it cost to remove it
+
+| | rev C | rev D | Saving |
+|---|---|---|---|
+| Designs to fabricate | 2 + a panel project | **1** | the $16.42 multi-design panel charge and the $23.80 loss of the flat promotional tier — **$40.22** at the PCB stage alone |
+| Cables per link | 3 mini HDMI | **1 SlimSAS** | two cables, and the boot-width risk that went with three |
+| Connectors per board | 3 | **1** | |
+| Upright riser section and its right-angle soldered joint | required | **gone** | |
+| ROLE strap: 1×3 header, shunt, MOSFET, 10 k, 100 k | fitted | **gone** | $0.11 of parts, one Extended header fee, and an entire failure-mode analysis |
+| Production panel: rails, coupon, three V-scores, mouse bites | a whole third KiCad project | **gone** | and with it the unanswered question of whether JLCPCB would accept a panel mixing V-scores with a mouse-bite separation |
+| AC-coupling option and VBIAS divider | 8 links + 2 resistors, not fitted | **gone** | not needed on a fixed-direction link |
+| Strap-selected terminations | 4 positions, 2 fitted | **8 fitted, all fixed** | direction is no longer a variable |
+| ICs per board | 10 fitted on board A, 8 on board B | **13 fitted** | more chips, fewer boards |
+| Shipments | 1 (panel) or 2 (separate orders) | **1** | |
+
+**What rev D added:** the SlimSAS connector at $3.17 against three mini HDMI at
+about $2.40 the set, four more translator packages ($1.24) to build the AUXIO
+and JTAG paths, and eight more ESD arrays because rev D protects **every**
+conductor rather than rev C's subset ($0.56).
 
 ---
 
 ## 5. What could be cut, ranked by what it saves
 
-Figures at **two assembled sets**, counted from the BOMs by
-`tools/cost_model.py`.
-
-| # | Cut | Saves | What is lost |
+| | Change | Saves | What it costs you |
 |---|---|---|---|
-| 1 | **✅ DONE — the Extended single-gate inverter is now a Basic-tier MOSFET** | **$3.11** | Nothing measurable. Applied in this revision; section 5a examines it point by point. |
-| 2 | **Do not pay for impedance control** | **$33.88** | The fab's *guarantee* that the 100 Ω differential pairs land on 100 Ω, and the measurement report. $32.84 for the control plus a mandatory $1.04 file check — a 65 % surcharge on a $52.42 board, and **the largest single line on this list.** Against buying it: the geometry in `ROUTING.md` is designed to JLCPCB's published `JLC04161H-7628` stackup, every pair is externally terminated in 100 Ω, and the signals cross 2 m of cable, so a ±10 % trace impedance is very unlikely to be what fails. **This is an open decision, not a recommendation** — `README.md` and `ROUTING.md` still say to buy it, and that advice was written before the price was known. |
-| 3 | **Ship Global Standard Direct Line instead of DHL Express** | **$14.63** | 9–13 days instead of 2–4. No design change at all. |
-| 4 | **Hand-fit the seven pin headers instead of having the fab place them** | **$8.04** | You solder 19 through-hole pins per set. Saves two Extended loading fees ($6.14), two reel minimums ($1.28) and 38 joints ($0.62). Buy a 1x40 strip for about $0.16 and snap it. Best value-per-effort cut on the list. |
-| 5 | **Hand-fit the Tang dock's 2x20 socket too** | **$5.04** | You solder 40 more through-hole pins per set. Saves one Extended loading fee ($3.07), the part ($0.66) and 80 joints ($1.31). You are already told to solder the mating male header into the dock. The $3.58 hand-soldering base fee does **not** go away: the six HDMI sockets are hybrid-mount and their four through-hole shell legs each still need soldering, 30 joints per set. Whether JLCPCB will solder those legs at all is **unverified**; if not, the base fee goes too (a further $3.58) and you solder them, but the connectors then rely on their surface-mount contacts alone until you do. |
-| 6 | **Leaded HASL instead of lead-free** | **$5.20** | RoHS compliance, and a finish that is slightly less pleasant to rework by hand. The $7.00 promotional tier is priced for leaded. |
-| 7 | **Merge the 0805 zero-ohm links into 0402** | **$0.45** | One reel minimum, and that is all: Basic loading is free. It also makes lifting a cable shield by hand harder. **Not worth it.** |
-| 8 | **Drop the AC-coupling option footprints** | **~$0.30** | The only escape route if the link turns out to need AC coupling. The option's 32 parts per set use only two part numbers: 100 nF, already placed as decoupling, and 4k7, which is **never placed** and so carries no loading fee — only a reel minimum. **Do not cut this. It is almost free.** |
-| 9 | **Drop all 82 test points per set** | **$0.00** | All bring-up visibility, for nothing. Test points have no part number: no part cost, no loading fee, no joint fee. **Non-item.** |
-| 10 | **Shrink or delete the fiducial coupon** | **$0.00** | Nothing is saved. Board B rotated already sets the panel's 100 mm height, and the panel is already inside the size cap (sections 1 and 3b). **Non-item.** |
-| 11 | **Consolidate resistor and capacitor values** | **$0.00** | Nothing on Economic assembly. There are only **10 distinct placed passive part numbers** per set, **all Basic**, and **Basic loading is free**. The 35 zero-ohm links are two part numbers, not many. On **Standard** assembly each value removed would save $1.53 — but Standard is the wrong service here. **The suspicion that "34 and 50 resistors are probably many distinct values" is not borne out: they are seven values.** |
-| 12 | **Abandon the panel for two separate orders** | **−$16.83** (costs more), or **+$4.72** if the two orders can be combined into one shipment | Nothing functional. See section 3. |
+| 1 | **Leaded HASL instead of lead-free** | **$5.20** | RoHS. The $7.00 promotional PCB tier is priced for leaded |
+| 2 | **DS90LV047A in TSSOP-16 (C87097) instead of SOIC-16** | **$4.30** over five boards | $0.43 each. Same silicon, same pinout, smaller package. SOIC-16 was kept for thermal margin — the drivers dissipate the most on the board — and for higher stock (1,741 against 1,099) |
+| 3 | **Drop the 2.5 V LDO and take Vlvds instead** (fit `SL_VLVDS` and `FB2`, remove U12) | **$3.35** — one Extended fee and $0.28 of silicon | Do not. §4.2 of `DESIGN_NOTES.md`: the board's 50 mA is the *whole* of the radio's conservative 2.5 V headroom, and the rail it would brown out is the FPGA bank supply carrying the ADC data |
+| 4 | **Drop the spare lane's ESD array** and the two spare sideband clamps | **$0.21** | One array, and two conductors that leave the enclosure unclamped. Not worth thinking about |
+| 5 | **Order 2 boards instead of 5** | **$39.90** of components | You get one link and no spares. The fixed charges ($60.25) do not move, so the per-board cost rises from $26.49 to **$46.34** |
+| 6 | **Order 10 boards** | nothing per board worth naming | components rise $66.49 to $132.98 and joints $4.15 to $8.30, so the total goes to $203.06 and the per-board cost **falls to $20.31**. Economic assembly is capped at 30 pieces per design |
 
-### 5a. The inverter swap, applied — and what it gives up
+**Do 1 and 2 if you want the money. Do not do 3.**
 
-**No 74x1G04, 1G00, 1G02, 1G14 or 1G07 of any brand, family or package is a
-Basic part in JLCPCB's library** — checked across all ten manufacturers they
-list. One logic gate would therefore have cost the $3.07
-per-unique-Extended-part fee on the Economic tier, which is what we are on.
+### 5.1 Impedance control: a decision, not a default
 
-Replaced with **one N-channel MOSFET: Alpha & Omega AO3400A, LCSC C20917,
-SOT-23, Basic tier, about 890,000 in stock, about $0.08.** Gate on `ROLE`,
-source to ground, drain on `ROLE_N`, loaded by the **10 kΩ pull-up that was
-already fitted**. Pin 1 gate, pin 2 source, pin 3 drain.
+JLCPCB charges **$32.84** for impedance control plus a **mandatory** $1.04
+production-file check — **$33.88**, which is a 26 % surcharge on this whole
+order and nearly three times the bare-board price.
 
-**Saving: $3.11** — the $3.07 loading fee plus $0.013 of parts, and one fewer
-unique Extended part on the panel, 12 down to 11.
+**Do not take it.** At 307.2 Mbit/s with a 3.2552 ns unit interval, on a
+4-layer 1.6 mm stack-up with a solid ground plane directly under the pairs, an
+uncontrolled 100 Ω target that lands anywhere between 85 and 115 Ω gives a
+reflection coefficient under 8 % — and the connector itself is specified
+**85 Ω ±10**, so an 8 % mismatch is already present at the interface by
+design. The cable is 100 Ω twinax qualified to 24 Gb/s. Nothing in the chain
+needs the guarantee.
 
-**Why the 2N7002 was rejected** even though it is cheaper: its gate threshold
-is specified up to **2.5 V**, too close to a 3.3 V drive. The AO3400A's is
-**1.45 V maximum**, leaving **1.85 V of margin** — a genuine logic-level part.
-
-**What is given up, point by point:**
-
-* **`ROLE_N`'s high state is now passive**, supplied by the 10 kΩ pull-up
-  rather than actively driven. **Acceptable**: `ROLE_N` drives only CMOS enable
-  inputs — one LVDS driver `EN` and one translator `OE` per board — whose input
-  leakage is nanoamps to a few microamps. At a worst case of 20 µA the pull-up
-  drops 0.2 V, giving 3.1 V against enable thresholds around 2.0 V.
-* **The pull-up's rise time is slow.** **Irrelevant**: `ROLE_N` is a static
-  level set once by a jumper and never switched in operation. Nothing on either
-  board ever sees an edge on it.
-* **The low state is better, not worse.** The MOSFET's on-resistance is tens of
-  milliohms, so with 0.33 mA flowing through the 10 kΩ load the drain sits
-  within microvolts of ground — cleaner than a logic gate's specified output
-  low. Standing current is unchanged: a logic inverter pulling the same node
-  down through the same pull-up drew the same 0.33 mA.
-* **No hysteresis regression.** The part it replaces, SN74LVC1G04, is a
-  **plain** inverter with no Schmitt input either, so nothing is lost. And
-  `ROLE` is never in transition: it is hard 3.3 V or hard 0 V through a shunt,
-  or 0 V through the 100 kΩ pull-down when no shunt is fitted.
-* **The fail-safe direction is unchanged**, which is the point that matters
-  most. A missing, dead or unpowered device leaves `ROLE_N` pulled **high** by
-  the 10 kΩ resistor, which **disables** the auxiliary port facing the host.
-  That is the auxiliary-disabled state: the link fails to work and nothing is
-  stressed. It can never enable a port.
-* **Power-up is also safe, and this is new.** The MOSFET stays off until its
-  gate passes about 1.45 V, so during the supply ramp `ROLE_N` is held high by
-  the pull-up — again the auxiliary-disabled state.
-* **What is genuinely weaker:** the input threshold is a device parameter with
-  a manufacturing spread, rather than a specified fraction of the supply rail
-  as a logic gate guarantees. For a jumper level that is either 0 V or 3.3 V,
-  with 1.85 V of margin to the worst-case threshold, this does not matter.
-
-`tools/check_netlist.py` was updated for it and still proves the contention
-case impossible on both boards, enumerating both strap states. It now also
-checks that the source is grounded — a MOSFET inverter only inverts with its
-source at ground.
-
-### 5b. Why a strap with no complement at all is not available
-
-Worth recording, since it is the obvious thing to try. The DS90LV047A driver
-has **both** an active-high `EN` and an active-low `EN*`, so the two LVDS
-drivers *could* be gated from a single strap net with no inverter at all. But
-the host-facing buffer is an SN74AVC4T245, which offers only an **active-low**
-`OE` per port, so one of its two ports still needs the complement. A pair such
-as the 74LVC125A (active-low enables) plus the 74LVC126A (active-high) would
-remove the need, at the cost of two packages instead of one. **The complement
-is genuinely required, and only by the buffers.** One MOSFET is the cheapest
-way to produce it.
+ENIG instead of lead-free HASL is **+$12.30** and is a more defensible spend
+than impedance control: the SlimSAS contacts are 0.35 mm wide on a 0.60 mm
+pitch, which is where a lumpy HASL finish actually bites.
 
 ---
 
-## 6. The cheapest credible configuration for two working sets
+## 6. What is not verified in these numbers
+
+| Item | Worth | Status |
+|---|---|---|
+| **Whether JLCPCB will solder the connector's four through-hole shell tails** | $3.91, and whether the connector arrives mechanically anchored | **Unverified.** Same question rev C asked about the HDMI shell legs and never got answered |
+| **The exact solder-joint fee** | a few dollars | JLCPCB will not compute it without a login and an uploaded position file. The 519 joints were counted from the board file here |
+| **JLCPCB's own fee schedule disagrees with itself** | pennies | Two of their pages, both dated 9 September 2026, give setup as $8.18 and $8.00 and the SMT joint rate as $0.0016 and $0.0017. Both are live official text; neither was picked over the other for any reason but consistency with rev C |
+| **Whether C14709 is really Basic** | $3.07 | Its tier does not print on JLCPCB's own part page; the Basic call comes from the parts database, which matched on every part where a cross-check was possible |
+| **Whether Preferred Extended really is fee-exempt on Economic** | $3.07 per such part | JLCPCB says so in their FAQ, but Preferred Extended and plain Extended both print as "Extended" on their part pages. No part in this BOM depends on it |
+| **Shipping for the hand-fitted parts** | not in any total here | Whoever you buy the sockets, standoffs and the 2×4-cut-down-to-2×3 from |
+| **The cable price** | $15.00 is 10Gtek's current store price, down from a $25.00 list | Check at the point of ordering, and buy it early — §10 of `DESIGN_NOTES.md` wants it ohmmetered before fabrication |
+
+---
+
+## 7. Sources
 
 | | |
 |---|---|
-| rev C panel, Economic assembly, DHL Express, **with** impedance control | **$230.46** |
-| − skip impedance control (section 5, item 2 — read it before deciding) | −$33.88 |
-| **As costed everywhere else in this repository** | **$196.58** |
-| − ship Global Standard Direct Line instead (9–13 days) | −$14.63 |
-| − hand-fit the seven pin headers (19 pins per set) | −$8.04 |
-| − hand-fit the Tang dock 2x20 socket (40 pins per set) | −$5.04 |
-| **Cheapest with a lead-free finish** | **$168.87** |
-| − leaded HASL instead of lead-free | −$5.20 |
-| **Cheapest overall** | **$163.67** |
-
-Nothing in that list changes a single net. The schematic is untouched.
-
-**Five sets** at the same settings is $284.50 − $14.63 − $8.04 − $5.04 =
-**$256.79, or $51 each**, against **$84 each** for two. The fixed fees dominate
-at these quantities, so if more than two sets will ever be wanted, five is much
-better value than three — and ordering exactly three is the worst option of
-all, because JLCPCB's Economic service appears to offer only 2 or 5 assembled
-out of a 5-board run, which forces the dearer Standard tier. **That limit is
-unverified** — see section 7.
-
----
-
-## 7. What is not verified
-
-| Item | Why it matters | Status |
-|---|---|---|
-| **Whether a two-design file is billed as ONE assembly job or TWO.** JLCPCB's published pages do not say. Every table here assumes one job plus the $8.21 panel surcharge. | **The largest remaining uncertainty.** If it is two jobs — two setups and two stencils, $9.71 more — the panel's $16.83 advantage falls to about $7; if the loading fees were duplicated too, the panel would lose outright. | **Unverified.** Ask before ordering. |
-| **Whether Economic assembly really offers only 2 or 5 units** out of a 5-board fabrication run, with no 3. | Decides whether three sets can avoid the Standard tier. | **Unverified.** A third-party guide is consistent with it; JLCPCB's own pages do not state it and the live form could not be driven far enough to see the selector. |
-| **Whether two separate orders can be combined into one shipment.** | $21.55, and it flips section 3's verdict from "the panel saves $16.83" to "two orders save $4.72". | **Unverified.** |
-| **Whether impedance control is worth $33.88 here.** | The largest optional cost in the order, and two documents currently recommend buying it. | **Open decision**, not merely unverified. |
-| **That Basic parts carry no feeder fee on Economic.** JLCPCB's pricing page lists only the $3.07 Extended fee, with no Basic line at all. Consistent with free, but it is an inference. | Every total here rests on it. If Basic parts were chargeable, add 12 × whatever the fee is. | **Inferred, not quoted.** |
-| **The per-joint fees.** Both rates were confirmed on JLCPCB's own pricing page, but they will not compute the total without a login and an uploaded placement file. The counts — 781 surface-mount and 89 through-hole per panel — were counted from the board files. | About $5.42 of $196.58. Changes nothing. | Rates confirmed; total not quoted. |
-| **Whether JLCPCB will accept a panel mixing V-scores with one mouse-bite separation.** Their FAQ says, verbatim: *"For Economic assembly, please panelize your boards with mouse-bites. for Standard assembly, you can panelize with mouse-bites or V-cut."* | If refused for Economic, the fallback is two separate orders, which section 3 prices at $16.83 more. | **Rule confirmed; willingness to waive it not confirmed.** Ask before paying. |
-| **Whether JLCPCB will solder the hybrid-mount HDMI sockets' through-hole shell legs.** | $3.58, and whether the connectors arrive mechanically secured. | **Unverified.** |
-| **Shipping from Mouser and from Phoenix Enterprises to Germany** for the two retail sockets. | Not in any total here. | **Unverified.** |
-| **The AO3400A's exact price and stock**, which came in as "about $0.08, about 890,000 in stock". Its Basic classification, SOT-23 package, pinout and 1.45 V maximum threshold were all confirmed. | About $0.01. Negligible. | Price approximate. |
-| **The reel-minimum figure for rev B** ($8.06) is estimated from its larger passive set; rev C's $8.73 is itemised from LCSC's own batch prices. | $0.67. Negligible. | Estimated for rev B only. |
-
----
-
-## 8. Sources
-
-| Figure | Source |
-|---|---|
-| Bare PCB prices at every size and design count, the size cap, impedance control, ENIG, shipping options | JLCPCB instant quote form, US store, read 12 Sep 2026 |
-| Assembly setup, stencil, panel fee, per-unique-part loading fees, per-joint rates, hand-soldering base fee, the $0.48-per-board minimum assembly charge | `https://jlcpcb.com/help/article/pcb-assembly-price`, read 12 Sep 2026 |
-| The Economic mouse-bite-only panelisation rule | `https://jlcpcb.com/help/article/pcb-assembly-faqs` question 11, read 12 Sep 2026 |
-| Basic versus Extended classification, per part | JLCPCB's own parts library search, read 12 Sep 2026 |
-| Unit prices, stock, minimum order quantities | LCSC product pages, read 12 Sep 2026 |
-| Retail socket prices | Mouser (Samtec SSQ-103-02-S-D) and Phoenix Enterprises (HWS16492), read 12 Sep 2026 |
-| Part counts, joint counts, unique-part counts, board areas | Counted from the generated BOMs and PCBs by `tools/cost_model.py` |
-| rev B's figures | `STATUS.md` at git commit `5c62b90`; rev B's BOMs and PCBs at git commit `a15d05a` |
+| Bare PCB prices, the size cap, impedance control, ENIG, shipping | JLCPCB instant-quote form, US store, read 12 September 2026 (carried forward from rev C, where the 64.5 × 65 mm case was quoted directly as $7.00 + $5.10) |
+| Assembly setup, stencil, per-unique-part loading fee, per-joint rates, hand-soldering base fee, the 30-piece Economic cap, through-hole support | `https://jlcpcb.com/help/article/pcb-assembly-price` and `https://jlcpcb.com/help/article/pcb-assembly-faqs`, both read 13 September 2026 |
+| Every component price and tier | LCSC product pages and JLCPCB part pages, read 13 September 2026 |
+| Cable | `https://store.10gtek.com/24g-internal-slimsas-sff-8654-to-sff-8654-8i-cable-sas-4-0-100-ohm-0-5-1-meter/p-8475` |
+| Joint counts | counted from `bridge/bridge.kicad_pcb` — 519 SMT joints and 4 through-hole across 97 factory-placed parts |
