@@ -417,7 +417,10 @@ def emit_footprint_lib(path, fpname, node):
 
 
 def _emit_fp_body(w, node, with_text=False, refdes=None, value=None,
-                  net_of_pad=None, rot=0, fp_rot_for_pads=0, mirror_x=False):
+                  net_of_pad=None, rot=0, fp_rot_for_pads=0, mirror_x=False,
+                  flip_side=False):
+    """flip_side: the footprint sits on B.Cu, so its F.* graphics (silk,
+    courtyard, fab) belong on the matching B.* layers."""
     if with_text:
         w.open('fp_text', 'reference', q(refdes or 'REF**'))
         w.line('at', '0', '-3', '0')
@@ -434,9 +437,9 @@ def _emit_fp_body(w, node, with_text=False, refdes=None, value=None,
             continue
         h = head(item)
         if h in ('fp_line', 'fp_rect', 'fp_circle', 'fp_arc'):
-            _emit_fp_graphic(w, item, mirror_x)
+            _emit_fp_graphic(w, item, mirror_x, flip_side)
         elif h == 'fp_poly':
-            _emit_fp_poly(w, item, mirror_x)
+            _emit_fp_poly(w, item, mirror_x, flip_side)
         elif h == 'pad':
             _emit_fp_pad(w, item, net_of_pad, fp_rot_for_pads, mirror_x)
 
@@ -461,10 +464,12 @@ def _fp_stroke(item):
     return 0.12
 
 
-def _emit_fp_graphic(w, item, mx=False):
+def _emit_fp_graphic(w, item, mx=False, flip=False):
     h = head(item)
     width = _fp_stroke(item)
     layer = _lay(item)[0]
+    if flip and layer.startswith('F.'):
+        layer = 'B.' + layer[2:]
     fl = kid(item, 'fill')
     filled = False
     if fl is not None:
@@ -498,9 +503,11 @@ def _emit_fp_graphic(w, item, mx=False):
     w.close_inline()
 
 
-def _emit_fp_poly(w, item, mx=False):
+def _emit_fp_poly(w, item, mx=False, flip=False):
     width = _fp_stroke(item)
     layer = _lay(item)[0]
+    if flip and layer.startswith('F.'):
+        layer = 'B.' + layer[2:]
     pts = kid(item, 'pts')
     sx = -1.0 if mx else 1.0
     w.open('fp_poly')

@@ -1,6 +1,6 @@
 # gowin-bridge status (branch `gowin-bridge-pcb`, rev D)
 
-Last updated 2026-09-13. Worktree
+Last updated 2026-09-13 (prepared for Quilter). Worktree
 `G:\proj\worktrees\Hermes-Lite2-gowin-bridge-pcb`.
 
 **rev D is one design with two ends, on one board.** The **radio end** plugs
@@ -10,13 +10,64 @@ after manufacture.
 
 | | |
 |---|---|
-| `bridge/` | **225 parts (195 fitted), 173 nets.** ERC **0**, DRC **0** violations, schematic/PCB parity **0** |
+| `bridge/` | **161 parts (132 fitted), 168 nets, ten test points.** ERC **0**, DRC **0** violations, schematic/PCB parity **0**. **Prepared for Quilter, not placed:** 11 fixed parts locked, 142 parts waiting off the board |
+| `quilter-upload/` | the three files to upload, KiCad 10 format. ERC 0, DRC 0, parity 0 on those copies too. Procedure: `QUILTER.md` |
 | `tools/check_netlist.py` | **OK** — radio-end header maps, the Gowin-end J14 map with both clocks on clock balls, all 74 contacts at each end, **the crossover walked radio→Gowin, Gowin→radio and radio→radio**, the radio-to-radio JTAG proof, the enables, **the AUXIO fail-safe in all three pairings**, every conductor clamped at both ends, and no net shared between the ends |
-| `tools/check_geometry.py` | **OK** — **one continuous outline, 64.50 × 100.00 mm**, every pad inside its own end, no courtyard overlaps, the radio-end sockets on the HL2 grids, the Gowin-end socket on dock J14 positions 5–40, both connector land patterns recomputed from SFF-8654 Table A-1, the connector at the case position, the scores clean |
+| `tools/check_geometry.py` | **OK** — **one continuous outline, 64.50 × 90.00 mm, no rails**, the radio-end sockets on the HL2 grids, the Gowin-end socket on dock J14 positions 5–40, both connector land patterns recomputed from SFF-8654 Table A-1, **exactly the 11 fixed parts locked, each at its documented position**, every other part off the board, the score clean. Given the board Quilter returns, it also checks the placement and routing rules |
 | `tools/cost_model.py` | **$154.84** for five boards; one link **$30.97**; the Gowin half **$22.41** |
 | `gowin_end_j14.cst` | the Gowin constraint file, placed and routed by Gowin EDA 1.9.11.03 without error |
 
-DRC reports 468 unconnected items: the routing, left for EasyEDA Pro.
+DRC reports 499 unconnected items: the placement and routing, left for Quilter.
+
+---
+
+## Prepared for Quilter (13 Sep 2026)
+
+**What Quilter takes.** A schematic and a board file, plus the project file
+for net classes; no zip, no folders. Its docs name no KiCad version; a user
+report shows KiCad 10 format parsing where an older file did not, so the
+upload copies are KiCad 10. Parts inside the outline stay put; parts outside
+get placed. `DESIGN_NOTES.md` §12.1 has every answer with its source.
+
+**What changed on the board.**
+
+| | |
+|---|---|
+| Notes on the board | all removed; one name-and-revision line and the hot-plug warning per end remain. `DESIGN_NOTES.md` §12.2 |
+| Test points | **73 → 10**, list below. Two spare outputs that ended on pads now carry no-connect flags |
+| Locked | J1, J2, J3, J4, J5, J101, J102, FID1–FID3 and the MH6 hole. J5 is not set by the radio; it is locked so the placer cannot bury the USB Blaster header |
+| Everything else | off the board, in five groups, one per placement region |
+| Rules in the file | five top-side placement regions, ten keepouts, pair net class `differentialpair` at 0.25/0.20 mm, 0.15 mm clearance, JLC04161H-7628 stack, In1 named `GND`, In2 `PWR`. `DESIGN_NOTES.md` §12.5 |
+| Rails | **removed**: JLCPCB lists rails as not necessary for Economic assembly, parts 0.3 mm from the edge. Board now **64.50 × 90.00 mm**, one score at y 25.12 |
+| Pre-drawn +2V5 island | removed; it assumed the old placement. Quilter pours `+2V5` on In2 |
+| Fixed on the way | bottom sockets had their silk, courtyard and fab graphics on the top layers; the middle score line was drawn 0.07 mm off the boundary; the old stack had core and prepreg swapped |
+| Deleted | `drl/`, a stale drill export |
+
+**What Quilter cannot be told, and is checked on return:** pairs on the top
+layer only, and the length-matched groups within 2.5 mm. ESD arrays and
+terminations within 5 mm are typed in as proximity constraints.
+
+**Position disagreement found:** HL2 jumper header DB6 runs 0.50 mm past the
+jumper window's far edge. It is about reaching the jumper, not a collision.
+Not changed.
+
+**Test points kept:**
+
+| Ref | Net | Why |
+|---|---|---|
+| TP9 | GND | radio ground clip |
+| TP1 | +3V3 | rail after the input bead |
+| TP2 | +2V5 | the translators' 2.5 V rail |
+| TP3 | SB_PRSNT_IN | is a powered far end present |
+| TP4 | JTAG_EN_N | must read HIGH at power-up |
+| TP5 | AUXIO_EN_N | must read HIGH at power-up |
+| TP6 | AUXIO_OE_N | the drive enable after the presence interlock |
+| TP7 | HL2_FWD_CLK | forward clock after the divider, 2.50 V high |
+| TP8 | HL2_REV_CLK | reverse clock into FPGA pin 88 |
+| TP101 | G_GND | Gowin ground clip |
+
+No pull resistor, clamp or fail-safe element depended on a removed pad.
+`check_netlist.py` passes all three pairings.
 
 ---
 
@@ -80,10 +131,10 @@ J14 positions 1 and 2 sit under the connector's contacts and 3 and 4 under its
 housing, so **neither side of the stack has anything at J14 positions 1–4.**
 That leaves 34 pins: fourteen pairs plus six sideband lines, exactly. **Not
 wired at the Gowin end: the spare lane and the four AUXIO lines.** The spare
-lane reaches only test pads at the radio end, so nothing working today is lost;
+lane reaches nothing beyond its own spare channels at the radio end, so nothing
+working today is lost;
 AUXIO (remote keying, the radio's I2C bus) can be done by the radio's own
-gateware on a command over the aux lane. All those conductors are still clamped
-and on test pads. **Leaving them unwired is safe**: the radio end biases them
+gateware on a command over the aux lane. All those conductors are still clamped. **Leaving them unwired is safe**: the radio end biases them
 to the not-keyed level itself (next section but one). Tying them at the Gowin
 end is not possible anyway: the safe level is 3.3 V and J14 has no 3.3 V pin,
 only 5 V and ground.
@@ -153,8 +204,8 @@ enable. It passes in all three.
 
 | | |
 |---|---|
-| Board | **64.50 × 100.00 mm, one continuous outline**: 5 mm rail, Gowin end, radio end, 5 mm rail, joined across three straight V-scores (y 5.00, 30.12, 95.00); both connectors on the left edge |
-| What moved to get under 100 mm | the radio end's edge facing the Gowin end came in **0.07 mm** (HL2 y 73.30 → 73.37). No part, hole, socket or connector moved; the nearest pad is still 1.63 mm from that edge. The rails stay at JLCPCB's recommended 5 mm |
+| Board | **64.50 × 90.00 mm, one continuous outline, no rails**: Gowin end, radio end, joined across one straight V-score at y 25.12; both connectors on the left edge |
+| The 0.07 mm | the radio end's edge facing the Gowin end is 0.07 mm in (HL2 y 73.37), kept from when the rails had to fit 100 mm |
 | **Order total, five boards** | **$154.84** |
 | Paid once | **$61.78**: PCB $12.10 (board $7.00, lead-free HASL $5.10), setup $8.18, stencil $1.53, six Extended fees $18.42, shipping $21.55 |
 | Paid per board | **$18.61**: radio-end parts $13.39, Gowin-end parts $4.04, joints $1.18 |
@@ -184,7 +235,8 @@ by two; no net changed.
 | **C55160396 stock** | the only 5.0 mm 2×18 socket found; 10 in stock | buy them now if scheme 1 |
 | **Dock J14 position on rev 31005** | all dock coordinates come from Sipeed's interactive BOM for rev 31004 | measure the board in hand, or print the 1:1 template and offer it up |
 | **PMOD socket J9 height** | estimated 6.4 mm; scheme 1 leaves about 0.6 mm under the adapter | callipers |
-| **V-scores across two 3.4 mm notches** | fab acceptance | ask JLCPCB at order time |
+| **A V-score on an Economic-assembly order** | JLCPCB's capability table lists V-cut panels for Standard assembly only; Standard would need the rails back | ask JLCPCB at order time |
+| **What Quilter makes of the board** | its docs say nothing on scores; pairs cannot be held to the top layer; length matching is not available | `QUILTER.md` part E |
 | **C5432262 stock** | 189 in stock on 13 Sep 2026; the order needs 10 | buy or order soon |
 | **The connector's front-face setback** | derived, ±0.5 mm; sets where both mating faces sit | Amphenol's drawing for U10A474240T |
 | **The radio end's open items** | M2/M3 heights under the radio end, HL2 R17 not fitted, the three-socket tolerance stack, Cyclone IV capture at 307.2 Mbit/s | `DESIGN_NOTES.md` §10 |
@@ -208,9 +260,8 @@ ventilation holes are to be cut.
 4. Print `templates/bridge-1to1-TOP-fit-check.pdf` at 100 %. Offer the radio
    end to the radio and the Gowin end to the dock: J14 positions 5–40, the
    dock corner hole, and the connector face against the RJ45 face.
-5. Route both ends in EasyEDA Pro. Gowin end: the fourteen pairs from the
-   connector straight to J14, the ESD arrays within 5 mm of the contacts,
-   pairs matched within each group.
+5. Upload to Quilter and check what comes back: `QUILTER.md`. Finish any
+   routing by hand with `ROUTING_EASYEDA.md`.
 6. Order: five boards, one design, 4 layer, 1.6 mm, lead-free HASL,
    Economic assembly. `COST.md`.
 7. Gowin gateware: start from `gowin_end_j14.cst`, with the two
@@ -236,17 +287,25 @@ python tools/cost_model.py
 %KC% pcb drc --severity-error --schematic-parity --refill-zones ^
      -o bridge/bridge-drc.rpt bridge/bridge.kicad_pcb
 
-%KC% pcb export drill --format excellon --drill-origin absolute ^
-     --excellon-units mm --excellon-separate-th -o drl/ bridge/bridge.kicad_pcb
+copy bridge\bridge.kicad_pro, .kicad_sch, .kicad_pcb to quilter-upload\
+%KC% pcb upgrade --force quilter-upload/bridge.kicad_pcb
+%KC% sch upgrade --force quilter-upload/bridge.kicad_sch
+del quilter-upload\bridge.kicad_prl
+
+%KC% pcb render --side top    -w 1600 -h 1600 --background opaque ^
+     --preset follow_pcb_editor -o prep-top.png    bridge/bridge.kicad_pcb
+%KC% pcb render --side bottom -w 1600 -h 1600 --background opaque ^
+     --preset follow_pcb_editor -o prep-bottom.png bridge/bridge.kicad_pcb
 
 %KC% pcb export pdf --mode-single --scale 1 --black-and-white --drill-shape-opt 2 ^
      --exclude-value --layers "Edge.Cuts,Eco1.User,Dwgs.User,F.SilkS,F.Cu,F.Fab" ^
      -o templates/bridge-1to1-TOP-fit-check.pdf bridge/bridge.kicad_pcb
 ```
 
-Results: **ERC 0, DRC 0, parity 0, all three checkers OK.** The Gowin-end
-drill holes were read back from the Excellon export and land on dock J14
-positions 5–40. KiCad 10.0.6; files written in KiCad 8 format.
+Results: **ERC 0, DRC 0, parity 0, all three checkers OK**, on `bridge/`
+and on the KiCad 10 copies in `quilter-upload/`. `prep-top.png` and
+`prep-bottom.png` show the prepared board. KiCad 10.0.6; the generator writes
+KiCad 8 format into `bridge/`.
 
 The radio end's power budget, ESD choice, translator reasoning, JTAG buffer
 and the corrections to the original brief are unchanged: `DESIGN_NOTES.md`

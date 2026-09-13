@@ -245,12 +245,12 @@ Same convention: row A is driven by this board, row B is received.
 | Pos | Row A — driven | Row B — received | What it does |
 |---|---|---|---|
 | 8 | `SB_PRSNT_OUT`, 1 kΩ to +3V3 | `SB_PRSNT_IN`, 10 kΩ to GND | presence and link reset |
-| 9 | **nothing** — ESD clamp and a test pad only | `SB_TCK_IN` → gated buffer → 330 Ω → CN1 pin 1 | JTAG TCK in |
+| 9 | **nothing** — ESD clamp only | `SB_TCK_IN` → gated buffer → 330 Ω → CN1 pin 1 | JTAG TCK in |
 | 11 | `SB_AUXIO0_OUT` | `SB_AUXIO0_IN`, 10 kΩ **to +3V3** | AUXIO line 0 (FPGA 90) |
 | 12 | `SB_AUXIO1_OUT` | `SB_AUXIO1_IN`, 10 kΩ **to +3V3** | AUXIO line 1 (FPGA 91) |
 | 26 | `SB_AUXIO2_OUT` | `SB_AUXIO2_IN`, 10 kΩ **to +3V3** | AUXIO line 2 (FPGA 103) |
 | 27 | `SB_AUXIO3_OUT` | `SB_AUXIO3_IN`, 10 kΩ **to +3V3** | AUXIO line 3 (FPGA 104) |
-| 29 | **nothing** — ESD clamp and a test pad only | `SB_TMS_IN` → gated buffer → 330 Ω → CN1 pin 5 | JTAG TMS in |
+| 29 | **nothing** — ESD clamp only | `SB_TMS_IN` → gated buffer → 330 Ω → CN1 pin 5 | JTAG TMS in |
 | 30 | `SB_TDO_OUT`, from CN1 pin 3 | `SB_TDI_IN` → gated buffer → 330 Ω → CN1 pin 9 | JTAG TDO out, TDI in |
 
 Contacts 10 and 28 in both rows are ground, per the specification. All 16
@@ -278,9 +278,10 @@ unpowered board; referencing the assertion to +3V3 makes it read
 present-**and**-powered, which is what the brief asked for.
 
 `SB_PRSNT_IN` also serves as **link reset**: the far end pulls it low. On this
-board there is a test pad you can ground by hand to assert reset in the other
-direction — a gateware-driven reset would need another HL2 pin and there is not
-one. The signal is brought to a test pad and to the not-fitted link
+board there is a test point on it you can ground by hand to assert reset in
+the other direction — a gateware-driven reset would need another HL2 pin and
+there is not one. The signal is brought to that test point and to the
+not-fitted link
 **R_DRVEN_PRSNT**, which if fitted instead of **R_DRVEN_ON** gates the two LVDS
 drivers on the far end being present and powered, saving about 60 mA with no
 cable plugged in. It is not the default because 10Gtek sell a **no-sideband**
@@ -296,7 +297,7 @@ any enable does. TDO is driven out on position 30, whose far-end input is TDI �
 a data line that does nothing without a clock.
 
 `check_netlist.py` asserts that the only things on those two nets are a
-connector contact, an ESD clamp and a test pad.
+connector contact and an ESD clamp.
 
 **What happens to all four JTAG lines in a radio-to-radio link, with the
 feature disabled — which is its power-up state:**
@@ -507,13 +508,13 @@ What the gateware must do that the hardware cannot enforce:
 
 | | Why |
 |---|---|
-| HL2 `VLVDS` on DB1 pins 7/8 | brought to a test pad and to the not-fitted link `SL_VLVDS`, but the board makes its own 2.5 V. `DESIGN_NOTES.md` section 5: the radio's 2.5 V LDO has perhaps 50 mA spare, and the rail it would brown out is the FPGA bank supply carrying the ADC data |
+| HL2 `VLVDS` on DB1 pins 7/8 | brought to the not-fitted bead FB2 and link `SL_VLVDS`, but the board makes its own 2.5 V. `DESIGN_NOTES.md` section 5: the radio's 2.5 V LDO has perhaps 50 mA spare, and the rail it would brown out is the FPGA bank supply carrying the ADC data |
 | CN1 pins 6, 7, 8 | unconnected on the HL2 today, but nCE/nCS/nCONFIG in Active Serial mode. Passed through to J5 and left **open**, not grounded |
 | CN1 pin 4 | passed through to J5 as the programmer's VTREF sense line; no current drawn |
 | Two sideband output contacts, A9 and A29 | undriven on purpose — section 6.2 |
-| One of the 16 differential pairs, positions 35/36 | a spare full-duplex lane; driver input and receiver output both on test pads |
+| One of the 16 differential pairs, positions 35/36 | a spare full-duplex lane; driver input held low, receiver output unconnected |
 | Two of 48 ESD channels | the twelfth array's spare channels |
-| Three of 28 translator channels | U11's port 2 is disabled with its inputs grounded and its outputs on test pads, and one channel of U11 port 1 is spare. Three gated 3.3 V channels available for a future revision |
+| Three of 28 translator channels | U11's port 2 is disabled with its inputs grounded and its outputs unconnected, and one channel of U11 port 1 is spare. Three gated 3.3 V channels available for a future revision |
 
 ---
 
@@ -599,7 +600,7 @@ every position the Gowin end drives what the radio end receives.
 | 14/15 | **reverse clock** | **forward clock** | forward clock out / reverse clock in |
 | 17/18, 20/21, 23/24 | transmit data 0, 1, 2 | ADC data 0, 1, 2 | ADC data out / transmit data in |
 | 32/33 | duplicate reverse clock | duplicate forward clock | duplicate out / second receiver in |
-| 35/36 | **spare — not wired, test pads only** | **spare — not wired, test pads only** | spare, test pads only |
+| 35/36 | **spare — not wired** | **spare — not wired** | spare, clamped only |
 
 | Pos | Row A — Gowin drives | Row B — Gowin receives |
 |---|---|---|
@@ -611,11 +612,13 @@ every position the Gowin end drives what the radio end receives.
 
 **What the Gowin end gives up, and why.** Without positions 1–4 J14 has 34
 usable pins, and fourteen working pairs plus six sideband lines is exactly 34.
-Left out: the **spare lane** (at the radio end it reaches only test pads, so
-nothing that works today is lost) and the **AUXIO lines** (remote CW/PTT and
+Left out: the **spare lane** (at the radio end it reaches only its own spare
+driver and receiver channels, so nothing that works today is lost) and the **AUXIO lines** (remote CW/PTT and
 the radio's I2C bus, which the radio's own gateware can drive on a command
 sent over the aux lane). Every one of those conductors is still ESD-clamped
-and on a test pad.
+at the connector. The test pads they used to end on were removed on 13 Sep
+2026: nothing at the Gowin end drives or reads them, and the radio end's own
+10 kΩ pull-ups set the AUXIO level (`check_netlist.py`, all three pairings).
 
 **Presence is driven by the gateware**, not by a resistor to 3.3 V: J14 has no
 3.3 V pin. HIGH through 1 k means present, LOW means link reset. An

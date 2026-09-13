@@ -56,7 +56,6 @@ J2,DB1 2x10 socket,PinSocket_2x10_P2.54mm_Vertical,,JXTCONN PM2.54-2X10P-H85 (LC
 J3,DB12 2x03 socket,PinSocket_2x03_P2.54mm_Vertical,,"2.54 mm 2x3P female header, VERTICAL (top entry). LCSC stocks no vertical 2x3 socket - buy a 2x4 and cut it down, or source outside LCSC",DNP,"Mates HL2 DB12. HAND SOLDERED, bottom side","NOT PLACED BY JLCPCB. NOTE THE ORDER: pin 5 = FPGA PIN_89 (auxiliary clock in) and pin 6 = FPGA PIN_88 (reverse clock in). rev A of PINMAP.md had these two transposed; check_netlist.py now asserts it. Also: HL2 R17, the optional 100 R LVDS termination between DB12 pins 5 and 6, MUST NOT BE POPULATED - it shorts the two nets together through 100 R."
 J4,CN1 2x05 socket,PinSocket_2x05_P2.54mm_Vertical,,PM254V-12-10P-H85 (LCSC C492399) or any 2.54 mm 2x5 vertical female socket,DNP,"Mates HL2 CN1, the USB-Blaster JTAG header","NOT PLACED BY JLCPCB - hand soldered on the underside. THE TOLERANCE WARNING: this is the third rigid 2.54 mm socket on one board, 54.19 mm from DB1, and HL2_MECHANICAL_ENVELOPE.md 12.2 puts the worst-case misalignment at CN1 relative to DB1 at about +/-0.8 mm against the +/-0.35 mm a 2.54 mm socket takes comfortably. If it will not engage, LEAVE J4 OFF and run a flying 10-way IDC ribbon from CN1 to J5 instead - J5 carries the same ten nets and needs no other change."
 J5,JTAG pass-through,PinHeader_2x05_P2.54mm_Vertical,,"PZ254V-12-10P (LCSC C492422) 2.54 mm 2x5 vertical male header, or DC3-2.54-10PAS (LCSC C2977596) if a keyed boxed header is preferred",DNP,"Straight passive pass-through of all ten CN1 nets, so a USB Blaster still plugs in locally with this board fitted. Also the alternative CN1 connection: a flying 10-way IDC ribbon from CN1 to here replaces J4","PURELY PASSIVE: socket straight through to header, ten nets, no branches other than the four buffered taps. Pins 6, 7 and 8 are left open - unconnected on the HL2 today but nCE/nCS/nCONFIG in Active Serial mode. DO NOT draw supply current from pin 4: it is the programmer VTREF sense line and expects microamps. This board's power comes from DB1 pins 19/20."
-J6,GND CLIP,PinHeader_1x02_P2.54mm_Vertical,,2.54 mm 1x2P vertical pin header (LCSC C52016390),DNP,Ground clip / scope reference,Hand soldered.
 J101,SlimSAS 8i 74P R/A,SlimSAS_SFF-8654_8i_74P_RightAngle_M3,C5432262,Amphenol ICC U10A474240T,yes,"SlimSAS SFF-8654 8i at the Gowin end. Same part and same contact land pattern as J1 at the radio end, plus the M3 spacer hole over dock hole H7_LU1. Row A is driven by this end, row B is received; the cable crosses A(n) to B(n)","Mating face at dock x 89.73, flush with the dock RJ45 face. Reflow the 74 contacts, hand-solder the four shell tails. The M3 hole under the housing takes a spacer fixed from BELOW: the housing covers the top of it."
 J102,"TANG J14 pos 5-40, 2x18",PinSocket_2x18_P2.54mm_Vertical,,"SCHEME 1: Hong Cheng HC-PZ254-11.5L-2X18PZ, LCSC C41376109, 2x18 male (3.0 mm tail, 2.5 mm insulator, 6.0 mm mating), fitted UPSIDE DOWN: the 3.0 mm end goes down into the dock socket, the 6.0 mm end up through the adapter, soldered on top and clipped. SCHEME 2: hanxia HX PM2.54-2x18P ZC, LCSC C42372542, 2x18 female, 8.5 mm body, on the adapter underside",DNP,"Mates Tang Mega 138K dock J14 positions 5-40 (FPGA Bank 4). Pin k of this part is J14 position k+4. HAND SOLDERED, bottom side","NOT PLACED BY JLCPCB. J14 positions 1-4 lie under the SlimSAS connector and are NOT fitted on either side of the stack. Position 11 (pin 7 here) is the dock 5 V rail and is left unconnected; position 12 (pin 8 here) is the only ground. Positions 5-8 are PMOD0 and 21-28 are PMOD1 and the camera: nothing may be plugged into either PMOD socket or the camera connector while fitted. Dock side, scheme 1: kinghelm KH-2.54FH-2X18P-H5.0, LCSC C55160396, 2x18 female, 5.0 mm body, soldered into dock J14 positions 5-40. Dock side, scheme 2: Hong Cheng HC-PZ254-11.5L-2X18PZ, LCSC C41376109, 2x18 male, 2.5 mm insulator, soldered into dock J14 positions 5-40."
 Q1,AO3400A,SOT-23,C20917,AO3400A,yes,"AUXIO drive presence interlock: the drive buffer can be enabled only while the gateware enables AND a powered far end asserts presence. N-MOSFET, gate SB_PRSNT_IN, source AUXIO_EN_N, drain AUXIO_OE_N",JLCPCB Basic. With the cable unplugged or the far end unpowered the gate is held at 0 V and the AUXIO drive path is tri-stated whatever the gateware does.
@@ -127,88 +126,25 @@ R115,100R,R_0402_1005Metric,C25076,,DNP,OPTIONAL external 100 ohm termination on
 R116,100R,R_0402_1005Metric,C25076,,DNP,OPTIONAL external 100 ohm termination on the received DUPCLK pair,NOT FITTED. The FPGA terminates on-die (DIFF_RESISTOR=ON). Fit only if that is ever found not to work.
 R117,0R,R_0805_2012Metric,C17477,,yes,"Connector shell to ground, as R_SHELL at the radio end",
 SL_VLVDS,0R,R_0402_1005Metric,C17168,,DNP,Reference the translators' 2.5 V side to the radio's own Vlvds rail (DB1 pins 7/8) instead of U12,"NOT FITTED, and think before you do. Electrically ideal - the thresholds then track the FPGA bank supply exactly - but it draws this board's 50 mA from a 200 mA TPS73025 that already carries the Ethernet PHY RGMII I/O supply, four PLL supplies and VCCIO5 itself, with maybe 50 mA genuinely spare. Do not fit together with U12. Fit FB2 as well if you do."
-TP1,TP_HL2_FWD_CLK_RAW,TestPoint_Pad_D1.5mm,,,yes,,
-TP2,TP_HL2_FWD_CLK,TestPoint_Pad_D1.5mm,,,yes,,
-TP3,TP_DI_FWDCLK,TestPoint_Pad_D1.5mm,,,yes,,
-TP4,TP_HL2_ADC_D0,TestPoint_Pad_D1.5mm,,,yes,,
-TP5,TP_HL2_ADC_D1,TestPoint_Pad_D1.5mm,,,yes,,
-TP6,TP_HL2_ADC_D2,TestPoint_Pad_D1.5mm,,,yes,,
-TP7,TP_HL2_AUX_CLK_OUT,TestPoint_Pad_D1.5mm,,,yes,,
-TP8,TP_HL2_AUX_DAT_OUT,TestPoint_Pad_D1.5mm,,,yes,,
-TP9,TP_HL2_AUX_CLK_IN,TestPoint_Pad_D1.5mm,,,yes,,
-TP10,TP_HL2_AUX_DAT_IN,TestPoint_Pad_D1.5mm,,,yes,,
-TP11,TP_HL2_REV_CLK,TestPoint_Pad_D1.5mm,,,yes,,
-TP12,TP_HL2_TX_D0,TestPoint_Pad_D1.5mm,,,yes,,
-TP13,TP_HL2_TX_D1,TestPoint_Pad_D1.5mm,,,yes,,
-TP14,TP_HL2_TX_D2,TestPoint_Pad_D1.5mm,,,yes,,
-TP15,TP_RX_REVCLK,TestPoint_Pad_D1.5mm,,,yes,,
-TP16,TP_RX_DUPCLK,TestPoint_Pad_D1.5mm,,,yes,,
-TP17,TP_RX_SPARE,TestPoint_Pad_D1.5mm,,,yes,,
-TP18,TP_X_REVCLK25,TestPoint_Pad_D1.5mm,,,yes,,
-TP19,TP_HL2_JTAG_EN,TestPoint_Pad_D1.5mm,,,yes,,
-TP20,TP_HL2_AUXIO_EN,TestPoint_Pad_D1.5mm,,,yes,,
-TP21,TP_JTAG_EN_N,TestPoint_Pad_D1.5mm,,,yes,,
-TP22,TP_AUXIO_EN_N,TestPoint_Pad_D1.5mm,,,yes,,
-TP23,TP_AUXIO_OE_N,TestPoint_Pad_D1.5mm,,,yes,,
-TP24,TP_DRV_EN,TestPoint_Pad_D1.5mm,,,yes,,
-TP25,TP_DI_SPARE,TestPoint_Pad_D1.5mm,,,yes,,
-TP26,TP_SB_PRSNT_OUT,TestPoint_Pad_D1.5mm,,,yes,,
-TP27,TP_SB_PRSNT_IN,TestPoint_Pad_D1.5mm,,,yes,,
-TP28,TP_SB_TDO_OUT,TestPoint_Pad_D1.5mm,,,yes,,
-TP29,TP_SB_TCK_IN,TestPoint_Pad_D1.5mm,,,yes,,
-TP30,TP_SB_TMS_IN,TestPoint_Pad_D1.5mm,,,yes,,
-TP31,TP_SB_TDI_IN,TestPoint_Pad_D1.5mm,,,yes,,
-TP32,TP_SB_NC9,TestPoint_Pad_D1.5mm,,,yes,,
-TP33,TP_SB_NC29,TestPoint_Pad_D1.5mm,,,yes,,
-TP34,TP_J_TCK,TestPoint_Pad_D1.5mm,,,yes,,
-TP35,TP_J_TMS,TestPoint_Pad_D1.5mm,,,yes,,
-TP36,TP_J_TDI,TestPoint_Pad_D1.5mm,,,yes,,
-TP37,TP_J_TDO,TestPoint_Pad_D1.5mm,,,yes,,
-TP38,TP_CN1_VTREF,TestPoint_Pad_D1.5mm,,,yes,,
-TP39,TP_J_SPARE1,TestPoint_Pad_D1.5mm,,,yes,,
-TP40,TP_J_SPARE2,TestPoint_Pad_D1.5mm,,,yes,,
-TP41,TP_J_SPARE3,TestPoint_Pad_D1.5mm,,,yes,,
-TP42,TP_J_SPARE4,TestPoint_Pad_D1.5mm,,,yes,,
-TP43,TP_AUXIO0_T,TestPoint_Pad_D1.5mm,,,yes,,
-TP44,TP_AUXIO1_T,TestPoint_Pad_D1.5mm,,,yes,,
-TP45,TP_AUXIO2_T,TestPoint_Pad_D1.5mm,,,yes,,
-TP46,TP_AUXIO3_T,TestPoint_Pad_D1.5mm,,,yes,,
-TP47,TP_VLVDS,TestPoint_Pad_D1.5mm,,,yes,,
-TP48,TP_DB1_3V3,TestPoint_Pad_D1.5mm,,,yes,,
-TP49,TP_+3V3,TestPoint_Pad_D1.5mm,,,yes,,
-TP50,TP_+2V5,TestPoint_Pad_D1.5mm,,,yes,,
-TP51,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
-TP52,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
-TP101,TP_G_SB_PRSNT_OUT,TestPoint_Pad_D1.5mm,,,yes,,
-TP102,TP_G_SB_PRSNT_IN,TestPoint_Pad_D1.5mm,,,yes,,
-TP103,TP_G_SB_TCK_OUT,TestPoint_Pad_D1.5mm,,,yes,,
-TP104,TP_G_SB_TMS_OUT,TestPoint_Pad_D1.5mm,,,yes,,
-TP105,TP_G_SB_TDI_OUT,TestPoint_Pad_D1.5mm,,,yes,,
-TP106,TP_G_SB_TDO_IN,TestPoint_Pad_D1.5mm,,,yes,,
-TP107,TP_G_SB_NC_B9,TestPoint_Pad_D1.5mm,,,yes,,
-TP108,TP_G_SB_NC_B29,TestPoint_Pad_D1.5mm,,,yes,,
-TP109,TP_G_SB_NC_A11,TestPoint_Pad_D1.5mm,,,yes,,
-TP110,TP_G_SB_NC_A12,TestPoint_Pad_D1.5mm,,,yes,,
-TP111,TP_G_SB_NC_A26,TestPoint_Pad_D1.5mm,,,yes,,
-TP112,TP_G_SB_NC_A27,TestPoint_Pad_D1.5mm,,,yes,,
-TP113,TP_G_SB_NC_B11,TestPoint_Pad_D1.5mm,,,yes,,
-TP114,TP_G_SB_NC_B12,TestPoint_Pad_D1.5mm,,,yes,,
-TP115,TP_G_SB_NC_B26,TestPoint_Pad_D1.5mm,,,yes,,
-TP116,TP_G_SB_NC_B27,TestPoint_Pad_D1.5mm,,,yes,,
-TP117,TP_G_A_SPARE_P,TestPoint_Pad_D1.5mm,,,yes,,
-TP118,TP_G_A_SPARE_N,TestPoint_Pad_D1.5mm,,,yes,,
-TP119,TP_G_B_SPARE_P,TestPoint_Pad_D1.5mm,,,yes,,
-TP120,TP_G_B_SPARE_N,TestPoint_Pad_D1.5mm,,,yes,,
-TP121,TP_G_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
+TP1,TP_+3V3,TestPoint_Pad_D1.5mm,,,yes,,
+TP2,TP_+2V5,TestPoint_Pad_D1.5mm,,,yes,,
+TP3,TP_SB_PRSNT_IN,TestPoint_Pad_D1.5mm,,,yes,,
+TP4,TP_JTAG_EN_N,TestPoint_Pad_D1.5mm,,,yes,,
+TP5,TP_AUXIO_EN_N,TestPoint_Pad_D1.5mm,,,yes,,
+TP6,TP_AUXIO_OE_N,TestPoint_Pad_D1.5mm,,,yes,,
+TP7,TP_HL2_FWD_CLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP8,TP_HL2_REV_CLK,TestPoint_Pad_D1.5mm,,,yes,,
+TP9,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
+TP101,TP_G_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
 U1,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply translator, VCCA 2.5 V / VCCB 3.3 V. THE FORWARD GROUP: the 153.6 MHz forward clock and ADC data lanes 0, 1 and 2 - exactly four signals in exactly one package, so the clock cannot lead its data by the 1.1 to 3.7 ns part-to-part propagation delay. Within one package they share a channel-to-channel skew instead","Both DIR tied to VCCA (A->B), both OE* to GND - always enabled. The forward clock arrives on FPGA pin 98, which is a 3.3 V bank pin, so it comes through the R1/R2 divider first: the A-side absolute maximum is VCCA+0.5 = 3.0 V and 3.3 V direct would be out of spec."
 U2,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply translator, VCCA 2.5 V / VCCB 3.3 V. Port 1 is the auxiliary transmit pair - clock and data in one port so they share a skew. Port 2 carries the two ENABLE LEVELS the gateware controls: JTAG over the cable and the AUXIO drive direction, both active LOW, both DC","Both DIR to VCCA (A->B), both OE* to GND. The two enable channels are static levels, not signals. Each enable is pulled UP at BOTH ends - to +2V5 on the HL2 side and to +3V3 on the logic side - so a missing part, an unpowered part, an unconfigured FPGA or an open HL2 jumper J25 all leave the feature DISABLED."
 U3,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply translator, VCCA 3.3 V / VCCB 2.5 V. Port 1 carries the two candidate reverse clocks - the primary and the duplicate - so whichever is selected has the same delay. Port 2 carries the auxiliary receive pair, clock and data together","Both DIR to VCCA (A->B), both OE* to GND. The duplicate clock output goes nowhere unless R_CLKSEL_B is fitted and R_CLKSEL_A removed; driving an open pad is harmless."
 U4,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. THE FORWARD GROUP: 153.6 MHz forward clock plus ADC data lanes 0, 1 and 2 at 307.2 Mbit/s each. Three lanes DDR at 153.6 MHz is 921.6 Mbit/s, the complete raw 12-bit 76.8 MSPS stream. All four channels used, none spare","EN = DRV_EN, EN* = GND. DRV_EN is tied to +3V3 through the fitted link R_DRVEN_ON, so the drivers are always on. Move the link to R_DRVEN_PRSNT to gate them on the far end being present and powered instead, which saves about 60 mA with no cable - but only if your cable actually wires the sidebands, because the no-sideband cable variant exists and would leave the link dead."
-U5,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. Channel 1 is the DUPLICATE forward clock, fed from the same translated net as the primary: the forward clock is the single point of failure for the whole receive path, the far end has spare pins and trains whichever lane works, and this costs one trace. Channels 2 and 3 are the auxiliary transmit pair, channel 4 is a spare brought out to test pads","EN = DRV_EN, EN* = GND. DRV_EN is tied to +3V3 through the fitted link R_DRVEN_ON, so the drivers are always on. Move the link to R_DRVEN_PRSNT to gate them on the far end being present and powered instead, which saves about 60 mA with no cable - but only if your cable actually wires the sidebands, because the no-sideband cable variant exists and would leave the link dead."
+U5,DS90LV047A,SOIC-16_3.9x9.9mm_P1.27mm,C206491,DS90LV047ATMX/NOPB,yes,"Quad LVDS driver, 400 Mbps, SOIC-16. Channel 1 is the DUPLICATE forward clock, fed from the same translated net as the primary: the forward clock is the single point of failure for the whole receive path, the far end has spare pins and trains whichever lane works, and this costs one trace. Channels 2 and 3 are the auxiliary transmit pair, channel 4 is a spare driver channel with its input held low","EN = DRV_EN, EN* = GND. DRV_EN is tied to +3V3 through the fitted link R_DRVEN_ON, so the drivers are always on. Move the link to R_DRVEN_PRSNT to gate them on the far end being present and powered instead, which saves about 60 mA with no cable - but only if your cable actually wires the sidebands, because the no-sideband cable variant exists and would leave the link dead."
 U6,DS90LV048A,TSSOP-16_4.4x5mm_P0.65mm,C87137,DS90LV048ATMTCX/NOPB,yes,"Quad LVDS receiver, 400 Mbps, TSSOP-16. The reverse group: reverse clock plus transmit data lanes 0, 1 and 2 at 307.2 Mbit/s, received simultaneously with the forward group. All four channels used","EN tied to +3V3 and EN* to GND: always enabled. A receiver input is high impedance, so there is nothing to gate."
-U7,DS90LV048A,TSSOP-16_4.4x5mm_P0.65mm,C87137,DS90LV048ATMTCX/NOPB,yes,"Quad LVDS receiver, 400 Mbps, TSSOP-16. Channel 1 receives the far end's DUPLICATE forward clock, which is what makes the duplicate symmetric: fit R_CLKSEL_B instead of R_CLKSEL_A and FPGA pin 88 is fed from this channel instead. Channels 2 and 3 are the auxiliary receive pair, channel 4 a spare","EN tied to +3V3 and EN* to GND: always enabled. A receiver input is high impedance, so there is nothing to gate."
+U7,DS90LV048A,TSSOP-16_4.4x5mm_P0.65mm,C87137,DS90LV048ATMTCX/NOPB,yes,"Quad LVDS receiver, 400 Mbps, TSSOP-16. Channel 1 receives the far end's DUPLICATE forward clock, which is what makes the duplicate symmetric: fit R_CLKSEL_B instead of R_CLKSEL_A and FPGA pin 88 is fed from this channel instead. Channels 2 and 3 are the auxiliary receive pair, channel 4 a spare whose output is left unconnected","EN tied to +3V3 and EN* to GND: always enabled. A receiver input is high impedance, so there is nothing to gate."
 U8,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"AUXIO READ path, all four lines. Both rails 3.3 V, both DIR LOW so the direction is B->A: the HL2 side is a high-impedance input and the cable side is the output. ALWAYS ON, and physically incapable of driving an HL2 pin","DIR = GND on both ports, OE* = GND on both ports. This is the default and only path that is live without gateware."
 U9,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"AUXIO DRIVE path, all four lines. Both rails 3.3 V, both DIR HIGH so the direction is A->B: the cable drives the HL2 pins. Both ports gated by AUXIO_OE_N, which is LOW only while the gateware enables AND a powered far end is present. Its inputs are pulled UP, so an absent far end can only ever pass the not-keyed HIGH level","DIR = +3V3 both ports, OE* = AUXIO_OE_N both ports. The gateware must tri-state FPGA pins 90, 91, 103 and 104 BEFORE asserting the enable - that is a software interlock, and the 330 R series resistors are what make getting it wrong survivable rather than fatal. Be aware that lines 2 and 3 are the I2C bus to the VersaClock that generates the radio master clock."
 U10,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"JTAG buffers, part 1. Port 1 is B->A and ALWAYS ON: it reads TDO out of CN1 and drives it onto the cable. Port 2 is A->B and GATED by JTAG_EN_N: TCK and TMS from the cable into CN1","Port 1: 1DIR = GND (B->A), 1OE* = GND. Port 2: 2DIR = +3V3 (A->B), 2OE* = JTAG_EN_N. Reading TDO is unconditional and harmless; driving TCK and TMS is not, and is off until the gateware says otherwise."
-U11,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"JTAG buffers, part 2. Port 1 channel 1 is TDI from the cable into CN1, gated by the same JTAG_EN_N. The other three channels are spare","Port 1: 2 channels, DIR = +3V3 (A->B), OE* = JTAG_EN_N; only channel 1 is used and channel 2 has its input grounded. Port 2 is disabled (2OE* to +3V3) with both inputs grounded and both outputs on test pads. Three spare gated 3.3 V channels are available here if a future revision needs them."
+U11,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"JTAG buffers, part 2. Port 1 channel 1 is TDI from the cable into CN1, gated by the same JTAG_EN_N. The other three channels are spare","Port 1: 2 channels, DIR = +3V3 (A->B), OE* = JTAG_EN_N; only channel 1 is used and channel 2 has its input grounded. Port 2 is disabled (2OE* to +3V3) with both inputs grounded and both outputs unconnected. Three spare gated 3.3 V channels are available here if a future revision needs them."
 U12,ME6211C25M5G,SOT-23-5,C194395,ME6211C25M5G-N,yes,"2.5 V 400 mA LDO, the 2.5 V side of U1, U2 and U3 only. Computed load 50 mA, so 8x of headroom and 40 mW of dissipation","Output tolerance +/-2%, so VCCA worst case 2.55 V and the translator VIH worst case 0.65 x 2.55 = 1.66 V against the HL2's guaranteed 2.0 V VOH: 340 mV of margin. Enable is tied to the input. If you would rather the thresholds tracked the FPGA's own bank supply exactly, fit SL_VLVDS and FB2 and remove U12 - but read the note on SL_VLVDS first."

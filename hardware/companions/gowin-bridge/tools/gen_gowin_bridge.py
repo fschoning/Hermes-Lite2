@@ -523,8 +523,12 @@ CUSTOM_SYMS = tuple(CUSTOM)
 class Part:
     def __init__(self, ref, ptype, value, pins, lcsc='', mfr='', desc='',
                  dnp=False, note='', at=None, rot=0, layer='F.Cu',
-                 exclude_bom=False, mirror=False, qty=1):
+                 exclude_bom=False, mirror=False, qty=1, locked=False):
         self.ref = ref
+        # LOCKED = the position is set by the radio, the dock, the case or
+        # the panel, and Quilter must not move it.  Everything else is left
+        # OFF the board for Quilter to place (panel() stages it).
+        self.locked = locked
         self.ptype = ptype
         self.value = value
         self.pins = dict(pins)          # pad number (str) -> net name or None
@@ -564,6 +568,11 @@ class Board:
         self.zones_full = None
         # extra graphics the panel needs: V-score lines, mouse-bite drills
         self.npth = []                  # (x, y, drill) plain holes
+        # Rule areas.  keepouts: (name, layers, disallowed set, polygon).
+        # regions: (name, polygon, [refs]) - F.Cu rule areas with nothing
+        # disallowed, which is how Quilter reads a KiCad placement region.
+        self.keepouts = []
+        self.regions = []
         self.edge_extra = []            # [(x0,y0,x1,y1)] more Edge.Cuts
 
     def calibration_rule(self, x, y, length=50.0):
@@ -766,75 +775,6 @@ def courtyard(ptype, rot=0):
     return _CRT_CACHE[key]
 
 
-PLACE_GAP = 0.40             # clearance left between neighbouring courtyards
-PLACE_TYPES = ('R', 'R0805', 'C', 'C0805', 'TP', 'TPBIG', 'ESD4', 'NMOS')
-
-
-def autoplace(board, regions):
-    """Shelf-pack every small part into the free regions using its real
-    courtyard, so no two courtyards overlap and no pad lands on another.
-
-    A placement *starting point* only - the board is routed by hand (or in
-    EasyEDA Pro) - but it has to be DRC-clean before routing starts, which a
-    fixed grid is not: an 0805 courtyard is 3.4 mm wide and would overlap its
-    neighbour on any grid fine enough to fit the 0402s.
-
-    Keep-outs are derived from the parts that ALREADY have a position (the
-    connectors, the ICs, the headers), so adding or moving a chip cannot leave
-    a stale reserved rectangle behind.  Parts are packed tallest-first into
-    horizontal shelves.
-    """
-    if isinstance(regions[0], (int, float)):
-        regions = [regions]
-    reserved = []
-    for q_ in board.parts:
-        # Anything already positioned is a keep-out, including a test pad or
-        # a capacitor that was placed by hand.
-        if q_.at is None or not TYPES[q_.ptype][3]:
-            continue
-        hw, hh = courtyard(q_.ptype, q_.rot)
-        reserved.append((q_.at[0] - hw, q_.at[1] - hh,
-                         q_.at[0] + hw, q_.at[1] + hh))
-    todo = [q_ for q_ in board.parts
-            if q_.ptype in PLACE_TYPES and q_.at is None]
-    todo.sort(key=lambda q_: -courtyard(q_.ptype)[1])
-
-    def blocked(x0, y0, x1, y1):
-        for (rx0, ry0, rx1, ry1) in reserved:
-            if (x0 < rx1 + PLACE_GAP and x1 > rx0 - PLACE_GAP
-                    and y0 < ry1 + PLACE_GAP and y1 > ry0 - PLACE_GAP):
-                return True
-        return False
-
-    i = 0
-    for (rx0, ry0, rx1, ry1) in regions:
-        y = ry0
-        while y < ry1 and i < len(todo):
-            shelf_h = 2.0 * courtyard(todo[i].ptype)[1] + PLACE_GAP
-            if y + shelf_h > ry1:
-                break
-            x = rx0
-            while x < rx1 and i < len(todo):
-                pp = todo[i]
-                hw, hh = courtyard(pp.ptype)
-                w = 2.0 * hw + PLACE_GAP
-                if 2.0 * hh + PLACE_GAP > shelf_h or x + w > rx1:
-                    break
-                cx, cy = x + w / 2.0, y + shelf_h / 2.0
-                if blocked(cx - hw, cy - hh, cx + hw, cy + hh):
-                    x += 0.5
-                    continue
-                pp.at = (round(cx, 3), round(cy, 3))
-                reserved.append((cx - hw, cy - hh, cx + hw, cy + hh))
-                i += 1
-                x += w
-            y += shelf_h
-    if i < len(todo):
-        raise SystemExit('autoplace: %d of %d small parts did not fit on %s; '
-                         'enlarge its regions' % (len(todo) - i, len(todo),
-                                                  board.name))
-
-
 # ==========================================================================
 #  THE BOARD.  One design, one schematic, one PCB, one BOM.
 # ==========================================================================
@@ -974,7 +914,7 @@ LANES = (
                              'channel / a second receiver for the far end'
                              "'s duplicate, link-selectable onto pin 88"),
     (35, 'SPARE', 'SPARE', 'spare lane, one driver channel out and one '
-                           'receiver channel in, both on test pads'),
+                           'receiver channel in; nothing else uses it'),
 )
 
 # The eight single-ended sideband channels, same idea: A(n) is what this board
@@ -1028,21 +968,6 @@ AUXIO = (
 )
 
 
-def row(parts, y, x0, rot=0, gap=0.6):
-    """Place an ordered list of parts left to right in one band, spacing them
-    by their REAL courtyards so two of them cannot overlap however the part
-    list changes.  Hand coordinates for eleven ICs is how the first rev D
-    build collected 101 shorting-item DRC violations."""
-    x = x0
-    for p_ in parts:
-        hw, hh = courtyard(p_.ptype, rot)
-        x += hw
-        p_.at = (round(x, 3), round(y, 3))
-        p_.rot = rot
-        x += hw + gap
-    return x
-
-
 def bridge():
     # THE M3 ANCHOR IS A NOTCH, NOT A HOLE.  HL2's MH2 sits at (73.00,
     # 137.00), i.e. local (3.00, 63.70), only 1.25 mm from this board's top
@@ -1081,7 +1006,7 @@ def bridge():
     }, lcsc='', mfr='JXTCONN PM2.54-2X10P-H85 (LCSC C42431860) or any '
                     '2.54 mm 2x10 vertical female socket',
         desc='Mates HL2 DB1. HAND SOLDERED, bottom side',
-        at=DB1_PIN1, rot=0, layer='B.Cu', mirror=True, dnp=True,
+        at=DB1_PIN1, locked=True, rot=0, layer='B.Cu', mirror=True, dnp=True,
         note='NOT PLACED BY JLCPCB - hand soldered on the underside. DB1 is '
              'marked DNI in the HL2 BOM, so the male header on the radio may '
              'need soldering too. Pin 1 (FPGA 72) reaches the FPGA only '
@@ -1096,7 +1021,7 @@ def bridge():
                     'stocks no vertical 2x3 socket - buy a 2x4 and cut it '
                     'down, or source outside LCSC',
         desc='Mates HL2 DB12. HAND SOLDERED, bottom side',
-        at=DB12_PIN1, rot=0, layer='B.Cu', mirror=True, dnp=True,
+        at=DB12_PIN1, locked=True, rot=0, layer='B.Cu', mirror=True, dnp=True,
         note='NOT PLACED BY JLCPCB. NOTE THE ORDER: pin 5 = FPGA PIN_89 '
              '(auxiliary clock in) and pin 6 = FPGA PIN_88 (reverse clock '
              'in). rev A of PINMAP.md had these two transposed; '
@@ -1126,7 +1051,7 @@ def bridge():
                     'driven by this board, row B is received; the cable '
                     'crosses A(n) to B(n), which is what lets ONE design sit '
                     'at both ends',
-               at=SLIMSAS_AT, rot=0,
+               at=SLIMSAS_AT, locked=True, rot=0,
                note='Reflow the 74 SMD contacts, then solder the four 2.2 mm '
                     'through-hole shell tails. Mating face nominally 0.20 mm '
                     'behind the board edge - see the SLIMSAS comment block '
@@ -1148,7 +1073,7 @@ def bridge():
                lcsc='', mfr='PM254V-12-10P-H85 (LCSC C492399) or any 2.54 mm '
                             '2x5 vertical female socket',
                desc='Mates HL2 CN1, the USB-Blaster JTAG header',
-               at=CN1_PIN1, rot=0, layer='B.Cu', mirror=True, dnp=True,
+               at=CN1_PIN1, locked=True, rot=0, layer='B.Cu', mirror=True, dnp=True,
                note='NOT PLACED BY JLCPCB - hand soldered on the underside. '
                     'THE TOLERANCE WARNING: this is the third rigid 2.54 mm '
                     'socket on one board, 54.19 mm from DB1, and '
@@ -1167,7 +1092,7 @@ def bridge():
                     'USB Blaster still plugs in locally with this board '
                     'fitted. Also the alternative CN1 connection: a flying '
                     '10-way IDC ribbon from CN1 to here replaces J4',
-               at=(56.0, 24.5), rot=0,
+               at=(56.0, 24.5), locked=True, rot=0,
                note='PURELY PASSIVE: socket straight through to header, ten '
                     'nets, no branches other than the four buffered taps. '
                     'Pins 6, 7 and 8 are left open - unconnected on the HL2 '
@@ -1277,7 +1202,7 @@ def bridge():
          'point of failure for the whole receive path, the far end has spare '
          'pins and trains whichever lane works, and this costs one trace. '
          'Channels 2 and 3 are the auxiliary transmit pair, channel 4 is a '
-         'spare brought out to test pads'),
+         'spare driver channel with its input held low'),
     ]
     for ref_u, at, chmap, desc in drv:
         pins = {'1': 'DRV_EN', '4': '+3V3', '5': 'GND', '8': 'GND'}
@@ -1306,11 +1231,12 @@ def bridge():
          '2 at 307.2 Mbit/s, received simultaneously with the forward group. '
          'All four channels used'),
         ('U7', None, [('DUPCLK', 'RX_DUPCLK'), ('AUXCLK', 'RX_AUXCLK'),
-                              ('AUXDAT', 'RX_AUXDAT'), ('SPARE', 'RX_SPARE')],
+                              ('AUXDAT', 'RX_AUXDAT'), ('SPARE', None)],
          "Channel 1 receives the far end's DUPLICATE forward clock, which is "
          'what makes the duplicate symmetric: fit R_CLKSEL_B instead of '
          'R_CLKSEL_A and FPGA pin 88 is fed from this channel instead. '
-         'Channels 2 and 3 are the auxiliary receive pair, channel 4 a spare'),
+         'Channels 2 and 3 are the auxiliary receive pair, channel 4 a spare '
+         'whose output is left unconnected'),
     ]
     for ref_u, at, chmap, desc in rcv:
         pins = {'16': '+3V3', '9': 'GND', '12': 'GND', '13': '+3V3'}
@@ -1500,7 +1426,7 @@ def bridge():
                  'Isolates the HL2 FPGA TDO pin from the cable entirely'))
     b.add(Part('U10', 'XLAT4', 'SN74AVC4T245PW',
                x4(['J_TDO_T', 'GND', 'SB_TCK_IN', 'SB_TMS_IN'],
-                  ['SB_TDO_OUT', 'J_SPARE1', 'SB_TCK_IN_B', 'SB_TMS_IN_B'],
+                  ['SB_TDO_OUT', None, 'SB_TCK_IN_B', 'SB_TMS_IN_B'],
                   '+3V3', '+3V3', 'GND', '+3V3', 'GND', 'JTAG_EN_N'),
                lcsc=LC_X4, mfr='SN74AVC4T245PWR',
                desc='JTAG buffers, part 1. Port 1 is B->A and ALWAYS ON: it '
@@ -1514,7 +1440,7 @@ def bridge():
                     'and is off until the gateware says otherwise.'))
     b.add(Part('U11', 'XLAT4', 'SN74AVC4T245PW',
                x4(['SB_TDI_IN', 'GND', 'GND', 'GND'],
-                  ['SB_TDI_IN_B', 'J_SPARE2', 'J_SPARE3', 'J_SPARE4'],
+                  ['SB_TDI_IN_B', None, None, None],
                   '+3V3', '+3V3', '+3V3', '+3V3', 'JTAG_EN_N', '+3V3'),
                lcsc=LC_X4, mfr='SN74AVC4T245PWR',
                desc='JTAG buffers, part 2. Port 1 channel 1 is TDI from the '
@@ -1524,7 +1450,7 @@ def bridge():
                note='Port 1: 2 channels, DIR = +3V3 (A->B), OE* = JTAG_EN_N; '
                     'only channel 1 is used and channel 2 has its input '
                     'grounded. Port 2 is disabled (2OE* to +3V3) with both '
-                    'inputs grounded and both outputs on test pads. Three '
+                    'inputs grounded and both outputs unconnected. Three '
                     'spare gated 3.3 V channels are available here if a '
                     'future revision needs them.'))
 
@@ -1822,35 +1748,34 @@ def bridge():
                  'capacitor on both sides'))
 
     # ==================================================== test points
-    # Test points, trimmed to what the bring-up sequence in ROUTING.md
-    # actually probes plus every net that would otherwise have only one
-    # connection.  A 1.5 mm pad with its courtyard costs 8.4 mm2 of placeable
-    # area, so sixty of them is half the free board.
-    tps = ['HL2_FWD_CLK_RAW', 'HL2_FWD_CLK', 'DI_FWDCLK',
-           'HL2_ADC_D0', 'HL2_ADC_D1', 'HL2_ADC_D2',
-           'HL2_AUX_CLK_OUT', 'HL2_AUX_DAT_OUT',
-           'HL2_AUX_CLK_IN', 'HL2_AUX_DAT_IN', 'HL2_REV_CLK',
-           'HL2_TX_D0', 'HL2_TX_D1', 'HL2_TX_D2',
-           'RX_REVCLK', 'RX_DUPCLK', 'RX_SPARE', 'X_REVCLK25',
-           'HL2_JTAG_EN', 'HL2_AUXIO_EN', 'JTAG_EN_N', 'AUXIO_EN_N',
-           'AUXIO_OE_N', 'DRV_EN', 'DI_SPARE',
-           'SB_PRSNT_OUT', 'SB_PRSNT_IN', 'SB_TDO_OUT',
-           'SB_TCK_IN', 'SB_TMS_IN', 'SB_TDI_IN', 'SB_NC9', 'SB_NC29',
-           'J_TCK', 'J_TMS', 'J_TDI', 'J_TDO', 'CN1_VTREF',
-           'J_SPARE1', 'J_SPARE2', 'J_SPARE3', 'J_SPARE4',
-           'AUXIO0_T', 'AUXIO1_T', 'AUXIO2_T', 'AUXIO3_T',
-           'VLVDS', 'DB1_3V3', '+3V3', '+2V5']
-    for net in tps:
+    # TEN TEST POINTS ON THE WHOLE BOARD: nine here and one at the Gowin end.
+    # rev D as first generated carried 73, one on
+    # almost every net, and they took half the free board.  Each survivor
+    # earns its place in the bring-up sequence (ROUTING.md section 7) or the
+    # fault-finding table (section 6):
+    #   GND            scope ground clip for this half (THT pad)
+    #   +3V3           the rail after FB1: bring-up step 2
+    #   +2V5           U12's output, the translators' 2.5 V side: step 2
+    #   SB_PRSNT_IN    presence detect: step 3, and the first suspect when
+    #                  nothing works in either direction
+    #   JTAG_EN_N      JTAG over the cable, logic side: MUST read HIGH at
+    #                  power-up with no gateware (step 1, the safety check)
+    #   AUXIO_EN_N     the AUXIO drive enable from the gateware: step 1
+    #   AUXIO_OE_N     the drive buffer's real enable after the Q1 presence
+    #                  interlock: the proof that an absent far end cannot key
+    #                  the radio
+    #   HL2_FWD_CLK    forward clock after the R1/R2 divider: expect 2.50 V
+    #                  high; a low level means pin 98 is not at 8 mA drive
+    #   HL2_REV_CLK    received reverse clock after the translator and the
+    #                  clock-select link, into FPGA pin 88
+    # Every other net that used to end on a pad either still has two or more
+    # connections, or was a spare output that now carries a no-connect flag:
+    # RX_SPARE (U7 channel 4 output) and J_SPARE1-4 (U10/U11 spare outputs).
+    # No pull resistor, clamp or fail-safe element depended on a test pad.
+    for net in ('+3V3', '+2V5', 'SB_PRSNT_IN', 'JTAG_EN_N', 'AUXIO_EN_N',
+                'AUXIO_OE_N', 'HL2_FWD_CLK', 'HL2_REV_CLK'):
         b.add(TP(ref('TP'), net))
-    for at in ((30.0, 60.0), (34.0, 60.0)):
-        g = TP(ref('TP'), 'GND', t='TPBIG')
-        g.at = at
-        b.add(g)
-    b.add(Part('J6', 'HDR1x02', 'GND CLIP', {'1': 'GND', '2': 'GND'},
-               lcsc='', dnp=True,
-               mfr='2.54 mm 1x2P vertical pin header (LCSC C52016390)',
-               desc='Ground clip / scope reference', at=(41.0, 60.0), rot=0,
-               note='Hand soldered.'))
+    b.add(TP(ref('TP'), 'GND', t='TPBIG'))
 
     # ==================================================== mechanical
     # One unplated 1.1 mm hole for the optional locating peg into HL2 MH6 at
@@ -1865,71 +1790,26 @@ def bridge():
                 'CN1_VTREF', 'SHELL']:
         b.add(FLAG(net))
 
-    # The +2V5 island: it has to reach U1 and U2's VCCA, U3's VCCB, U12's
-    # output and the SL_VLVDS link, so it spans the translator row.
-    b.zones_extra.append(('In2.Cu', '+2V5', 10,
-                          [(8.0, 1.0), (33.0, 1.0), (33.0, 12.0),
-                           (8.0, 12.0)],
-                          'power plane island: +2V5'))
+    # No pre-drawn +2V5 island any more: its old rectangle assumed the
+    # translators' old positions.  Quilter makes the power pours for +3V3 and
+    # +2V5 on In2.Cu from the Power Nets comprehension (QUILTER.md).
 
     # ---------------------------------------------------- the floor plan
-    # Three bands, packed by real courtyards, and every band chosen to clear
-    # the four socket keep-outs (DB1 reaches local y 29.3 at x < 8.4, DB12
-    # occupies x 9.2-17.8 / y 7.3-21.0, the CN1 socket x 53.9-62.5 / y < 20.9
-    # and the JTAG header x 51.7-60.3 / y 18.1-41.9) and the SlimSAS
-    # receptacle (x < 20.8, y 33.5-58.5).
-    #
-    # Band B holds the LVDS silicon and band A the translators, both inside
-    # local x 18..53 and y 12..28 - i.e. within about 25 mm of DB1 and DB12,
-    # which is what section 11.6's rule asks for: every single-ended HL2 net
-    # stays short, and the only long runs are the terminated 100 ohm
-    # differential pairs up to the connector, which do not care.
-    P = {p_.ref: p_ for p_ in b.parts}
-    row([P['U1'], P['U2'], P['U3'], P['U8'], P['U9']], 25.0, 9.0)
-    row([P['U4'], P['U5'], P['U6'], P['U7']], 16.0, 18.6, rot=90)
-    row([P['FB1'], P['FB2'], P['U12']], 31.5, 9.0)
-    row([P['U10'], P['U11']], 31.5, 22.0)
+    # NOT PLACED HERE.  Only the parts whose position the radio fixes (J1-J5)
+    # have a position; panel() stages everything else off the board, where
+    # Quilter reads it as "place this".  What this end tells the placer is in
+    # radio_rules(), expressed as KiCad rule areas.
 
-    autoplace(b, [(9.5, 1.0, 51.0, 6.8),
-                  (18.2, 7.6, 51.0, 11.6),
-                  (22.0, 35.0, 44.0, 49.5),
-                  (22.0, 50.5, 44.0, 58.0),
-                  (45.0, 50.5, 63.5, 58.0),
-                  (1.0, 58.8, 28.0, 63.2),
-                  (43.5, 58.8, 63.5, 63.2),
-                  (44.0, 27.5, 51.2, 38.5),
-                  (57.5, 42.2, 63.5, 49.5),
-                  (60.8, 21.5, 63.5, 41.5)])
-
-    b.calibration_rule(30.0, 64.2, 30.0)
+    # ON THE BOARD: reference designators, the footprints' own pin-1 marks,
+    # one small name-and-revision line and the agreed hot-plug warning, both
+    # in a strip along the bottom edge that no placement region covers.  Everything the first rev D build wrote onto the board
+    # - the connector's row convention, the DB12 pin 5/6 order, "HL2 R17 MUST
+    # NOT BE FITTED", the outline and datum dimensions, the panel window
+    # figures - is in DESIGN_NOTES.md section 12, and the 1:1 print rule is
+    # drawn on User.Drawings outside the board outline (see panel()).
     b.texts = [
-        ('F.SilkS', 32.0, 31.0, 0, 1.6,
-         'HERMES LITE 2 SlimSAS BRIDGE  rev %s  ONE DESIGN, BOTH ENDS' % REV),
-        ('F.SilkS', 24.0, 46.0, 0, 1.2, 'SlimSAS SFF-8654 8i'),
-        ('F.SilkS', 24.0, 48.5, 0, 1.0,
-         'ROW A = DRIVEN   ROW B = RECEIVED   CABLE CROSSES A(n)-B(n)'),
-        ('F.SilkS', 57.3, 21.5, 0, 1.0, 'JTAG PASS-THRU'),
-        ('F.SilkS', 50.75, 44.75, 0, 1.0, 'DB6 / DB3 ACCESS'),
-        ('Dwgs.User', 32.0, 58.0, 0, 1.4,
-         'Radio end = 64.50 x 64.88 mm (HL2 y 73.37..138.25). Local (0,0) = '
-         'Hermes-Lite 2 main board (70.00, 73.30) mm. Underside 11.04 mm above '
-         'the HL2 top surface.'),
-        ('Dwgs.User', 32.0, 60.0, 0, 1.4,
-         'SlimSAS locating-hole datum at local x 10.40, y 46.00 = HL2 '
-         '(80.40, 119.30). Mating face nominally 0.30 mm behind the board '
-         'edge - VERIFY BEFORE CUTTING THE PANEL.'),
-        ('Dwgs.User', 32.0, 62.0, 0, 1.4,
-         'Panel window: 26.5 x 10.5 mm centred on HL2 y 119.30, from 19.6 to '
-         '30.2 mm above the enclosure floor. FABRICATION: 4 layer, 1.6 mm, '
-         'HASL, ONE design.'),
-        ('B.SilkS', 32.0, 33.0, 0, 1.2, 'SOCKETS J2 J3 J4 ON THIS SIDE'),
-        ('B.SilkS', 32.0, 35.5, 0, 1.0,
-         'DB12 p5=PIN_89(AUX CLK IN)  p6=PIN_88(REV CLK)'),
-        ('B.SilkS', 32.0, 38.0, 0, 1.0,
-         'HL2 R17 MUST NOT BE FITTED.  DO NOT PLUG OR UNPLUG POWERED.'),
-        ('F.SilkS', 9.0, 3.0, 90, 1.0, 'DB1 p1'),
-        ('F.SilkS', 18.0, 11.0, 0, 1.0, 'DB12 p1'),
-        ('F.SilkS', 60.0, 6.0, 90, 1.0, 'CN1 p1'),
+        ('F.SilkS', 34.0, 60.9, 0, 1.0, 'HL2 SlimSAS BRIDGE  rev %s' % REV),
+        ('F.SilkS', 34.0, 62.7, 0, 1.0, 'DO NOT PLUG OR UNPLUG POWERED'),
     ]
     return b
 
@@ -2069,7 +1949,8 @@ GJ14_SE = {
 # Not wired to the FPGA at this end: the spare lane.  With J14 positions 1-4
 # under the connector there are 34 usable J14 pins, and fourteen working
 # pairs plus six sideband lines is exactly 34.  At the radio end the spare
-# lane goes only to test pads, so nothing that works today is lost.
+# lane goes nowhere beyond its own driver and receiver, so nothing that
+# works today is lost.
 GOWIN_UNWIRED_LANES = ('SPARE',)
 
 # Sidebands at the Gowin end.  pos -> (driven on A, received on B).
@@ -2077,7 +1958,8 @@ GOWIN_UNWIRED_LANES = ('SPARE',)
 # on B30 - the exact positions the radio end listens on.  B9 and B29 face the
 # radio's two deliberately undriven outputs and are left unused here too.
 # The four AUXIO positions are not implemented at this end: J14 has no pin
-# left.  Their eight conductors are clamped and brought to test pads.
+# left.  Their eight conductors are clamped at the connector and go no
+# further; the radio end biases them to their safe level on its own.
 GSIDEBANDS = (
     (8,  'PRSNT', 'PRSNT', 'presence and link reset'),
     (9,  'TCK',   None,    'JTAG TCK out to the radio; B9 faces the radio '
@@ -2124,7 +2006,7 @@ def gowin_end():
                     'spacer hole over dock hole H7_LU1. Row A is driven by '
                     'this end, row B is received; the cable crosses A(n) to '
                     'B(n)',
-               at=GOWIN_SS_AT, rot=0,
+               at=GOWIN_SS_AT, locked=True, rot=0,
                note='Mating face at dock x 89.73, flush with the dock RJ45 '
                     'face. Reflow the 74 contacts, hand-solder the four shell '
                     'tails. The M3 hole under the housing takes a spacer '
@@ -2154,7 +2036,7 @@ def gowin_end():
                     '4). Pin k of this part is J14 position k+4. HAND '
                     'SOLDERED, bottom side',
                at=_gloc(J14_PIN1_DOCK[0] + 2.54 * 2, J14_PIN1_DOCK[1]),
-               rot=90, layer='B.Cu', mirror=True, dnp=True,
+               locked=True, rot=90, layer='B.Cu', mirror=True, dnp=True,
                note='NOT PLACED BY JLCPCB. J14 positions 1-4 lie under the '
                     'SlimSAS connector and are NOT fitted on either side of '
                     'the stack. Position 11 (pin 7 here) is the dock 5 V rail '
@@ -2226,78 +2108,69 @@ def gowin_end():
                 a_.pins[kk] = 'G_GND'
     b.add(*arr)
 
-    # ---------------------------------------------------- test pads
-    tk = 101
-    for net in (['G_SB_PRSNT_OUT', 'G_SB_PRSNT_IN', 'G_SB_TCK_OUT',
-                 'G_SB_TMS_OUT', 'G_SB_TDI_OUT', 'G_SB_TDO_IN',
-                 'G_SB_NC_B9', 'G_SB_NC_B29'] +
-                ['G_SB_NC_A%d' % p_ for p_ in (11, 12, 26, 27)] +
-                ['G_SB_NC_B%d' % p_ for p_ in (11, 12, 26, 27)] +
-                ['G_A_SPARE_P', 'G_A_SPARE_N', 'G_B_SPARE_P', 'G_B_SPARE_N']):
-        b.add(TP('TP%d' % tk, net))
-        tk += 1
-    g = TP('TP%d' % tk, 'G_GND', t='TPBIG')
+    # ---------------------------------------------------- test point
+    # One: ground, for the scope clip.  The Gowin end has no active part,
+    # no power rail and no receiver of its own - the FPGA receives - so the
+    # signals worth probing are on the dock.  The spare lane and the eight
+    # AUXIO conductors used to end on test pads here; they now end at the
+    # connector and their ESD clamps, which is all they ever needed: nothing
+    # at this end drives or listens to them, and the radio end's own pull-ups
+    # decide the AUXIO level (check_netlist.py, all three pairings).
+    g = TP('TP101', 'G_GND', t='TPBIG')
     b.add(g)
     for net in ('G_GND', 'G_SHELL'):
         b.add(FLAG(net))
 
     # ---------------------------------------------------- floor plan
-    P = {p_.ref: p_ for p_ in b.parts}
-    esd = [P['D%d' % i] for i in range(101, 113)]
-    ehw, ehh = courtyard('ESD4', 90)
-    x0 = 17.6 + ehw
-    for i, d_ in enumerate(esd):
-        col, rw = divmod(i, 4)
-        d_.at = (round(x0 + col * (2 * ehw + 0.5), 3),
-                 round(1.0 + ehh + rw * (2 * ehh + 0.5), 3))
-        d_.rot = 90
-    xa = x0 + 3 * (2 * ehw + 0.5) - ehw + 0.2
-    nx, ny = _gloc(*GOWIN_NOTCH)
-    g.at = (round(nx - 2.2, 3), 2.2)
-    autoplace(b, [(xa, 0.4, nx - 0.4, 17.9),
-                  (nx + 0.4, ny + 0.4, GOWIN_W - 0.4, 17.9)])
+    # ---------------------------------------------------- floor plan
+    # Only J101 and J102 are placed; the rest is staged off the board by
+    # panel() for Quilter.  The rules are in gowin_rules().
+    # Name, revision and the hot-plug warning, top silkscreen, in the strip
+    # along this end's top edge that no placement region covers.
     b.texts = [
-        ('B.SilkS', 40.0, 3.0, 0, 1.4,
-         'HERMES LITE 2 SlimSAS BRIDGE  rev %s  GOWIN END' % REV),
-        ('B.SilkS', 40.0, 5.5, 0, 1.0,
-         'TANG MEGA 138K DOCK J14 POSITIONS 5-40 (BANK 4, 3.3 V, NATIVE LVDS)'),
-        ('B.SilkS', 40.0, 7.5, 0, 1.0,
-         'J14 POSITIONS 1-4 EMPTY.  NOTHING IN PMOD0 / PMOD1 / CAMERA'),
-        ('B.SilkS', 40.0, 9.5, 0, 1.0,
-         'M3 SPACER TO DOCK HOLE H7_LU1, FIXED FROM BELOW'),
-        ('B.SilkS', 40.0, 11.5, 0, 1.0, 'DO NOT PLUG OR UNPLUG POWERED'),
+        ('F.SilkS', 40.0, 1.4, 0, 1.0, 'HL2 SlimSAS BRIDGE  rev %s  GOWIN END'
+         % REV),
+        ('F.SilkS', 40.0, 3.1, 0, 1.0, 'DO NOT PLUG OR UNPLUG POWERED'),
     ]
     return b
 
 
 # ==========================================================================
-#  THE PANEL.  Both ends on one outline, snapped apart after manufacture.
+#  THE BOARD.  Both ends on one outline, snapped apart after manufacture.
 # ==========================================================================
 #
-#   y  0.00 ..  5.00   top assembly rail                  V-score y = 5.00
-#   y  5.00 .. 30.12   the Gowin end, unrotated           V-score y = 30.12
-#   y 30.12 .. 95.00   the radio end, unrotated           V-score y = 95.00
-#   y 95.00 .. 100.00  bottom assembly rail
-#   ONE continuous Edge.Cuts outline round all of it; the scores are the only
-#   break-off.  100.00 mm, inside the 100 x 100 mm promotional band, with
-#   JLCPCB's recommended 5 mm rails: the radio end's outline starts 0.07 mm in
-#   from its local y 0 (RADIO_TRIM), and nothing else moved.
-#   x  0.00 .. 64.50   both ends are exactly 64.50 mm long, so every score is
-#                      straight from edge to edge
+#   y  0.00 .. 25.12   the Gowin end, unrotated
+#                      V-score y = 25.12, the one break-off
+#   y 25.12 .. 90.00   the radio end, unrotated (its local (0,0) at y 25.05)
+#   ONE continuous Edge.Cuts outline round both; 64.50 x 90.00 mm.
 #
-# Both connectors face the panel's left edge, x = 0, which is a routed outer
-# edge, so no score runs under a connector's overhanging housing.  Two scores
-# cross air: y = 5.00 over the Gowin end's HDMI notch (x 59.07..64.50, at the
-# panel's right edge) and y = 95.00 over the radio end's M3 U-notch
-# (x 1.30..4.70).
+# NO ASSEMBLY RAILS.  rev D as first built carried JLCPCB's recommended 5 mm
+# rails top and bottom.  JLCPCB's assembly capability table lists edge rails
+# as "Not necessary" for Economic PCBA (Standard PCBA needs them), and its
+# assembly FAQ asks only that traces and components stay more than 0.3 mm
+# from the board edge, with about 0.2 mm of routing tolerance on top.  Every
+# placement region stops 0.8 mm inside the edge, and the locked connectors'
+# copper was already 0.3 mm or more inside, so the rails bought nothing and
+# they are gone, with the two V-scores that joined them.  The fiducials that
+# sat on the rails moved onto the board.
+#
+# Both connectors face the board's left edge, x = 0.  The Gowin end's HDMI
+# notch (x >= 59.07) and the radio end's M3 U-notch (x 1.30..4.70) are now
+# notches in the outer outline itself.
 
 PANEL_W = BOARD_W                    # 64.50
-RAIL = 5.0
+RAIL = 0.0
 GOWIN_Y0 = RAIL
-RADIO_Y0 = RAIL + GOWIN_H - RADIO_TRIM   # 30.05: radio local (0,0)
-PANEL_H = RADIO_Y0 + BOARD_H + RAIL      # 100.00
-VSCORE_Y = (RAIL, RADIO_Y0, RADIO_Y0 + BOARD_H)
-FIDUCIALS = ((4.0, 2.5), (60.0, 2.5), (10.0, PANEL_H - 2.5))
+RADIO_Y0 = RAIL + GOWIN_H - RADIO_TRIM   # 25.05: radio local (0,0)
+PANEL_H = RADIO_Y0 + BOARD_H + RAIL      # 90.00
+# The score is where the two ends meet: the Gowin end's bottom edge, which is
+# also the radio end's trimmed top edge (local y 0.07).  rev D as first built
+# drew its middle score line 0.07 mm off that boundary, at the radio end's
+# untrimmed local y 0.
+VSCORE_Y = (GOWIN_Y0 + GOWIN_H,)         # 25.12
+VSCORE_PART_CLEAR = 5.0              # no component within 5 mm of a score
+VSCORE_COPPER_CLEAR = 0.5            # no track, via or pour within 0.5 mm
+EDGE_REGION_MARGIN = 0.8             # placement regions stop this far inside
 
 
 def xf_radio(x, y):
@@ -2308,18 +2181,201 @@ def xf_gowin(x, y):
     return (round(x, 3), round(y + GOWIN_Y0, 3))
 
 
+def rect(x0, y0, x1, y1):
+    return [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+
+
+# Fiducials, locked, in panel coordinates.  Three corners of a large
+# triangle, each clear of every locked part and of the 5 mm score band.
+FIDUCIALS = (xf_gowin(56.5, 14.0), xf_radio(62.5, 62.5), xf_radio(8.5, 62.5))
+
+# SlimSAS contact field, from the SLIMSAS table: rows A and B at datum + 2.70
+# and + 5.05, pads 1.30 long, so the contact copper ends 5.70 mm in from the
+# datum.  Its courtyard ends 6.45 mm in.
+SS_PAD_END = SLIMSAS['j02'] + SLIMSAS['j03'] + SLIMSAS['pad_l'] / 2.0   # 5.70
+SS_CRTYD_END = 6.45
+ESD_REACH = 5.0                      # arrays within 5 mm of the contacts
+
+
+def radio_rules(b):
+    """What the placer is told about the radio end, in radio local
+    coordinates.  Regions are F.Cu only: JLCPCB Economic assembly places one
+    side, and the radio end's underside sits over the KEY jack and the clock
+    SMAs.  Each region stops 5 mm short of the score (local y 0.07)."""
+    top = RADIO_TRIM + VSCORE_PART_CLEAR + 0.1             # 5.17
+    m = EDGE_REGION_MARGIN
+    ss_x = SLIMSAS_AT[0]
+    # every radio-end part without a tighter region; the notch in its bottom
+    # edge leaves the name and warning lines clear
+    b.regions.append(('REGION_RADIO', [
+        (m, top), (BOARD_W - m, top), (BOARD_W - m, BOARD_H - m),
+        (47.5, BOARD_H - m), (47.5, 59.9), (20.5, 59.9), (20.5, BOARD_H - m),
+        (m, BOARD_H - m)], 'radio'))
+    # the twelve ESD arrays: a strip beside the contact field, from the
+    # connector courtyard to 4.9 mm past the contact copper
+    x0 = round(ss_x + SS_CRTYD_END + 0.1, 2)                # 16.95
+    x1 = round(ss_x + SS_PAD_END + ESD_REACH - 0.1, 2)      # 21.00
+    cy = SLIMSAS_AT[1]
+    b.regions.append(('REGION_RADIO_ESD',
+                      rect(x0, cy - 12.0, x1, cy + 12.0), 'radio_esd'))
+    # the silicon and series parts on the HL2 header nets, beside DB1/DB12:
+    # from DB1's socket courtyard (local x 8.35) to x 36, and from the score
+    # band to y 33, short of the connector courtyard at y 33.5
+    b.regions.append(('REGION_RADIO_HDR', rect(8.45, top, 36.0, 33.0),
+                      'radio_hdr'))
+
+    # ---- keepouts
+    # 1. A USB Blaster's 10-way IDC socket on J5 needs about 20 x 12 mm clear
+    #    (ROUTING.md section 5): no footprint in a ring round J5's own
+    #    courtyard.  J5's pins run local x 56.00..58.54, y 24.50..34.66.
+    jx0, jy0, jx1, jy1 = 56.0 - 1.77, 24.5 - 1.77, 56.0 + 4.32, 24.5 + 11.93
+    cx, cy2 = 56.0 + 1.27, 24.5 + 5.08
+    ix0, ix1 = cx - 6.0, min(cx + 6.0, BOARD_W - m)
+    iy0, iy1 = 21.0, min(cy2 + 10.0, CUTOUT[1] - 0.1)
+    for nm, poly in (('L', rect(ix0, iy0, jx0 - 0.1, iy1)),
+                     ('R', rect(jx1 + 0.1, iy0, ix1, iy1)),
+                     ('T', rect(jx0 - 0.1, iy0, jx1 + 0.1, jy0 - 0.1)),
+                     ('B', rect(jx0 - 0.1, jy1 + 0.1, jx1 + 0.1, iy1))):
+        b.keepouts.append(('KEEPOUT_J5_IDC_%s' % nm, ('F.Cu',),
+                           ('footprints',), poly))
+    # 2. The underside over the clock SMAs (HL2 x 74.04-78.24, y
+    #    103.36-123.60) and the KEY jack (x 70.20-82.10, y 124.00-136.00),
+    #    whose heights are still unmeasured (DESIGN_NOTES.md section 10): no
+    #    bottom-side footprint.
+    for nm, (hx0, hy0, hx1, hy1) in (
+            ('SMA', (74.04, 103.36, 78.24, 123.60)),
+            ('KEYJACK', (70.20, 124.00, 82.10, 136.00))):
+        a0 = _loc(hx0, hy0)
+        a1 = _loc(hx1, hy1)
+        b.keepouts.append(('KEEPOUT_UNDER_%s' % nm, ('B.Cu',),
+                           ('footprints',),
+                           rect(max(a0[0], m), a0[1], a1[0],
+                                min(a1[1], BOARD_H - m))))
+
+
+def gowin_rules(b):
+    """What the placer is told about the Gowin end, in Gowin local
+    coordinates.  The score is this end's bottom edge, gy 25.12."""
+    m = EDGE_REGION_MARGIN
+    # 5 mm short of the score would be gy 20.02, but J102's pins stand up
+    # through the top from gy 19.28 (and in scheme 1 an upside-down header's
+    # pins stand 4.4 mm proud there), so the regions stop at its courtyard.
+    bot = 18.2
+    nx, ny = _gloc(*GOWIN_NOTCH)
+    ss_x = GOWIN_SS_AT[0]
+    x0 = round(ss_x + SS_CRTYD_END + 0.1, 2)                # 16.95
+    x1 = round(ss_x + SS_PAD_END + ESD_REACH - 0.1, 2)      # 21.00
+    text_strip = 4.2      # the name and warning lines sit above this
+    b.regions.append(('REGION_GOWIN', [
+        (x0, text_strip), (nx - m, text_strip), (nx - m, ny + m),
+        (GOWIN_W - m, ny + m), (GOWIN_W - m, bot), (x0, bot)], 'gowin'))
+    b.regions.append(('REGION_GOWIN_ESD', rect(x0, m, x1, bot), 'gowin_esd'))
+    # J14 positions 1-4 lie under the connector.  Nothing may stand there on
+    # either side of the stack: no via through the board and no bottom-side
+    # footprint.  Positions 1-4 are dock x 103.70/106.24, y 61.30/63.84; the
+    # box runs 1.3 mm out from the pin centres, except 0.7 mm toward J102,
+    # whose courtyard starts 0.73 mm past position 3/4, and stops short of
+    # the score.
+    p0 = _gloc(103.70 - 1.3, 61.30 - 1.3)
+    p1 = _gloc(106.24 + 0.7, 63.84 + 1.3)
+    box = rect(p0[0], p0[1], p1[0], min(p1[1], GOWIN_H - 0.6))
+    b.keepouts.append(('KEEPOUT_J14_POS1_4_VIAS',
+                       ('F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu'), ('vias',), box))
+    b.keepouts.append(('KEEPOUT_J14_POS1_4_BOTTOM', ('B.Cu',),
+                       ('footprints',), box))
+    # Dock PMOD socket J9 stands about 6.4 mm tall under the adapter, 0.6 mm
+    # below its underside (TANG_IN_40MM_CASE.md): no bottom-side footprint.
+    j0 = _gloc(104.41, 43.07)
+    j1 = _gloc(105.53, 57.97)
+    b.keepouts.append(('KEEPOUT_UNDER_DOCK_J9', ('B.Cu',), ('footprints',),
+                       rect(j0[0], max(j0[1], m), j1[0], j1[1])))
+
+
+# Which radio-end parts go in the header region: every part (other than
+# capacitors and test points) on a net that touches a DB1 or DB12 socket pin,
+# so each single-ended HL2 net stays short; the chips one hop further on those
+# paths; and the receiver U6's four terminations, so they travel with it.
+HDR_EXTRA = ('R2', 'U3', 'U6', 'U8', 'U9')   # R2: the divider's shunt leg, beside R1
+HDR_SKIP_NETS = ('GND', 'DB1_3V3', 'VLVDS', '+3V3', '+2V5')
+
+
+def assign_regions(radio, gow):
+    """-> {region tag: [refs]} for every part that is not locked."""
+    hdr_nets = set()
+    for q_ in radio.parts:
+        if q_.ref in ('J2', 'J3'):
+            hdr_nets |= {n for n in q_.pins.values()
+                         if n and n not in HDR_SKIP_NETS}
+    out = {'radio': [], 'radio_esd': [], 'radio_hdr': [], 'gowin': [],
+           'gowin_esd': []}
+    u6 = [q_ for q_ in radio.parts if q_.ref == 'U6'][0]
+    u6_in = {n for pd, n in u6.pins.items()
+             if pd in RCV_P.values() or pd in RCV_N.values()}
+    rx_term = {q_.ref for q_ in radio.parts
+               if q_.value == '100R' and set(q_.pins.values()) <= u6_in}
+    for q_ in radio.parts + gow.parts:
+        if q_.locked or not TYPES[q_.ptype][3]:
+            continue
+        g = q_ in gow.parts
+        if q_.ptype == 'ESD4':
+            tag = 'gowin_esd' if g else 'radio_esd'
+        elif g:
+            tag = 'gowin'
+        elif (q_.ref in HDR_EXTRA or q_.ref in rx_term
+              or (q_.ptype not in ('C', 'C0805', 'TP', 'TPBIG')
+                  and set(q_.pins.values()) & hdr_nets)):
+            tag = 'radio_hdr'
+        else:
+            tag = 'radio'
+        out[tag].append(q_.ref)
+    return out
+
+
+STAGE_X0 = PANEL_W + 12.0      # staging area starts 12 mm right of the board
+STAGE_GAP = 0.8
+
+
+def stage(parts, x0, y0, width):
+    """Shelf-pack parts OFF the board, courtyard to courtyard, from (x0, y0).
+    -> y below the last shelf.  Quilter places anything left outside the
+    board outline and keeps everything inside it where it is."""
+    todo = sorted(parts, key=lambda q_: (-courtyard(q_.ptype)[1], q_.ref))
+    x, y, shelf = x0, y0, 0.0
+    for q_ in todo:
+        hw, hh = courtyard(q_.ptype)
+        if x + 2 * hw > x0 + width and x > x0:
+            x, y, shelf = x0, y + shelf + STAGE_GAP, 0.0
+        q_.at = (round(x + hw, 3), round(y + hh, 3))
+        q_.rot = 0
+        x += 2 * hw + STAGE_GAP
+        shelf = max(shelf, 2 * hh)
+    return y + shelf
+
+
+REGION_ORDER = (('gowin_esd', 'REGION_GOWIN_ESD'), ('gowin', 'REGION_GOWIN'),
+                ('radio_esd', 'REGION_RADIO_ESD'),
+                ('radio_hdr', 'REGION_RADIO_HDR'), ('radio', 'REGION_RADIO'))
+
+
 def panel():
     radio, gow = bridge(), gowin_end()
-    nx, ny = xf_gowin(*_gloc(*GOWIN_NOTCH))
-    out = [(0, 0), (PANEL_W, 0), (PANEL_W, GOWIN_Y0), (nx, GOWIN_Y0),
-           (nx, ny), (PANEL_W, ny), (PANEL_W, PANEL_H), (0, PANEL_H)]
+    radio_rules(radio)
+    gowin_rules(gow)
+    groups = assign_regions(radio, gow)
+
+    gnx, gny = xf_gowin(*_gloc(*GOWIN_NOTCH))
+    n0, n1 = 3.00 - 1.70, 3.00 + 1.70
+    ny = PANEL_H - 3.00
+    out = [(0, 0), (gnx, 0), (gnx, gny), (PANEL_W, gny), (PANEL_W, PANEL_H),
+           (n1, PANEL_H), (n1, ny), (n0, ny), (n0, PANEL_H), (0, PANEL_H)]
     p = Board('bridge',
               'Hermes Lite 2 SlimSAS bridge rev %s - radio end and Gowin end, '
               'one board, one outline' % REV,
               out, (PANEL_W, PANEL_H),
-              origin_note='panel (0,0) = top-left; Gowin end local (0,0) at '
-                          '(0, 5.00); radio end local (0,0) at (0, %.2f)'
+              origin_note='board (0,0) = top-left; Gowin end local (0,0) at '
+                          '(0, 0); radio end local (0,0) at (0, %.2f)'
                           % RADIO_Y0)
+    p.groups = groups
 
     def merge(board, xform):
         for q_ in board.parts:
@@ -2327,7 +2383,8 @@ def panel():
             p.add(Part(q_.ref, q_.ptype, q_.value, q_.pins, lcsc=q_.lcsc,
                        mfr=q_.mfr, desc=q_.desc, dnp=q_.dnp, note=q_.note,
                        at=at, rot=q_.rot, layer=q_.layer,
-                       exclude_bom=q_.exclude_bom, mirror=q_.mirror))
+                       exclude_bom=q_.exclude_bom, mirror=q_.mirror,
+                       locked=q_.locked))
         for (layer, tx, ty, trot, tsize, txt) in board.texts:
             nx_, ny_ = xform(tx, ty)
             p.texts.append((layer, nx_, ny_, trot, tsize, txt))
@@ -2345,53 +2402,65 @@ def panel():
         for (zlayer, znet, zprio, zpoly, zname) in board.zones_extra:
             p.zones_extra.append((zlayer, znet, zprio,
                                   [xform(x, y) for (x, y) in zpoly], zname))
-        opts = [xform(x, y) for (x, y) in board.outline]
-        for i in range(len(opts)):
-            (x0, y0), (x1, y1) = opts[i], opts[(i + 1) % len(opts)]
-            p.lines.append(('Cmts.User', x0, y0, x1, y1, 0.15))
-        return opts
+        for (nm, lays, dis, poly) in board.keepouts:
+            p.keepouts.append((nm, lays, dis,
+                               [xform(x, y) for (x, y) in poly]))
+        for (nm, poly, tag) in board.regions:
+            p.regions.append((nm, [xform(x, y) for (x, y) in poly], tag))
+        return [xform(x, y) for (x, y) in board.outline]
 
     g_poly = merge(gow, xf_gowin)
     r_poly = merge(radio, xf_radio)
 
-    # Each end's pours over its own outline; the two ends share no net.
+    # Each end's pours over its own outline; the two ends share no net.  The
+    # two inner ground planes are NAMED so they can be listed as Preserved
+    # Pours in Quilter, which deletes and regenerates every pour not listed.
     p.zones_full = [
-        ('In1.Cu', 'GND', 0, r_poly, 'GND plane (layer 2) - DO NOT CUT'),
-        ('F.Cu', 'GND', 0, r_poly, 'top ground fill'),
-        ('B.Cu', 'GND', 0, r_poly, 'bottom ground fill'),
-        ('In2.Cu', '+3V3', 0, r_poly, 'power plane (layer 3): +3V3'),
+        ('In1.Cu', 'GND', 0, r_poly, 'GND_PLANE_RADIO'),
+        ('F.Cu', 'GND', 0, r_poly, 'GND_TOP_RADIO'),
+        ('B.Cu', 'GND', 0, r_poly, 'GND_BOTTOM_RADIO'),
+        ('In2.Cu', '+3V3', 0, r_poly, 'PWR_3V3_RADIO'),
     ]
-    for lay in ('F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu'):
-        p.zones_full.append((lay, 'G_GND', 0, g_poly,
-                             'Gowin end ground, %s' % lay))
-
-    # The radio end's M3 U-notch opens onto the y = 95.00 score.  As a cut it
-    # has to be a closed shape, so it runs 1.00 mm on into the bottom rail.
-    n0, n1 = 3.00 - 1.70, 3.00 + 1.70
-    yb = RADIO_Y0 + BOARD_H
-    p.edge_extra += [(n0, yb - 3.0, n1, yb - 3.0), (n1, yb - 3.0, n1, yb + 1.0),
-                     (n1, yb + 1.0, n0, yb + 1.0), (n0, yb + 1.0, n0, yb - 3.0)]
+    for lay, nm in (('F.Cu', 'GND_TOP_GOWIN'), ('In1.Cu', 'GND_PLANE_GOWIN'),
+                    ('In2.Cu', 'GND_IN2_GOWIN'), ('B.Cu', 'GND_BOTTOM_GOWIN')):
+        p.zones_full.append((lay, 'G_GND', 0, g_poly, nm))
 
     for i, (fx, fy) in enumerate(FIDUCIALS, start=1):
         p.add(Part('FID%d' % i, 'FIDUCIAL', 'Fiducial', {}, at=(fx, fy),
-                   exclude_bom=True,
-                   desc='Panel fiducial on an assembly rail, 1 mm copper, '
-                        '2 mm mask opening'))
+                   exclude_bom=True, locked=True,
+                   desc='Fiducial, 1 mm copper, 2 mm mask opening'))
 
+    # The score: no track, via or pour may cross it (a rule area on every
+    # copper layer, 0.5 mm either side), and the placement regions already
+    # stop 5 mm short of it.  The score line itself is drawn on User.Eco1 for
+    # the fab, with its label outside the outline.
     for vy in VSCORE_Y:
-        p.lines.append(('Eco1.User', 0.0, vy, PANEL_W, vy, 0.2))
-        p.texts.append(('Eco1.User', 50.0, vy - 0.8, 0, 0.8,
+        p.keepouts.append(('KEEPOUT_VSCORE_COPPER',
+                           ('F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu'),
+                           ('tracks', 'vias', 'copperpour'),
+                           rect(0.0, vy - VSCORE_COPPER_CLEAR, PANEL_W,
+                                vy + VSCORE_COPPER_CLEAR)))
+        p.lines.append(('Eco1.User', -3.0, vy, PANEL_W + 3.0, vy, 0.2))
+        p.texts.append(('Eco1.User', -12.0, vy - 1.0, 0, 0.8,
                         'V-SCORE y = %.2f' % vy))
-    p.texts += [
-        ('F.SilkS', 32.0, 2.6, 0, 1.1,
-         'HL2 SlimSAS BRIDGE rev %s  RADIO END + GOWIN END' % REV),
-        ('F.SilkS', 32.0, PANEL_H - 2.5, 0, 1.1,
-         'RAILS ARE SCRAP - SNAP ALONG THE THREE SCORES'),
-        ('Dwgs.User', 32.0, PANEL_H + 2.0, 0, 1.2,
-         'BOARD %.2f x %.2f mm, ONE design, 4 layer, 1.6 mm. V-SCORES y = '
-         '%s, each edge to edge.' % (PANEL_W, PANEL_H,
-                                     ', '.join('%.2f' % v for v in VSCORE_Y))),
-    ]
+
+    # Stage every unlocked part OFF the board, grouped by the region it
+    # belongs to, so Quilter places it.
+    byref = {q_.ref: q_ for q_ in p.parts}
+    y = -6.0
+    for tag, label in REGION_ORDER:
+        refs = groups[tag]
+        p.texts.append(('Dwgs.User', STAGE_X0 + 20.0, y, 0, 1.0,
+                        'UNPLACED - for %s (%d parts)' % (label, len(refs))))
+        y = stage([byref[r] for r in refs], STAGE_X0, y + 4.5, 60.0) + 3.0
+
+    # Notes that stay with the file, all OUTSIDE the outline.
+    p.texts.append(
+        ('Dwgs.User', PANEL_W / 2.0, PANEL_H + 3.0, 0, 1.2,
+         'BOARD %.2f x %.2f mm, ONE design, 4 layer, 1.6 mm. V-SCORE y = '
+         '%s, edge to edge. No rails.'
+         % (PANEL_W, PANEL_H, ', '.join('%.2f' % v for v in VSCORE_Y))))
+    p.calibration_rule(0.0, PANEL_H + 8.0, 50.0)
     return p
 
 
@@ -2647,7 +2716,10 @@ def write_sch(outdir, board):
 # ==========================================================================
 
 PCB_LAYERS = [
-    (0, 'F.Cu', 'signal'), (1, 'In1.Cu', 'signal'), (2, 'In2.Cu', 'signal'),
+    # Quilter reads a ground layer only if it is named "ground" or "gnd" and a
+    # power layer only if it is named "power" or "pwr".
+    (0, 'F.Cu', 'signal'), (1, 'In1.Cu', 'power', 'GND'),
+    (2, 'In2.Cu', 'power', 'PWR'),
     (31, 'B.Cu', 'signal'),
     (32, 'B.Adhes', 'user', 'B.Adhesive'), (33, 'F.Adhes', 'user', 'F.Adhesive'),
     (34, 'B.Paste', 'user'), (35, 'F.Paste', 'user'),
@@ -2698,19 +2770,19 @@ def write_pcb(outdir, board, fps):
         if th:
             w.line('thickness', th)
         w.close_inline()
-    for i, (dname, dty, dth) in enumerate(
-            (('dielectric 1', 'core', '0.2'),
-             ('dielectric 2', 'prepreg', '1.065'),
-             ('dielectric 3', 'core', '0.2')), start=1):
-        if i > 1:
-            pass
-        if i == 1:
-            pass
+    # JLCPCB JLC04161H-7628, their standard 1.6 mm 4-layer stack and the one
+    # ROUTING_EASYEDA.md section 2 uses: 7628 prepreg 0.2104 mm (er 4.4)
+    # under each outer layer, a 1.065 mm core (er 4.6) in the middle.  The
+    # 0.25 / 0.20 mm pair geometry is computed against this stack.
+    for i, (dname, dty, dth, er) in enumerate(
+            (('dielectric 1', 'prepreg', '0.2104', '4.4'),
+             ('dielectric 2', 'core', '1.065', '4.6'),
+             ('dielectric 3', 'prepreg', '0.2104', '4.4')), start=1):
         w.open('layer', q(dname))
         w.line('type', q(dty))
         w.line('thickness', dth)
         w.line('material', q('FR4'))
-        w.line('epsilon_r', '4.5')
+        w.line('epsilon_r', er)
         w.line('loss_tangent', '0.02')
         w.close_inline()
         if i == 1:
@@ -2732,7 +2804,7 @@ def write_pcb(outdir, board, fps):
         if th:
             w.line('thickness', th)
         w.close_inline()
-    w.line('copper_finish', q('None'))
+    w.line('copper_finish', q('HAL lead-free'))
     w.line('dielectric_constraints', 'no')
     w.close_inline()
     w.line('pad_to_mask_clearance', '0.05')
@@ -2778,6 +2850,8 @@ def write_pcb(outdir, board, fps):
         py = oy + (p.at[1] if p.at else 0.0)
         rot = p.rot % 360
         w.open('footprint', q('%s:%s' % (LOCAL_FP, fpname)))
+        if p.locked:
+            w.line('locked', 'yes')
         w.line('layer', q(p.layer))
         w.line('uuid', q(uuid_for(board.name, 'fp', p.ref)))
         if rot:
@@ -2809,16 +2883,17 @@ def write_pcb(outdir, board, fps):
         w.line('at', '0', '-3.2', '0')
         w.line('layer', q('%s.SilkS' % sidefx))
         w.line('uuid', q(uuid_for(board.name, 'fpr', p.ref)))
-        w.raw(effects(1.0))
+        w.raw(effects(1.0, justify='mirror' if sidefx == 'B' else None))
         w.close_inline()
         w.open('fp_text', 'value', q(p.value))
         w.line('at', '0', '3.2', '0')
         w.line('layer', q('%s.Fab' % sidefx))
         w.line('uuid', q(uuid_for(board.name, 'fpv', p.ref)))
-        w.raw(effects(1.0))
+        w.raw(effects(1.0, justify='mirror' if sidefx == 'B' else None))
         w.close_inline()
         K._emit_fp_body(w, node, with_text=False, net_of_pad=net_of,
-                        fp_rot_for_pads=rot, mirror_x=p.mirror)
+                        fp_rot_for_pads=rot, mirror_x=p.mirror,
+                        flip_side=(p.layer == 'B.Cu'))
         w.close_inline()
 
     pts = board.outline
@@ -2846,12 +2921,13 @@ def write_pcb(outdir, board, fps):
     # as a footprint per hole, because KiCad has no bare-drill primitive.
     for i, (hx, hy, hd) in enumerate(board.npth):
         w.open('footprint', q('MouseBite:Drill'))
+        w.line('locked', 'yes')
         w.line('layer', q('F.Cu'))
         w.line('uuid', q(uuid_for(board.name, 'mb', i)))
         w.line('at', fmt(ox + hx), fmt(oy + hy))
-        w.line('descr', q('Mouse-bite perforation, unplated'))
-        w.line('attr', 'exclude_from_pos_files', 'exclude_from_bom',
-               'allow_missing_courtyard')
+        w.line('descr', q('Unplated locating hole'))
+        w.line('attr', 'board_only', 'exclude_from_pos_files',
+               'exclude_from_bom', 'allow_missing_courtyard')
         w.open('fp_text', 'reference', q('MB%d' % (i + 1)))
         w.line('at', '0', '-1.2', '0')
         w.line('layer', q('F.Fab'))
@@ -2931,6 +3007,48 @@ def write_pcb(outdir, board, fps):
     for (zlayer, znet, zprio, zpoly, zname) in board.zones_extra:
         zone(zlayer, znet, zprio, zpoly, zname)
 
+    def rule_area(name, layers, disallowed, poly):
+        w.open('zone')
+        w.line('net', '0')
+        w.line('net_name', q(''))
+        w.line('locked', 'yes')
+        if len(layers) == 1:
+            w.line('layer', q(layers[0]))
+        else:
+            w.line('layers', *[q(l_) for l_ in layers])
+        w.line('uuid', q(uuid_for(board.name, 'rule', name)))
+        w.line('name', q(name))
+        w.line('hatch', 'edge', '0.5')
+        w.open('connect_pads')
+        w.line('clearance', '0')
+        w.close_inline()
+        w.line('min_thickness', '0.25')
+        w.line('filled_areas_thickness', 'no')
+        w.open('keepout')
+        for item in ('tracks', 'vias', 'pads', 'copperpour', 'footprints'):
+            w.line(item, 'not_allowed' if item in disallowed else 'allowed')
+        w.close_inline()
+        w.open('fill')
+        w.line('thermal_gap', '0.5')
+        w.line('thermal_bridge_width', '0.5')
+        w.close_inline()
+        w.open('polygon')
+        w.open('pts')
+        for (zx, zy) in poly:
+            w.line('xy', fmt(ox + zx), fmt(oy + zy))
+        w.close_inline()
+        w.close_inline()
+        w.close_inline()
+
+    # Keepouts: what Quilter and KiCad DRC must keep clear.
+    for (nm, lays, dis, poly) in board.keepouts:
+        rule_area(nm, lays, dis, poly)
+    # Placement regions: Quilter reads a KiCad rule area on F.Cu with every
+    # keepout item allowed as a placement region.  Components are assigned
+    # to it by reference designator in Quilter (QUILTER.md lists them).
+    for (nm, poly, tag) in board.regions:
+        rule_area(nm, ('F.Cu',), (), poly)
+
     w.close_inline()
     with open(path, 'w', encoding='utf-8') as f:
         f.write(w.text())
@@ -2961,7 +3079,7 @@ PRO_TEMPLATE = '''{
         { "gap": 0.17, "via_gap": 0.25, "width": 0.15 }
       ],
       "rules": {
-        "min_clearance": 0.13,
+        "min_clearance": 0.15,
         "min_copper_edge_clearance": 0.3,
         "min_hole_clearance": 0.25,
         "min_through_hole_diameter": 0.3,
@@ -2981,9 +3099,9 @@ PRO_TEMPLATE = '''{
         "microvia_diameter": 0.3, "microvia_drill": 0.1, "name": "Default",
         "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.25, "via_diameter": 0.6, "via_drill": 0.3, "wire_width": 6 },
-      { "bus_width": 12, "clearance": 0.13, "diff_pair_gap": 0.2,
+      { "bus_width": 12, "clearance": 0.15, "diff_pair_gap": 0.2,
         "diff_pair_via_gap": 0.25, "diff_pair_width": 0.25, "line_style": 0,
-        "microvia_diameter": 0.3, "microvia_drill": 0.1, "name": "LVDS100",
+        "microvia_diameter": 0.3, "microvia_drill": 0.1, "name": "differentialpair",
         "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.25, "via_diameter": 0.45, "via_drill": 0.25, "wire_width": 6 },
       { "bus_width": 12, "clearance": 0.2, "diff_pair_gap": 0.2,
@@ -3030,6 +3148,11 @@ PRO_TEMPLATE = '''{
 # cable, B_ is a pair it receives.  That is the whole naming convention, and
 # write_pro turns it into the LVDS100 net class.
 PAIR_PREFIXES = ('A_', 'B_', 'G_A_', 'G_B_')
+# The class name is Quilter's: it detects a differential pair only when both
+# nets are in a class called "differentialpair" (or a synonym it does not
+# publish) AND the names end in a P/N pair.  rev D as first built called the
+# class LVDS100, which Quilter would not have recognised.
+PAIR_CLASS = 'differentialpair'
 
 
 def is_pair_net(name):
@@ -3042,7 +3165,8 @@ def write_pro(outdir, board):
     pats = []
     for name in sorted(board.nets()):
         if is_pair_net(name):
-            pats.append('      { "netclass": "LVDS100", "pattern": "%s" }' % name)
+            pats.append('      { "netclass": "%s", "pattern": "%s" }'
+                        % (PAIR_CLASS, name))
     allnets = board.nets()
     for nm in ('+3V3', '+2V5', 'DB1_3V3', 'VLVDS', 'VLVDS_F'):
         if nm in allnets:

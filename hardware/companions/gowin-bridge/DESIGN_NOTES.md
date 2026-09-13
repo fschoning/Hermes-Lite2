@@ -425,7 +425,7 @@ Why not something cheaper or bigger:
 | | |
 |---|---|
 | Outline | **local x 0…64.50, y 0.07…64.95 = HL2 x 70.00…134.50, y 73.37…138.25** |
-| Size | **64.50 × 64.88 mm**, 4 layers, 1.6 mm, HASL. The 0.07 mm off the HL2 y 73.30 edge brings the whole board to 100.00 mm (§11.6); local coordinates are unchanged |
+| Size | **64.50 × 64.88 mm**, 4 layers, 1.6 mm, HASL. The 0.07 mm off the HL2 y 73.30 edge was taken when the board had rails and had to fit 100.00 mm (§11.6); local coordinates are unchanged |
 | Local origin | HL2 main-board (70.00, 73.30), so local x = HL2 x − 70.00 |
 | Underside | **11.04 mm** above the HL2's top surface; top surface at 12.64 mm |
 | Window in the board | **local x 44.50…57.00, y 39.50…50.00** (131 mm², 3 % of the board) to keep HL2 config headers DB6 and DB3 reachable. They clear an 11.04 mm underside by 2.5 mm, so this is about access, not collision — without it you would lift the whole board off to move a jumper |
@@ -829,13 +829,13 @@ reading as absent is harmless.
 
 | | |
 |---|---|
-| Board | **64.50 × 100.00 mm**, 4 layer, 1.6 mm, **one continuous Edge.Cuts outline** round both ends and both rails; `check_geometry.py` asserts there is exactly one outer loop |
-| Top to bottom | 5.00 mm rail, V-score, Gowin end 25.12 mm, V-score, radio end 64.88 mm, V-score, 5.00 mm rail |
-| Under 100 mm | the radio end's edge facing the Gowin end is 0.07 mm in from its local y 0 (HL2 y 73.37). Nothing else moved; the nearest pad is 1.63 mm from that edge; the rails keep JLCPCB's recommended 5 mm |
+| Board | **64.50 × 90.00 mm**, 4 layer, 1.6 mm, **one continuous Edge.Cuts outline** round both ends, **no rails** (§12.3); `check_geometry.py` asserts there is exactly one outer loop |
+| Top to bottom | Gowin end 25.12 mm, V-score at y 25.12, radio end 64.88 mm |
+| The 0.07 mm | the radio end's edge facing the Gowin end is 0.07 mm in from its local y 0 (HL2 y 73.37), kept from when the rails had to fit in 100 mm |
 | Connectors | both on the board's left edge, which is a routed outer edge, so no score runs under a connector housing |
-| Scores crossing air | y 5.00 over the 3.4 mm HDMI notch at the right edge; y 95.00 over the radio end's 3.4 mm M3 notch |
+| Notches | the HDMI notch and the M3 U-notch are notches in the outer outline; the score crosses neither |
 | Electrical separation | every Gowin-end net is prefixed `G_`; `check_netlist.py` asserts that no net touches both ends; ground pours are per end |
-| Designators | radio end as before; Gowin end numbered from 101 (J101, J102, D101–D112, R101–R117, TP101–TP121) |
+| Designators | radio end as before; Gowin end numbered from 101 (J101, J102, D101–D112, R101–R117, TP101) |
 
 **A pre-existing bug fixed on the way.** The committed rev D BOM carried two
 R1s and two R2s: the generator named the forward-clock divider R1/R2 by hand
@@ -843,3 +843,99 @@ and also handed out R1 and R2 automatically to two 330 Ω AUXIO resistors.
 JLCPCB's placement file cannot hold duplicate designators. The automatic
 numbering now skips R1 and R2, so every automatically numbered radio-end
 resistor moved up by two; no net changed.
+
+---
+
+## 12. Prepared for Quilter (13 Sep 2026)
+
+### 12.1 What Quilter reads, and the sources
+
+All read 13 Sep 2026.
+
+| Question | Answer | Source |
+|---|---|---|
+| KiCad version | Not published. A user's upload only parsed after re-saving in KiCad 10 format; Quilter staff said they try to keep up with the latest KiCad. The upload files are KiCad 10, made by `kicad-cli pcb upgrade` and `sch upgrade`; the generator still writes KiCad 8 format into `bridge/` | community.quilter.ai/t/trying-to-upload-my-kicad-but-it-keep-giving-me-an-error/375 |
+| Files | Schematic (required, used to detect constraints), board (required), project (optional, carries net classes and rules). No zip, no folders | docs.quilter.ai/using-quilter/upload-your-design-files |
+| Placed parts | Everything inside the outline at upload is fixed, position and rotation. Everything outside is placed | docs.quilter.ai/design-parameters/pre-placed-components |
+| Regions | A KiCad rule area on F.Cu or B.Cu with every keepout item deselected is a placement region; parts are assigned by designator in the app; a hard constraint | docs.quilter.ai/design-parameters/placement-regions |
+| Keepouts | Read from the file | docs.quilter.ai/design-parameters/keepouts |
+| One side | Only by assigning every part to a top-layer region | docs.quilter.ai/design-parameters/single-sided-placement |
+| Pairs | Net class `differentialpair` (or an unpublished synonym) and names ending P/N; 100 or 85 ohm only; microstrip over a ground plane; **no layer restriction** | docs.quilter.ai/physics-constraints/differential-pairs |
+| Length matching | "Timing-sensitive signals" is in internal testing, not available | docs.quilter.ai/physics-constraints/timing-sensitive-signals |
+| Proximity | In-app "Proximity Constraints", for parts with no automatic rule, protection diodes named as the common case | docs.quilter.ai/using-quilter/review-and-edit-constraints |
+| Layers | A ground layer must be named "ground" or "gnd", a power layer "power" or "pwr" | docs.quilter.ai/using-quilter/prepare-your-input-board-file |
+| Stackup, rules | Read from the file if chosen, or a JLCPCB preset | docs.quilter.ai/design-parameters/stackups, docs.quilter.ai/using-quilter/fabricator-constraints |
+| Pours | Deleted and regenerated unless named and listed as Preserved Pours | docs.quilter.ai/design-parameters/preserved-pours |
+| Bypass caps | Detected; assigned by schematic wire, else by voltage-type pin name | docs.quilter.ai/physics-constraints/bypass-capacitors |
+| V-scores, rails, panels | **Not documented.** Only "one closed board outline". Expressed as a copper keepout on the score and regions that stop 5 mm short of it | docs.quilter.ai/using-quilter/prepare-your-input-board-file |
+| Free tier limits | No board size, layer, part or pin limit published; eligibility is by company size | quilter.ai/pricing |
+| Common upload failures | zip or folders; not exactly one closed outline; netlist not matching the schematic | docs.quilter.ai/about-quilter/faq |
+
+### 12.2 What came off the board
+
+Every note that was written on the board is here or already elsewhere: the
+connector's row convention (row A driven, row B received, the cable crosses
+A(n) to B(n): `PINMAP.md` section 1), the DB12 pin 5/6 order (`PINMAP.md`),
+"HL2 R17 must not be fitted" (section 10), "sockets J2, J3, J4 on the
+underside", the outline and datum dimensions (sections 6.1 and 11.3), the
+panel window figures (`HL2_END_PANEL.md`) and the rail warning (no rails
+now). On the board: reference designators, the footprints' own pin-1 marks,
+one name-and-revision line and the "do not plug or unplug powered" warning
+per end. The 1:1 print rule and the score label are on user layers outside
+the outline.
+
+Found while doing it: the bottom-side sockets carried their silkscreen,
+courtyard and fab graphics on the **top** layers, and their reference text
+was not mirrored. Both fixed in the generator.
+
+### 12.3 No rails
+
+JLCPCB lists edge rails as "Not necessary" for Economic PCBA and "Necessary"
+for Standard (jlcpcb.com/capabilities/pcb-assembly-capabilities), and asks
+for traces and components more than 0.3 mm from the edge
+(jlcpcb.com/help/article/pcb-assembly-faqs-part-2). Every placement region
+stops 0.8 mm inside the edge and the locked parts' copper was already at
+least 0.3 mm in. The board is 64.50 x 90.00 mm with one score, at y 25.12.
+
+**Open question for the order:** the same capability table lists "Panel with
+V-cut" as a delivery format for Standard PCBA only; Economic lists single PCB
+and mouse-bite panels. This board is one design with its own score, ordered
+as a single PCB. Ask JLCPCB at order time. If they insist on Standard PCBA,
+Standard needs rails and a 70 mm minimum, and the rails come back.
+
+Found while doing it: the generator drew the middle score line 0.07 mm off
+the real boundary between the two ends (at the radio end's untrimmed y 0).
+It is now on the boundary.
+
+### 12.4 Locked parts, against their sources
+
+| Part | Position | Source | Agrees |
+|---|---|---|---|
+| J2 on DB1, J3 on DB12, J4 on CN1 | HL2 hole grids | `hermeslite.kicad_pcb`, recomputed by `check_geometry.py` | yes |
+| J1 SlimSAS | datum HL2 (80.40, 119.30) | `HL2_END_PANEL.md` | yes |
+| J5 JTAG pass-through | local (56.00, 24.50) | `ROUTING.md` section 5; not set by the radio, locked so the placer cannot bury it | yes |
+| M3 U-notch | x 1.30-4.70 round HL2 MH2 (73.00, 137.00) | `HL2_MECHANICAL_ENVELOPE.md` | yes |
+| MH6 locating hole | HL2 (74.04, 75.42) | same | yes |
+| Jumper window | local x 44.50-57.00, y 39.50-50.00 | section 6.1 | **DB6 runs 0.50 mm past the window's far edge** (DB6 HL2 y 117.80-123.80, window to 123.30). Access only, not a collision; not changed |
+| J101 SlimSAS | face dock x 89.73 = 13.97 mm from J14 pin 1, centreline dock y 53.73 | `TANG_IN_40MM_CASE.md` | yes |
+| J102 | J14 positions 5-40 | Sipeed iBOM, dock rev 31004 | yes |
+| Gowin M3 hole | dock (97.67, 62.66) | `TANG_IN_40MM_CASE.md` | yes (inside J101's footprint) |
+| FID1-FID3 | moved from the removed rails onto the board | - | - |
+
+### 12.5 The rules, and how each is expressed
+
+| Rule | In the file | In Quilter | Checked after return |
+|---|---|---|---|
+| ESD arrays within 5 mm of the contacts | `REGION_*_ESD`, a strip from the connector courtyard to 4.9 mm past the contact copper | proximity constraint, typed in | `check_geometry.py` |
+| Terminations within 5 mm of the receiver | U6's four share `REGION_RADIO_HDR` with U6 | proximity constraint, typed in | `check_geometry.py` |
+| HL2 header nets under 25 mm | `REGION_RADIO_HDR`: every non-capacitor part on a DB1/DB12 net, plus R2, U3, U6, U8, U9 | not expressible | `check_geometry.py`, routed length |
+| Decoupling at the pin | - | bypass capacitor comprehension | `check_geometry.py`, 3 mm |
+| Each part on its own end | five regions, each inside one end | regions | `check_geometry.py` |
+| 5 mm from the score | regions stop short of it | regions | `check_geometry.py` |
+| No copper across the score | `KEEPOUT_VSCORE_COPPER`: tracks, vias and pours, 0.5 mm each side, all layers | keepout | DRC |
+| J14 positions 1-4 | `KEEPOUT_J14_POS1_4_VIAS`, `KEEPOUT_J14_POS1_4_BOTTOM` | keepout | DRC |
+| Height under the board | `KEEPOUT_UNDER_SMA`, `KEEPOUT_UNDER_KEYJACK`, `KEEPOUT_UNDER_DOCK_J9`: no bottom footprint; and every region is top-only | keepout, regions | DRC |
+| USB Blaster access to J5 | `KEEPOUT_J5_IDC_L/R/T/B`: no footprint in a 12 x 20 mm ring | keepout | DRC |
+| Pairs top layer only | - | **not expressible** | `check_geometry.py` |
+| Length groups within 2.5 mm | - | **not available** | `check_geometry.py` |
+| Stack, classes, clearance | JLC04161H-7628 stack, In1 `GND`, In2 `PWR`, class `differentialpair` 0.25/0.20 mm, 0.15 mm clearance everywhere | read from the file | DRC |

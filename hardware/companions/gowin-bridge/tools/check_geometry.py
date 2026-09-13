@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 """Geometry self-check for the generated gowin-bridge board, rev D.
 
-Run:   python tools/check_geometry.py
+Run:   python tools/check_geometry.py [board.kicad_pcb]
 
-Reads the generated .kicad_pcb back and checks, independently of KiCad:
+With no argument it reads bridge/bridge.kicad_pcb.  Give it the file Quilter
+sends back to check a placed (and routed) board.
 
- 1. every pad and every courtyard lies inside the board outline with margin;
+Reads the board back and checks, independently of KiCad:
+
+ 1. every pad of every LOCKED part lies inside its own end with margin, and
+    every unlocked part is either wholly off the board (prepared for Quilter)
+    or wholly inside its own end (placed) - never half and half;
  2. no two footprint courtyards overlap;
  3. no two pads of different nets are closer than the clearance floor;
  4. the three HL2 sockets land exactly on the DB1, DB12 and CN1 hole grids,
@@ -14,7 +19,15 @@ Reads the generated .kicad_pcb back and checks, independently of KiCad:
  5. the SlimSAS receptacle's 74 contacts, 4 shell tails and 2 locating pegs
     match SFF-8654 Rev 1.2 Table A-1 arithmetic, recomputed here, and the
     mated plug's fit inside the extrusion is restated with the numbers;
- 6. the M3 anchor and the locating peg line up with HL2 MH2 and MH6.
+ 6. the M3 anchor and the locating peg line up with HL2 MH2 and MH6;
+ 7. exactly the mechanically fixed parts are locked, each at its documented
+    position (J1-J5, J101, J102, FID1-FID3, the MH6 hole, the U-notch, the
+    jumper window);
+ 8. once parts are placed: the placement rules Quilter cannot read or can
+    only be asked for - ESD arrays and terminations within 5 mm, decoupling
+    capacitors at their pins, HL2 header nets under 25 mm, one side only, no
+    part within 5 mm of the score - and, once routed, pairs on the top layer
+    only and the length-matched groups within 2.5 mm.
 
 This exists because the placement is generated, not drawn, so it needs a test.
 KiCad's own DRC is still the authority on manufacturability; this catches the
@@ -55,15 +68,42 @@ HL2_ORIGIN = (70.00, 73.30)
 RADIO_W, RADIO_H = 64.50, 64.95        # local frame: HL2 y 73.30..138.25
 RADIO_TRIM = 0.07                       # outline starts at local y 0.07
 GOWIN_W, GOWIN_H = 64.50, 25.12
-RAIL = 5.00
+RAIL = 0.00                              # no assembly rails any more
 PANEL_W = RADIO_W                        # 64.50
-RADIO_Y0 = RAIL + GOWIN_H - RADIO_TRIM   # 30.05, radio local (0,0)
-PANEL_H = RADIO_Y0 + RADIO_H + RAIL      # 100.00
+RADIO_Y0 = RAIL + GOWIN_H - RADIO_TRIM   # 25.05, radio local (0,0)
+PANEL_H = RADIO_Y0 + RADIO_H + RAIL      # 90.00
 PANEL_MAX = 100.00                       # JLCPCB promotional size band
 GOWIN_BOX = (0.0, RAIL, GOWIN_W, RAIL + GOWIN_H)
 RADIO_BOX = (0.0, RADIO_Y0 + RADIO_TRIM, RADIO_W, RADIO_Y0 + RADIO_H)
 RADIO_FRAME = (0.0, RADIO_Y0, RADIO_W, RADIO_Y0 + RADIO_H)
-VSCORES_Y = (RAIL, RAIL + GOWIN_H, RADIO_Y0 + RADIO_H)
+VSCORES_Y = (RAIL + GOWIN_H,)            # 25.12, where the two ends meet
+SCORE_PART_CLEAR = 5.0                   # no unlocked part within 5 mm
+
+# The parts whose position is set by the radio, the dock, the case or the
+# board itself, and nothing else.  Panel coordinates of the footprint origin.
+# J5's position is not set by the radio; it is locked so the placer cannot
+# bury the USB Blaster header, and ROUTING.md section 5 gives its place.
+LOCKED = {
+    'J1': (10.40, RADIO_Y0 + 46.00),           # HL2 (80.40, 119.30)
+    'J2': (4.04, RADIO_Y0 + 4.66),             # DB1 pin 1, HL2 (74.04, 77.96)
+    'J3': (13.50, RADIO_Y0 + 14.16),           # DB12 pin 1, HL2 (83.50, 87.46)
+    'J4': (58.23, RADIO_Y0 + 8.92),            # CN1 pin 1, HL2 (128.23, 82.22)
+    'J5': (56.00, RADIO_Y0 + 24.50),           # ROUTING.md section 5
+    'J101': (89.43 + 10.40 - 89.43, 53.73 - 41.17),   # face dock x 89.73
+    'J102': (103.70 + 2 * 2.54 - 89.43, 63.84 - 41.17),  # J14 position 5
+    'MB1': (4.04, RADIO_Y0 + 2.12),            # HL2 MH6 (74.04, 75.42)
+    'FID1': (56.50, 14.00),
+    'FID2': (62.50, RADIO_Y0 + 62.50),
+    'FID3': (8.50, RADIO_Y0 + 62.50),
+}
+# Board-edge features, panel coordinates: the M3 U-notch round HL2 MH2
+# (73.00, 137.00) and the DB6/DB3 jumper window.
+NOTCH = (3.00 - 1.70, PANEL_H - 3.00, 3.00 + 1.70)       # x0, y top, x1
+WINDOW = (44.50, RADIO_Y0 + 39.50, 57.00, RADIO_Y0 + 50.00)
+# HL2 DB6 and DB3, the configuration jumpers the window keeps reachable
+# (HL2_MECHANICAL_ENVELOPE.md section 4.2), in panel coordinates.
+DB6_HL2 = (115.80, 117.80, 120.70, 123.80)
+DB3_HL2 = (123.33, 114.39, 125.87, 122.01)
 
 
 # The Tang Mega 138K dock, from Sipeed's interactive BOM for dock 31004
@@ -224,18 +264,41 @@ def rot(x, y, deg):
 
 
 class FP:
-    __slots__ = ('ref', 'at', 'r', 'layer', 'pads', 'crt', 'tht')
+    __slots__ = ('ref', 'at', 'r', 'layer', 'pads', 'crt', 'tht', 'locked')
 
 
 def load(path):
     root = K.parse(open(path, encoding='utf-8').read())[0]
     fps = []
     edges = []
+    tracks = []
+    codes = {}
     for node in root[1:]:
         if not isinstance(node, list):
             continue
         h = K.head(node)
-        if h == 'gr_line':
+        if h == 'net':
+            a = K.atoms(node)
+            if len(a) >= 2:
+                codes[a[0]] = a[1]
+        elif h in ('segment', 'arc'):
+            s0 = K.atoms(K.kid(node, 'start'))
+            e0 = K.atoms(K.kid(node, 'end'))
+            lay = K.atoms(K.kid(node, 'layer'))[0]
+            nn = K.kid(node, 'net')
+            net = K.atoms(nn)[-1] if nn is not None else ''
+            ln = math.hypot(float(e0[0]) - float(s0[0]),
+                            float(e0[1]) - float(s0[1]))
+            if h == 'arc':
+                m0 = K.atoms(K.kid(node, 'mid'))
+                ln = (math.hypot(float(m0[0]) - float(s0[0]),
+                                 float(m0[1]) - float(s0[1]))
+                      + math.hypot(float(e0[0]) - float(m0[0]),
+                                   float(e0[1]) - float(m0[1])))
+            tracks.append((net, lay, ln,
+                           (float(s0[0]), float(s0[1])),
+                           (float(e0[0]), float(e0[1]))))
+        elif h == 'gr_line':
             lay = K.kid(node, 'layer')
             if lay is not None and K.atoms(lay)[0] == 'Edge.Cuts':
                 s = K.atoms(K.kid(node, 'start'))
@@ -248,10 +311,17 @@ def load(path):
             f.at = (float(a[0]), float(a[1]))
             f.r = float(a[2]) if len(a) > 2 else 0.0
             f.layer = K.atoms(K.kid(node, 'layer'))[0]
+            lk = K.kid(node, 'locked')
+            f.locked = ('locked' in [x for x in node[1:2] if isinstance(x, str)]
+                        or (lk is not None and (not K.atoms(lk)
+                                                or K.atoms(lk)[0] == 'yes')))
             f.ref = None
             for tx in K.kids(node, 'fp_text'):
                 if K.atoms(tx) and K.atoms(tx)[0] == 'reference':
                     f.ref = K.atoms(tx)[1]
+            for pr in K.kids(node, 'property'):
+                if K.atoms(pr) and K.atoms(pr)[0] == 'Reference':
+                    f.ref = K.atoms(pr)[1]
             f.pads = []
             f.tht = False
             for pad in K.kids(node, 'pad'):
@@ -263,7 +333,7 @@ def load(path):
                 sz = K.atoms(K.kid(pad, 'size'))
                 px, py = rot(float(at[0]), float(at[1]), f.r)
                 netn = K.kid(pad, 'net')
-                net = K.atoms(netn)[1] if netn is not None else ''
+                net = K.atoms(netn)[-1] if netn is not None else ''
                 hx, hy = float(sz[0]) / 2.0, float(sz[1]) / 2.0
                 # the pad's own rotation is folded into the emitted value, so
                 # a 90/270 total rotation swaps the pad's own x and y extents
@@ -289,6 +359,8 @@ def load(path):
     ys = [p[1] for e in edges for p in e]
     box = (min(xs), min(ys), max(xs), max(ys))
     load.edges = edges
+    load.tracks = [(codes.get(n, n), l_, ln, a, b) for (n, l_, ln, a, b)
+                   in tracks]
     return fps, box
 
 
@@ -305,7 +377,8 @@ def in_board(ref):
 
 
 def check(name):
-    path = os.path.join(ROOT, name, name + '.kicad_pcb')
+    path = (sys.argv[1] if len(sys.argv) > 1
+            else os.path.join(ROOT, name, name + '.kicad_pcb'))
     fps, box = load(path)
     bx0, by0, bx1, by1 = box
     prob = []
@@ -320,19 +393,36 @@ def check(name):
     rects = {'radio': RADIO_BOX, 'gowin': GOWIN_BOX,
              'panel': (0.0, 0.0, PANEL_W, PANEL_H)}
 
-    # 1. inside the outline of the piece the part belongs to
+    # 1. inside the outline of the piece the part belongs to.  A locked part
+    # must be inside.  An unlocked part is either wholly OFF the board
+    # (staged for Quilter) or wholly inside its own end (placed).
+    staged, placed = [], []
     for f in fps:
         if f.ref.startswith('MB'):
             continue
         rx0, ry0, rx1, ry1 = rects[in_board(f.ref)]
         rx0 += PAGE[0]; rx1 += PAGE[0]; ry0 += PAGE[1]; ry1 += PAGE[1]
+        bad = []
         for (num, px, py, hx, hy, net) in f.pads:
             if (px - hx < rx0 + EDGE_MARGIN or px + hx > rx1 - EDGE_MARGIN
                     or py - hy < ry0 + EDGE_MARGIN
                     or py + hy > ry1 - EDGE_MARGIN):
-                prob.append('OFF-BOARD pad %s.%s (%s end) at panel (%.2f, '
-                            '%.2f)' % (f.ref, num, in_board(f.ref),
-                                       px - PAGE[0], py - PAGE[1]))
+                bad.append((num, px, py))
+        if not f.locked:
+            off = f.crt is not None and (
+                f.crt[0] > PAGE[0] + PANEL_W or f.crt[2] < PAGE[0]
+                or f.crt[1] > PAGE[1] + PANEL_H or f.crt[3] < PAGE[1])
+            if off:
+                staged.append(f)
+                continue
+            placed.append(f)
+        for (num, px, py) in bad:
+            prob.append('OFF-BOARD pad %s.%s (%s end) at panel (%.2f, '
+                        '%.2f)' % (f.ref, num, in_board(f.ref),
+                                   px - PAGE[0], py - PAGE[1]))
+    check.staged, check.placed = staged, placed
+    print('   %d unlocked parts staged off the board for Quilter, %d placed '
+          'on it' % (len(staged), len(placed)))
     # 2. courtyard overlaps
     for i in range(len(fps)):
         for j in range(i + 1, len(fps)):
@@ -507,17 +597,29 @@ def check_one_outline():
                             'edge to edge, which would split the board in two' % vy)
     if not prob:
         print('   ONE board: a single continuous outline %.2f x %.2f mm '
-              'round both ends and both rails, plus %d internal cut-outs; the '
-              'ends are joined only across the V-scores'
+              'round both ends, no rails, plus %d internal cut-out; the '
+              'ends are joined only across the V-score'
               % (PANEL_W, PANEL_H, len(loops) - 1))
     return prob
 
 
 def check_panel(fps):
-    """Every score runs edge to edge; no copper within the edge margin of
-    one."""
+    """The score runs edge to edge; no copper within the edge margin of it,
+    and no unlocked part within 5 mm of it."""
     prob = check_one_outline()
+    for f in check.placed:
+        if f.crt is None:
+            continue
+        for vy in VSCORES_Y:
+            ay = PAGE[1] + vy
+            gap = max(f.crt[1] - ay, ay - f.crt[3])
+            if gap < SCORE_PART_CLEAR:
+                prob.append('%s is %.2f mm from the y = %.2f score; unlocked '
+                            'parts must stay %.1f mm away'
+                            % (f.ref, max(gap, 0.0), vy, SCORE_PART_CLEAR))
     for f in fps:
+        if f in check.staged:
+            continue
         for (num, px, py, hx, hy, net) in f.pads:
             y = py - PAGE[1]
             for vy in VSCORES_Y:
@@ -581,6 +683,237 @@ def boot_arithmetic(fps, box, refs, body_w, label):
     return []
 
 
+# ------------------------------------------------------------ locked parts
+def check_locked(fps):
+    """Exactly the mechanically fixed parts are locked, each where its
+    source document puts it; the outline features are where they belong."""
+    prob = []
+    byref = {f.ref: f for f in fps}
+    for ref, (wx, wy) in sorted(LOCKED.items()):
+        f = byref.get(ref)
+        if f is None:
+            prob.append('locked part %s is missing' % ref)
+            continue
+        gx, gy = f.at[0] - PAGE[0], f.at[1] - PAGE[1]
+        if abs(gx - wx) > 0.01 or abs(gy - wy) > 0.01:
+            prob.append('%s at panel (%.3f, %.3f), documented (%.3f, %.3f)'
+                        % (ref, gx, gy, wx, wy))
+        if not f.locked:
+            prob.append('%s is at its fixed position but not locked' % ref)
+    extra = sorted(f.ref for f in fps if f.locked and f.ref not in LOCKED)
+    if extra:
+        prob.append('locked but not mechanically fixed, so Quilter would '
+                    'never move them: %s' % ', '.join(extra))
+    # the U-notch and the window, from the Edge.Cuts segments
+    segs = [((round(a[0] - PAGE[0], 3), round(a[1] - PAGE[1], 3)),
+             (round(b[0] - PAGE[0], 3), round(b[1] - PAGE[1], 3)))
+            for a, b in load.edges]
+
+    def has(x0, y0, x1, y1):
+        return any({a, b} == {(x0, y0), (x1, y1)} for a, b in segs)
+
+    nx0, ny, nx1 = NOTCH
+    if not (has(nx0, ny, nx1, ny) and has(nx0, ny, nx0, PANEL_H)
+            and has(nx1, ny, nx1, PANEL_H)):
+        prob.append('the M3 U-notch is not at x %.2f..%.2f from y %.2f to the '
+                    'edge' % (nx0, nx1, ny))
+    wx0, wy0, wx1, wy1 = WINDOW
+    if not (has(wx0, wy0, wx1, wy0) and has(wx1, wy0, wx1, wy1)
+            and has(wx1, wy1, wx0, wy1) and has(wx0, wy1, wx0, wy0)):
+        prob.append('the jumper window is not at x %.2f..%.2f, y %.2f..%.2f'
+                    % WINDOW)
+    if not prob:
+        print('   locked, and each at its documented position: %s'
+              % ', '.join(sorted(LOCKED)))
+        print('   U-notch and jumper window in place; nothing else locked')
+    # the window against the jumpers it is for, reported, not failed
+    for nm, (hx0, hy0, hx1, hy1) in (('DB6', DB6_HL2), ('DB3', DB3_HL2)):
+        x0, y0 = hx0 - HL2_ORIGIN[0], hy0 - HL2_ORIGIN[1] + RADIO_Y0
+        x1, y1 = hx1 - HL2_ORIGIN[0], hy1 - HL2_ORIGIN[1] + RADIO_Y0
+        over = max(0.0, wx0 - x0) + max(0.0, x1 - wx1) + \
+            max(0.0, wy0 - y0) + max(0.0, y1 - wy1)
+        print('      %s body x %.2f..%.2f, y %.2f..%.2f: %s'
+              % (nm, x0, x1, y0, y1,
+                 'inside the window' if over == 0 else
+                 'extends %.2f mm past the window edge' % over))
+    return prob
+
+
+# ------------------------------------------------ placement and routing rules
+SS_CONTACT = {'J1': 'radio', 'J101': 'gowin'}
+DECAP_PIN = {'VCCA': '1', 'VCCB': '16', 'input': '1', 'output': '5'}
+VCC_PIN = {'SOIC': '4', 'TSSOP_RCV': '13'}
+HDR_SKIP = ('GND', 'DB1_3V3', 'VLVDS')
+GROUPS = {
+    'radio forward': ['A_FWDCLK', 'A_ADCD0', 'A_ADCD1', 'A_ADCD2'],
+    'radio reverse': ['B_REVCLK', 'B_TXD0', 'B_TXD1', 'B_TXD2'],
+    'radio aux out': ['A_AUXCLK', 'A_AUXDAT'],
+    'radio aux in': ['B_AUXCLK', 'B_AUXDAT'],
+    'Gowin forward': ['G_B_FWDCLK', 'G_B_ADCD0', 'G_B_ADCD1', 'G_B_ADCD2'],
+    'Gowin reverse': ['G_A_REVCLK', 'G_A_TXD0', 'G_A_TXD1', 'G_A_TXD2'],
+    'Gowin aux out': ['G_A_AUXCLK', 'G_A_AUXDAT'],
+    'Gowin aux in': ['G_B_AUXCLK', 'G_B_AUXDAT'],
+}
+MATCH_TOL = 2.5
+
+
+def edge_gap(a, b):
+    """Closest distance between two pad rectangles (x, y, hx, hy)."""
+    dx = max(0.0, abs(a[1] - b[1]) - a[3] - b[3])
+    dy = max(0.0, abs(a[2] - b[2]) - a[4] - b[4])
+    return math.hypot(dx, dy)
+
+
+def bom_functions():
+    import csv
+    path = os.path.join(ROOT, 'bridge', 'bridge-bom.csv')
+    with open(path, encoding='utf-8') as fh:
+        return {r['Designator']: r['Function'] for r in csv.DictReader(fh)}
+
+
+def check_rules(fps):
+    """The rules Quilter cannot read from the file.  Only meaningful once
+    the unlocked parts are on the board; skipped while they are staged."""
+    prob = []
+    if not check.placed:
+        print('   placement rules: nothing placed yet - checked when the '
+              'board comes back from Quilter')
+        return prob
+    byref = {f.ref: f for f in fps}
+    pads_on = {}
+    for f in fps:
+        for pd in f.pads:
+            if pd[5]:
+                pads_on.setdefault(pd[5], []).append((f, pd))
+    # one side only
+    for f in check.placed:
+        if f.layer != 'F.Cu':
+            prob.append('%s was placed on the bottom side' % f.ref)
+    # ESD arrays within 5 mm of the contacts they clamp
+    worst = 0.0
+    for f in check.placed:
+        if not f.ref.startswith('D'):
+            continue
+        for pd in f.pads:
+            if not pd[5] or pd[5] in ('GND', 'G_GND'):
+                continue
+            cons = [q for (g, q) in pads_on.get(pd[5], [])
+                    if g.ref in SS_CONTACT]
+            if not cons:
+                continue
+            d = min(edge_gap(pd, c) for c in cons)
+            worst = max(worst, d)
+            if d > 5.0:
+                prob.append('%s pad %s (%s) is %.2f mm from its SlimSAS '
+                            'contact; the limit is 5 mm'
+                            % (f.ref, pd[0], pd[5], d))
+    print('   ESD arrays: worst array-to-contact gap %.2f mm (limit 5)'
+          % worst)
+    # terminations within 5 mm of the receiver input
+    worst = 0.0
+    for f in check.placed:
+        if not f.ref.startswith('R') or len(f.pads) != 2:
+            continue
+        nets = {pd[5] for pd in f.pads}
+        if not all(n and n.endswith(('_P', '_N')) and
+                   (n.startswith('B_') or n.startswith('G_B_')) for n in nets):
+            continue
+        rx = [(g, q) for n in nets for (g, q) in pads_on.get(n, [])
+              if g.ref.startswith('U') or g.ref == 'J102']
+        if not rx:
+            continue
+        d = min(edge_gap(pd, q) for pd in f.pads for (g, q) in rx)
+        worst = max(worst, d)
+        if d > 5.0:
+            prob.append('termination %s is %.2f mm from its receiver %s; '
+                        'the limit is 5 mm' % (f.ref, d, rx[0][0].ref))
+    print('   terminations: worst resistor-to-receiver gap %.2f mm (limit 5)'
+          % worst)
+    # decoupling capacitors at the pins they serve
+    fn = bom_functions()
+    worst = 0.0
+    for f in check.placed:
+        if not f.ref.startswith('C'):
+            continue
+        words = fn.get(f.ref, '').split()
+        if len(words) < 2 or not words[0].startswith('U'):
+            continue
+        ic = byref.get(words[0])
+        if ic is None:
+            continue
+        kind = words[1]
+        if kind in DECAP_PIN:
+            pin = DECAP_PIN[kind]
+        elif kind == 'VCC':
+            pin = '4' if any(q[0] == '4' and q[5] == '+3V3' for q in ic.pads) \
+                and len(ic.pads) == 16 and ic.crt and \
+                (ic.crt[3] - ic.crt[1] > 9 or ic.crt[2] - ic.crt[0] > 9) \
+                else '13'
+        else:
+            continue
+        tgt = [q for q in ic.pads if q[0] == pin]
+        cp = [q for q in f.pads if q[5] == (tgt[0][5] if tgt else None)]
+        if not tgt or not cp:
+            continue
+        d = min(edge_gap(c, tgt[0]) for c in cp)
+        worst = max(worst, d)
+        if d > 3.0:
+            prob.append('%s (%s) is %.2f mm from %s pin %s; keep it within '
+                        '3 mm' % (f.ref, fn[f.ref], d, ic.ref, pin))
+    print('   decoupling: worst capacitor-to-pin gap %.2f mm (limit 3)'
+          % worst)
+    # single-ended nets touching an HL2 header pin under 25 mm
+    tracks = load.tracks
+    worst = (0.0, '')
+    for ref in ('J2', 'J3'):
+        f = byref.get(ref)
+        for pd in (f.pads if f else []):
+            n = pd[5]
+            if not n or n in HDR_SKIP:
+                continue
+            routed = sum(t[2] for t in tracks if t[0] == n)
+            if routed:
+                length, how = routed, 'routed'
+            else:
+                length = max(math.hypot(pd[1] - q[1], pd[2] - q[2])
+                             for (g, q) in pads_on.get(n, [])) if \
+                    pads_on.get(n) else 0.0
+                how = 'straight-line'
+            if length > worst[0]:
+                worst = (length, '%s (%s)' % (n, how))
+            if length > 25.0:
+                prob.append('HL2 header net %s is %.1f mm %s; the limit is '
+                            '25 mm' % (n, length, how))
+    print('   HL2 header nets: longest %.1f mm, %s (limit 25)' % worst)
+    if not tracks:
+        print('   routing rules: no tracks yet')
+        return prob
+    # pairs on the top layer only, nothing routed on the ground plane
+    for (n, lay, ln, a, b) in tracks:
+        if n.endswith(('_P', '_N')) and n.startswith(('A_', 'B_', 'G_A_',
+                                                      'G_B_')) \
+                and lay != 'F.Cu':
+            prob.append('pair net %s has track on %s; pairs are top layer '
+                        'only' % (n, lay))
+        if lay == 'In1.Cu':
+            prob.append('track on the In1.Cu ground plane (net %s)' % n)
+    # length-matched groups
+    for grp, lanes in GROUPS.items():
+        lens = {}
+        for lane in lanes:
+            lp = sum(t[2] for t in tracks if t[0] == lane + '_P')
+            ln_ = sum(t[2] for t in tracks if t[0] == lane + '_N')
+            lens[lane] = (lp + ln_) / 2.0
+        spread = max(lens.values()) - min(lens.values())
+        print('   %-14s pair lengths %s: spread %.2f mm (limit %.1f)'
+              % (grp, ', '.join('%.1f' % v for v in lens.values()), spread,
+                 MATCH_TOL))
+        if spread > MATCH_TOL:
+            prob.append('%s group lengths spread %.2f mm, over %.1f mm'
+                        % (grp, spread, MATCH_TOL))
+    return prob
+
+
 def main():
     fps, box, prob = check('bridge')
     # the radio end's LOCAL frame (HL2 y 73.30 at its top), not its trimmed
@@ -595,14 +928,20 @@ def main():
     prob += check_gowin(fps)
     print('-- the panel --')
     prob += check_panel(fps)
+    print('-- the locked parts --')
+    prob += check_locked(fps)
+    print('-- the placement and routing rules --')
+    prob += check_rules(fps)
     for s_ in prob:
         print('   !! ' + s_)
     print('   %s' % ('OK - every pad inside its own end of the panel, no two '
                      'courtyards overlap, no two different-net pads closer '
                      'than the clearance floor, the radio end sockets on the '
                      'HL2 grids, the Gowin end socket on the dock J14 grid, '
-                     'both SlimSAS land patterns match SFF-8654 Table A-1, and '
-                     'both V-scores are clean'
+                     'both SlimSAS land patterns match SFF-8654 Table A-1, the '
+                     'V-score is clean, exactly the fixed parts are locked at '
+                     'their documented positions, and every placement and '
+                     'routing rule that applies at this stage holds'
                      if not prob else '%d PROBLEMS' % len(prob)))
     return 1 if prob else 0
 

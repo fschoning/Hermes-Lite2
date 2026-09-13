@@ -1,5 +1,15 @@
 # gowin-bridge rev D — routing in EasyEDA Pro and ordering from JLCPCB
 
+> **13 Sep 2026: the board is no longer placed.** It is prepared for Quilter
+> instead: only the connectors, the sockets, the fiducials and the holes
+> have a position, and every other part waits off the board. Follow
+> `QUILTER.md`. Use this guide only on a board that has already been
+> placed — for example one Quilter sent back — for the routing rules, the
+> stack, the pair list and the JLCPCB order. Board facts below are
+> updated: **64.50 × 90.00 mm, no rails, one V-score at board y 25.12**,
+> the pair net class is now called `differentialpair`, and every
+> clearance in the file is already 0.15 mm.
+
 For the owner, routing this board by hand. Strictly procedural: one action per
 step. Do not change the schematic, the placement or the board outline —
 `bridge/bridge.kicad_pcb` and `bridge/bridge.kicad_sch` are generated and
@@ -25,11 +35,11 @@ commit `d390bca` (plus `c72c498` for the panel).
 | **Power track (+3V3, +2V5, DB1_3V3, VLVDS, VLVDS_F)** | 0.6 mm (23.6 mil), clearance 0.2 mm (7.9 mil) |
 | **Default via** | 0.3 mm drill / 0.6 mm pad |
 | **Differential-pair via** | 0.25 mm drill / **0.45 mm pad minimum** (below 0.45 mm JLCPCB's cheap tier ends) |
-| **General clearance — RAISE BEFORE ORDERING** | Imported KiCad value is 0.13 mm on the LVDS100 class and project-wide minimum. **JLCPCB's manufacturing floor is 0.15 mm.** Set EasyEDA's clearance rules to ≥0.15 mm everywhere before you order |
+| **General clearance** | **0.15 mm everywhere**, JLCPCB's manufacturing floor. The KiCad file now says 0.15 mm on every class and board-wide (it said 0.13 mm before 13 Sep 2026). Set EasyEDA's rules to the same |
 | **Length-match groups** | Forward group, reverse group: **±2.5 mm**, each group of 4 pairs matched to itself. Aux clock/data: **±2.5 mm** (derived, same lane rate). Duplicate clock, spare: no requirement. Full table in §4 |
 | **V-score copper setback** | **0.4 mm minimum from the score centreline, 1.0 mm recommended** |
 | **M3 U-notch keepout** | 0.3 mm copper clearance |
-| **Board** | 64.50 × 100.00 mm, one continuous outline, three V-scores |
+| **Board** | 64.50 × 90.00 mm, one continuous outline, one V-score at y 25.12 (Gowin end above it, radio end below), no rails |
 | **Order** | 4 layer, 1.6 mm, lead-free HASL, 1 oz outer / 0.5 oz inner, no impedance control, 5 pcs, **one design**, Single PCB |
 
 ---
@@ -60,15 +70,14 @@ check carefully" — their words, not a guess.
 
 8. Open the imported PCB. Zoom to fit (View menu or scroll-wheel).
 9. **Board outline.** Confirm you see **one continuous outline**, 64.50 mm
-   wide × 100.00 mm tall, with no gaps or duplicate edges. `STATUS.md` and
+   wide × 90.00 mm tall, with no gaps or duplicate edges. `STATUS.md` and
    `DESIGN_NOTES.md` §11.6 both state this is one design with one outline —
    if the import shows two separate boards or a broken loop, the import did
    not preserve the outline and must be redone from a fresh archive.
-10. **The three V-scores.** Confirm three straight horizontal score lines
-    running the full 64.50 mm width, at local y = 5.00, 30.12 and 95.00
-    mm (measuring from whichever end EasyEDA treats as y = 0 — check against
-    the 5.00 mm rail width at both ends). If the import did not carry the
-    V-cut layer across, you will need to redraw these three lines on the
+10. **The V-score.** Confirm one straight horizontal score line running
+    the full 64.50 mm width, 25.12 mm from the Gowin end's top edge (the
+    edge beside the HDMI notch). There are no rails. If the import did not
+    carry the V-cut layer across, you will need to redraw this line on the
     layer EasyEDA uses for V-CUT (see its board-outline documentation) before
     ordering — do this only after routing is complete, since it is a fab
     instruction, not a mechanical outline change.
@@ -109,15 +118,15 @@ check carefully" — their words, not a guess.
     into `+3V3` and `+2V5` regions does not have a 1:1 EasyEDA equivalent.
     After import, re-draw the split using EasyEDA's own "divide the inner
     plane layer with a broken line, then rebuild" method (§6.3) rather than
-    assuming the imported shapes are correct — check the +2V5 island
-    (local x 8–33, y 1–12 at the radio end) is still its own island, not
-    merged into +3V3 or vice versa.
+    assuming the imported shapes are correct. There is no pre-drawn +2V5
+    island any more: it assumed the old placement. Draw the +2V5 area on
+    In2 round wherever U1, U2, U3 and U12 ended up.
 18. **Net classes / design rules.** KiCad's three net classes (`Default`,
-    `LVDS100`, `Power`, defined in `bridge/bridge.kicad_pro`) may or may not
+    `differentialpair`, `Power`, defined in `bridge/bridge.kicad_pro`) may or may not
     survive import as EasyEDA Design Rules. Do not assume they did — set them
     by hand per §3 regardless.
 19. **Differential pairs.** The 32 pair legs (16 pairs × 2 ends, all on net
-    class `LVDS100`) may not come through as EasyEDA "differential pair"
+    class `differentialpair`) may not come through as EasyEDA "differential pair"
     objects even if the individual nets import correctly. Create them by
     hand per §4.2 — do not rely on auto-detection alone; verify every pair
     exists in the Differential Pair Manager before routing.
@@ -194,7 +203,7 @@ fixed at 8 mil:
 | **Gap (held)** | **8.00 mil = 0.203 mm** |
 | Calculator's result | 100.06 Ω differential, εr(eff) 2.927 |
 
-The project's own KiCad net class `LVDS100` (in `bridge/bridge.kicad_pro`,
+The project's own KiCad net class `differentialpair` (called `LVDS100` before 13 Sep 2026; in `bridge/bridge.kicad_pro`,
 already used to reach 0 DRC violations pre-routing) specifies **width
 0.25 mm / gap 0.20 mm** — within a few percent of the calculator's ideal.
 **Use 0.25 mm width / 0.20 mm gap** — round numbers, already proven, close
@@ -219,7 +228,7 @@ as your target; do not expect a guarantee.
 
 ### 3.2 Other track widths, via sizes and clearance
 
-Sourced from `bridge/bridge.kicad_pro`'s net classes (`Default`, `LVDS100`,
+Sourced from `bridge/bridge.kicad_pro`'s net classes (`Default`, `differentialpair`,
 `Power`) — the values already used to reach 0 DRC violations in KiCad —
 cross-checked against JLCPCB's published capability minimums
 (jlcpcb.com/capabilities/pcb-capabilities, read 13 Sep 2026).
@@ -228,9 +237,9 @@ cross-checked against JLCPCB's published capability minimums
 |---|---|---|
 | Default signal track width | **0.25 mm (9.8 mil)** | `Default` net class |
 | Default clearance | **0.15 mm (5.9 mil)** | `Default` net class. Matches JLCPCB's stated minimum trace/clearance (0.15/0.15 mm, 1 oz, under solder mask) exactly — do not go narrower |
-| **LVDS100 (differential pair) clearance** | **0.13 mm in the imported file — RAISE TO AT LEAST 0.15 mm** | The KiCad project's own `LVDS100` class and its board-wide `min_clearance` are both set to 0.13 mm, which is *below* JLCPCB's published manufacturing floor of 0.15 mm. KiCad's DRC did not catch this because KiCad was only checking against its own 0.13 mm rule, not JLCPCB's. Fix this in EasyEDA's Design Rules before you route — see step 5 below |
+| **differentialpair clearance** | **0.15 mm** | Raised in the KiCad file on 13 Sep 2026 from 0.13 mm, which was below JLCPCB's published floor of 0.15 mm. Board-wide `min_clearance` is 0.15 mm too |
 | Default via | **0.3 mm drill / 0.6 mm pad** | `Default` net class. JLCPCB's cheapest via tier is 0.3 mm drill (no upcharge); 0.6 mm pad is larger than their paired 0.4–0.45 mm suggestion, which only adds annular-ring margin, not cost |
-| **Differential-pair via** | **0.25 mm drill / 0.45 mm pad minimum** | `LVDS100` net class. JLCPCB's own capability note: "0.2 mm or 0.25 mm hole size with via diameter less than 0.45 mm will cost more" — keep the pad at 0.45 mm or larger to stay in the no-upcharge band |
+| **Differential-pair via** | **0.25 mm drill / 0.45 mm pad minimum** | `differentialpair` net class. JLCPCB's own capability note: "0.2 mm or 0.25 mm hole size with via diameter less than 0.45 mm will cost more" — keep the pad at 0.45 mm or larger to stay in the no-upcharge band |
 | **+3V3 / DB1_3V3 / VLVDS / VLVDS_F power track** | **0.6 mm (23.6 mil)** | `Power` net class. Carries the board's 350 mA design figure (`DESIGN_NOTES.md` §4.1). By IPC-2221 (1 oz external, 10 °C rise — the same convention `DESIGN_NOTES.md` §6.2 uses), 350 mA only needs ≈0.07 mm to stay under a 10 °C rise, so 0.6 mm is headroom against IR drop, not a heating minimum |
 | **+2V5 power track** | **0.6 mm (23.6 mil)**, same `Power` class | Carries the 50 mA design figure. By the same IPC-2221 method this needs a negligible fraction of a mil for heating — 0.6 mm is far more than required; keep it for consistency and to stay clear of the 0.15 mm manufacturing floor with margin |
 
@@ -244,8 +253,8 @@ cross-checked against JLCPCB's published capability minimums
 4. Under **Safe Spacing Rules**, set the board-wide default clearance to
    **0.15 mm** (not 0.13 mm).
 5. Under **Network Rules**, create a net class (right-click in the network
-   list → create new network class) named `LVDS100`. Assign it: track width
-   0.25 mm, clearance **0.15 mm** (raised from the KiCad file's 0.13 mm),
+   list → create new network class) named `differentialpair`. Assign it: track width
+   0.25 mm, clearance **0.15 mm**,
    via 0.25 mm drill / 0.45 mm pad. Assign every one of the 32 differential
    pair legs (both ends — see the net list in §4.1) to this class.
 6. Create a second net class `Power`, track width 0.6 mm, clearance 0.2 mm.
@@ -276,7 +285,7 @@ two tables.
 | 20/21 | A_ADCD1_P | A_ADCD1_N | ADC data 1, driven |
 | 23/24 | A_ADCD2_P | A_ADCD2_N | ADC data 2, driven |
 | 32/33 | A_DUPCLK_P | A_DUPCLK_N | duplicate forward clock, driven |
-| 35/36 | A_SPARE_P | A_SPARE_N | spare, driven (test pad only) |
+| 35/36 | A_SPARE_P | A_SPARE_N | spare, driven; nothing at the far Gowin end |
 | 2/3 | B_AUXCLK_P | B_AUXCLK_N | aux clock, received |
 | 5/6 | B_AUXDAT_P | B_AUXDAT_N | aux data, received |
 | 14/15 | B_REVCLK_P | B_REVCLK_N | **reverse clock**, received |
@@ -284,7 +293,7 @@ two tables.
 | 20/21 | B_TXD1_P | B_TXD1_N | transmit data 1, received |
 | 23/24 | B_TXD2_P | B_TXD2_N | transmit data 2, received |
 | 32/33 | B_DUPCLK_P | B_DUPCLK_N | duplicate reverse clock, received |
-| 35/36 | B_SPARE_P | B_SPARE_N | spare, received (test pad only) |
+| 35/36 | B_SPARE_P | B_SPARE_N | spare, received; receiver output unconnected |
 
 **Gowin end (J101), from `PINMAP.md` §11.3. Same Pos numbers, mapped to J14
 pin numbers on the dock side for reference.**
@@ -420,7 +429,7 @@ into concrete EasyEDA Pro steps.
    groups.
 4. **The duplicate clock pair** (Pos 32/33) and **the spare pair** (Pos
    35/36). No length-matching rule. Duplicate clock goes to U5 channel 1;
-   spare terminates on test pads only.
+   spare goes to U5 channel 4 out and U7 channel 4 in, and no further.
 5. **The 12 ESD arrays, then the 8 terminations.** Do this now, before
    single-ended routing claims the space near the connector. Each ESD
    array: within 5 mm of its SlimSAS contact, on the connector side of
@@ -437,7 +446,7 @@ into concrete EasyEDA Pro steps.
 7. **The 16 sideband conductors**: `SB_PRSNT_IN/OUT`, `SB_TCK_IN`,
    `SB_TMS_IN`, `SB_TDI_IN`, `SB_TDO_OUT`, `SB_AUXIO0..3_IN/OUT`, plus the
    two undriven-on-purpose contacts (`SB_NC9`, `SB_NC29` in the board
-   file — these still get ESD clamps and test pads, no further routing).
+   file — these still get ESD clamps, no further routing).
    All slow (DC to 24 MHz). Default single-ended track width (§3.2).
 8. **The JTAG run from CN1 (J4) to the connector** — `J_TCK`, `J_TMS`,
    `J_TDI`, `J_TDO` to/from the gated buffer, then `SB_TCK_IN`/`SB_TMS_IN`/
@@ -583,9 +592,11 @@ outline tabs themselves. JLCPCB's own published standard
 (jlcpcb.com/blog/v-cut-panelization-standards, read 13 Sep 2026): **copper
 — traces, pads, fill — must stay at least 0.4 mm from the score centreline,
 1.0 mm recommended**, to avoid exposed copper or trace damage during
-scoring. Apply this at all three scores (local y = 5.00, 30.12, 95.00):
+scoring. Apply this at the one score (board y 25.12). The KiCad file
+already carries a rule area there that forbids tracks, vias and pours within
+0.5 mm of it.
 
-1. After routing, zoom to each V-score line at high magnification.
+1. After routing, zoom to the V-score line at high magnification.
 2. Confirm no track, pad or copper-pour edge sits inside 0.4 mm of the
    score centreline (1.0 mm if you have the room to give it).
 3. Confirm the ground and power pours on L2/L3 also respect this setback —
@@ -664,7 +675,7 @@ scoring. Apply this at all three scores (local y = 5.00, 30.12, 95.00):
    reaches the same order form).
 2. **Base Material**: FR-4.
 3. **Layers**: 4.
-4. **Dimensions**: 64.50 × 100.00 mm.
+4. **Dimensions**: 64.50 × 90.00 mm.
 5. **PCB Qty**: 5.
 6. **Different Design**: **1**. Do not use the words "Different Design"
    with any value other than 1 — this is one design, not a multi-design
@@ -743,6 +754,29 @@ selection is needed either way.
     estimate-in-isolation, not what you'll actually pay once both items
     are in one cart; the real combined shipping charge appears at
     checkout after both items are added.
+
+---
+
+## 9.5 The test points (ten)
+
+Cut from 73 on 13 Sep 2026. Each one is there for the bring-up sequence or
+the fault-finding table in `ROUTING.md`.
+
+| Net | End | Why |
+|---|---|---|
+| `GND` | radio | scope ground clip (2 mm through-hole pad) |
+| `+3V3` | radio | the rail after the input bead |
+| `+2V5` | radio | the 2.5 V regulator output, the translators' low side |
+| `SB_PRSNT_IN` | radio | presence detect: is a powered far end there? |
+| `JTAG_EN_N` | radio | JTAG over the cable: must read HIGH at power-up |
+| `AUXIO_EN_N` | radio | the drive enable from the radio's gateware: must read HIGH at power-up |
+| `AUXIO_OE_N` | radio | the drive buffer's real enable after the presence interlock: HIGH unless both of the above allow it |
+| `HL2_FWD_CLK` | radio | forward clock after the divider: expect 2.50 V high |
+| `HL2_REV_CLK` | radio | reverse clock as it enters the radio's FPGA pin 88 |
+| `G_GND` | Gowin | scope ground clip (2 mm through-hole pad) |
+
+The Gowin end has no receiver of its own (the FPGA receives), so there is no
+forward clock to probe on it.
 
 ---
 

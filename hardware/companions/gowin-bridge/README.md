@@ -14,15 +14,15 @@ pairs and 16 sideband conductors.
 
 | | |
 |---|---|
-| Board | radio end **64.50 × 64.88 mm**, 4 layer, 1.6 mm, HASL. HL2 x 70.00→134.50, y 73.37→138.25. The whole board, both ends and rails, is **64.50 × 100.00 mm** |
+| Board | radio end **64.50 × 64.88 mm**, 4 layer, 1.6 mm, HASL. HL2 x 70.00→134.50, y 73.37→138.25. The whole board, both ends, is **64.50 × 90.00 mm**, no rails |
 | Underside | 11.04 mm above the HL2's top surface, on 2.54 mm sockets and one M3 screw |
 | Connector | Amphenol ICC **U10A474240T**, LCSC **C5432262** |
 | Cable | 10Gtek **CAB-8654/8654-8i-P**, 8i to 8i, 0.5 m, **$15** |
 | Lane rate | DDR at 153.6 MHz = **307.2 Mbit/s**, three lanes each way |
 | Payload | **921.6 Mbit/s** each way = the complete raw 12-bit 76.8 MSPS ADC stream, plus a full-duplex auxiliary channel at the same rate |
-| Parts | both ends: 225, of which **195 fitted**; 173 nets; **18 placed part numbers**, 12 Basic and 6 Extended |
+| Parts | both ends: 161, of which **132 fitted**; 168 nets; **18 placed part numbers**, 12 Basic and 6 Extended; ten test points |
 | Cost | **$154.84** for five assembled boards, both ends, delivered: **$30.97 per complete link** |
-| State | schematic and placement generated and validated; **not routed** |
+| State | schematic generated and validated; **prepared for Quilter**: fixed parts locked, everything else waiting off the board (`QUILTER.md`); **not placed, not routed** |
 
 ---
 
@@ -43,17 +43,20 @@ pairs and 16 sideband conductors.
 ```
 bridge/                 the ONE KiCad project
   bridge.kicad_sch      schematic, ERC 0 violations
-  bridge.kicad_pcb      parts placed, NOT routed, DRC 0 violations, parity 0
-  bridge.kicad_pro      project file, with the LVDS100 and Power net classes
+  bridge.kicad_pcb      fixed parts locked, the rest staged off the board;
+                        placement regions and keepouts; DRC 0, parity 0
+  bridge.kicad_pro      project file, with the differentialpair and Power
+                        net classes
+quilter-upload/         the three KiCad 10 files to upload to Quilter
   bridge-bom.csv        BOM with LCSC numbers and a Populate column
   gowin-bridge.kicad_sym, gowin-bridge.pretty/   project-local libraries
-drl/                    Excellon drill export, PTH and NPTH separately
 templates/              1:1 print templates for offering up to the radio
 panel-endcap/           the re-cut front end panel - SEE THE WARNING BELOW
 tools/
   gen_gowin_bridge.py   generates everything above from one netlist description
   check_netlist.py      asserts the pin maps, the crossover and the safety props
-  check_geometry.py     asserts the placement and the land pattern
+  check_geometry.py     asserts the locked parts, the land patterns and,
+                        on a returned board, the placement and routing rules
   cost_model.py         computes the order total from the generated BOM and PCB
   kisexp.py             the KiCad s-expression reader/writer
 ```
@@ -114,14 +117,13 @@ receives true LVDS at its 3.3 V supply. Placed at the 40 mm case position.
 
 JLCPCB, **Economic** assembly, **5 boards**, 4 layer, 1.6 mm, lead-free HASL,
 green, 1 oz, **one design**, delivered as a single PCB. It is one ordinary
-64.50 × 100.00 mm board with one outline; the V-score lines are on the
-Eco1.User layer. Do not buy impedance control — `COST.md` §4 explains why.
+64.50 × 90.00 mm board with one outline and no rails; the one V-score line
+is on the Eco1.User layer. Do not buy impedance control — `COST.md` §4 explains why.
 `COST.md` §1 is the line-by-line.
 
 Then hand-solder, per board: the DB1 2×10 socket and the DB12 2×3 socket and
 the CN1 2×5 socket on the **underside**, the JTAG pass-through 2×5 header on
-the **top**, the ground-clip 1×2 header, and **the connector's four 2.2 mm
-shell tails**.
+the **top**, and **the connector's four 2.2 mm shell tails**.
 
 **Before any of that, buy one cable and ohmmeter it.** The whole one-design
 argument rests on the cable crossing row A onto row B, and 10Gtek publish no

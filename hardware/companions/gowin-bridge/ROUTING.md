@@ -4,15 +4,18 @@
 `ROUTING_EASYEDA.md` instead — that is the procedural, step-by-step guide.
 This file is the KiCad-era background it was built from.**
 
-For whoever lays this board out. The schematic and the placement are
-generated and validated; the routing is not done and is not done here.
+For whoever lays this board out. The schematic is generated and
+validated. **Since 13 Sep 2026 the board is not placed either**: only the
+parts the radio, the dock and the case fix are on it, and it goes to Quilter
+for placement and routing (`QUILTER.md`). The rules below are what the
+returned board is checked against.
 
 **One design, one board, one connector.** rev C's three-socket fan-outs,
 upright-fin transitions and panel V-scores do not exist any more.
 
 | | |
 |---|---|
-| Board | radio end **64.50 × 64.88 mm** (outline from local y 0.07), local (0,0) = HL2 main board (70.00, 73.30); whole board with the Gowin end and rails 64.50 × 100.00 mm |
+| Board | radio end **64.50 × 64.88 mm** (outline from local y 0.07), local (0,0) = HL2 main board (70.00, 73.30); whole board with the Gowin end 64.50 × 90.00 mm, no rails |
 | Stack | **4 layer**, 1.6 mm. F.Cu signal / **In1.Cu solid GND** / In2.Cu power / B.Cu signal |
 | Unrouted nets at handover | 328 items, DRC otherwise **0 violations** |
 | Impedance | target **100 Ω differential**, **not** guaranteed — JLCPCB Economic gives no impedance control and `COST.md` §5.1 explains why buying it would waste $33.88 |
@@ -96,31 +99,31 @@ upright-fin transitions and panel V-scores do not exist any more.
 
 | Symptom | First suspect |
 |---|---|
-| **Nothing at all, both directions** | Read `TP_SB_PRSNT_IN`. If `R_DRVEN_PRSNT` was fitted instead of `R_DRVEN_ON` and the cable has no sidebands, the drivers are disabled and the board looks dead |
-| **The forward link does not train** | Scope `TP_HL2_FWD_CLK_RAW`, then `TP_HL2_FWD_CLK` (after the divider — expect 2.50 V high), then `TP_DI_FWDCLK` (the translator output into the driver). If the divider level is low, pin 98 is not set to 8 mA drive |
+| **Nothing at all, both directions** | Read test point `SB_PRSNT_IN`. If `R_DRVEN_PRSNT` was fitted instead of `R_DRVEN_ON` and the cable has no sidebands, the drivers are disabled and the board looks dead |
+| **The forward link does not train** | Scope R1's DB1-side pad (the raw clock), then test point `HL2_FWD_CLK` (after the divider — expect 2.50 V high), then U1 pin 13 (the translator output into the driver). If the divider level is low, pin 98 is not set to 8 mA drive |
 | **Forward clock fine, data garbled** | Skew. The forward group must be length-matched. Check that all four went through U1 and U4 and that nothing was split across packages |
 | **The forward link works but every bit is inverted** | The connector's A1 end is at the other physical end than the footprint assumes. Harmless and recoverable — invert the lane in gateware. `PINMAP.md` §1.1 |
 | **The reverse clock is absent** | `R_CLKSEL_A` must be fitted and `R_CLKSEL_B` must not. If the primary clock lane is physically damaged, swap them |
 | **The reverse data has a marginal eye** | This is the tightest path on the board: DB1 pins 11/15/17 are the LED pins, and a 3.3 V output into 15 pF gives a 1.65 ns rise against a 3.2552 ns unit interval. The series parts are 0 Ω on 0402 pads; do not raise them past 22 Ω |
-| **The auxiliary link works one way only** | Clock and data must be in the same translator port. `TP_HL2_AUX_CLK_IN` and `TP_HL2_AUX_DAT_IN` are both brought out |
+| **The auxiliary link works one way only** | Clock and data must be in the same translator port. Probe the two 0 Ω links into DB12 pins 5 and 2 |
 | **The radio's auxiliary clock input sees the reverse clock too** | HL2 **R17** is fitted. It must not be — it shorts the DB12 pin 5 and pin 6 nets through 100 Ω |
-| **JTAG over the cable does nothing** | Read `TP_JTAG_EN_N`: HIGH means disabled, which is the power-up state and the correct state until the gateware asserts it. If the gateware cannot run, fit `R_JTAG_FORCE` |
-| **A locally plugged USB Blaster misbehaves** | `TP_JTAG_EN_N` should read HIGH while a Blaster is plugged in. If it reads LOW, the remote path is driving CN1 at the same time |
-| **The radio's CW/PTT or I2C behaves oddly** | Read `TP_AUXIO_OE_N`. HIGH is read-only and is the power-up state; it can only go LOW while `TP_AUXIO_EN_N` is LOW **and** a powered far end holds `TP_SB_PRSNT_IN` high. If it is LOW, the far end is driving four of the radio's pins |
+| **JTAG over the cable does nothing** | Read test point `JTAG_EN_N`: HIGH means disabled, which is the power-up state and the correct state until the gateware asserts it. If the gateware cannot run, fit `R_JTAG_FORCE` |
+| **A locally plugged USB Blaster misbehaves** | Test point `JTAG_EN_N` should read HIGH while a Blaster is plugged in. If it reads LOW, the remote path is driving CN1 at the same time |
+| **The radio's CW/PTT or I2C behaves oddly** | Read test point `AUXIO_OE_N`. HIGH is read-only and is the power-up state; it can only go LOW while `TP_AUXIO_EN_N` is LOW **and** a powered far end holds `TP_SB_PRSNT_IN` high. If it is LOW, the far end is driving four of the radio's pins |
 | **The radio browns out or resets when the board is fitted** | Was the board plugged in with the radio powered? That is a 22 A microsecond event. Otherwise measure the radio's 3.3 V rail: the board should draw about 350 mA |
 
 ## 7. The bring-up sequence, and the safety check comes first
 
 1. **With no gateware loaded and no cable plugged in**, power the radio with
-   the board fitted and read `TP_JTAG_EN_N` and `TP_AUXIO_EN_N`. **Both must
+   the board fitted and read test points `JTAG_EN_N` and `AUXIO_EN_N`. **Both must
    read HIGH.** That is the whole unprogrammed-board safety property and it is
    the first thing to confirm, before anything is driven.
-2. Check `TP_+3V3` and `TP_+2V5`, and measure the radio's 3.3 V rail current
+2. Check test points `+3V3` and `+2V5`, and measure the radio's 3.3 V rail current
    with and without the board.
-3. Read `TP_SB_PRSNT_IN` with the cable out (expect 0 V) and in, with the far
+3. Read test point `SB_PRSNT_IN` with the cable out (expect 0 V) and in, with the far
    end powered (expect 3.0 V).
-4. Scope the forward clock chain: `TP_HL2_FWD_CLK_RAW`, `TP_HL2_FWD_CLK`,
-   `TP_DI_FWDCLK`.
+4. Scope the forward clock chain: R1's DB1-side pad, test point
+   `HL2_FWD_CLK`, U1 pin 13.
 5. Bring up the forward link, then the reverse link, then the auxiliary link.
 6. Only then enable JTAG over the cable, and only with no USB Blaster plugged
    into J5.

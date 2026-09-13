@@ -25,7 +25,7 @@ the Gowin end.
 
 | | |
 |---|---|
-| Bare PCB: the 64.50 × 100.00 mm board costs the same $12.10 as the radio end alone | $0.00 |
+| Bare PCB: the 64.50 × 90.00 mm board costs the same $12.10 as the radio end alone | $0.00 |
 | Gowin-end components, 5 × $4.04 | $20.20 |
 | Gowin-end solder joints, 5 × 214 × $0.0016 | $1.71 |
 | The radio end re-counted: the AUXIO fail-safe (5 × one AO3400A and one 10 kΩ, plus their joints) and today's prices | $0.50 |
@@ -35,8 +35,9 @@ connector and its ESD arrays are the radio end's own part numbers, and its
 resistors are Basic. The AUXIO fail-safe on the radio end adds one Basic
 MOSFET, so no fee either.
 
-**The board is 64.50 × 100.00 mm**, inside the 100 × 100 mm size band for the
-promotional board price. The live quote gives $7.00 for five boards plus $5.10
+**The board is 64.50 × 90.00 mm** since the rails came off on 13 Sep 2026
+(it was quoted at 64.50 × 100.00 mm), inside the 100 × 100 mm size band for the
+promotional board price, so the quote is unchanged. The live quote gives $7.00 for five boards plus $5.10
 for lead-free HASL.
 
 ---
@@ -50,7 +51,7 @@ green, 1 oz outer, **one design, single PCB**, no impedance control.
 
 | Charge | Cost |
 |---|---|
-| Bare PCB: board, 5 pieces, 64.50 × 100.00 mm (promotional price) | $7.00 |
+| Bare PCB: board, 5 pieces, 64.50 × 90.00 mm (quoted at 64.50 × 100.00, same promotional band) | $7.00 |
 | Bare PCB: lead-free HASL | $5.10 |
 | **Bare PCB subtotal** (live quote, 13 Sep 2026) | **$12.10** |
 | Assembly setup | $8.18 |
@@ -161,7 +162,7 @@ for a 307.2 Mbit/s link whose connector is itself 85 Ω ±10. `DESIGN_NOTES.md`
 |---|---|
 | Bare PCB | JLCPCB instant quote, cart.jlcpcb.com, read 13 Sep 2026. Entered: FR-4, 4 layers, 64.5 × 100 mm, PCB qty 5, product type industrial/consumer, **one design, delivery format "Single PCB"**, 1.6 mm, green, white silkscreen, FR4 TG135, **lead-free HASL**, 1 oz outer, 0.5 oz inner, no specified stackup, plugged vias (the 4-layer default), 0.3 mm minimum via, ±0.2 mm outline tolerance, mark on PCB "Remove Mark" (form default, no charge), flying-probe test, 3–4 day build. Returned: special offer (board) $7.00, via covering $0.00, surface finish $5.10, build time $0.00, **calculated price $12.10** |
 | Assembly fees | jlcpcb.com/help/article/pcb-assembly-price, read 13 Sep 2026: Economic setup $8.18, stencil $1.53, SMT joint $0.0016, through-hole joint $0.0164, hand soldering $3.58 per order, Extended feeder $3.07 |
-| Rails | JLCPCB panelization guidance recommends 5 mm edge rails, which is why the 0.07 mm came off the radio end rather than a rail |
+| Rails | Removed 13 Sep 2026. jlcpcb.com/capabilities/pcb-assembly-capabilities lists edge rails as "Not necessary" for Economic PCBA; jlcpcb.com/help/article/pcb-assembly-faqs-part-2 asks for traces and components more than 0.3 mm from the edge |
 | Gowin-end part prices and stock | LCSC product pages read 13 Sep 2026: C5432262 **189 in stock** (re-read 13 Sep 2026, unchanged; the order needs 10), $3.17 at 10+; C138714 45,175, $0.0696 at 50+; C25744, C11702, C25104, C17477, C25076 all in stock at the prices above; C55160396, C41376109, C42372542 |
 | AO3400A | LCSC C20917, read 13 Sep 2026: 461,420 in stock, $0.0853 at 5+; jlcpcb.com/partdetail/C20917: **Basic** |
 | Radio-end baseline | `COST.md` as committed in 8405702, $132.43 |
