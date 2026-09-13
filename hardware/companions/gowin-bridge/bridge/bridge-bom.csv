@@ -37,6 +37,18 @@ D9,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF E
 D10,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS, on the connector side of the terminations, the series resistors and the buffers, with the shortest possible ground return."
 D11,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS, on the connector side of the terminations, the series resistors and the buffers, with the shortest possible ground return."
 D12,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10","PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS, on the connector side of the terminations, the series resistors and the buffers, with the shortest possible ground return."
+D101,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
+D102,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
+D103,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
+D104,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
+D105,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
+D106,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
+D107,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
+D108,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
+D109,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
+D110,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
+D111,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
+D112,TPD4E05U06,USON-10_2.5x1.0mm_P0.5mm,C138714,TPD4E05U06DQAR,yes,"Quad 0.5 pF ESD array, 5.5 V, USON-10",PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.
 FB1,120R/2A,L_0603_1608Metric,C14709,BLM18PG121SN1D,yes,"Input filter on the 3.3 V the board takes from DB1 pins 19/20. 120 ohm at 100 MHz, 2 A, 50 mOhm, so 15 mV of drop at 300 mA. Keeps this board's switching currents out of the radio's 3.3 V rail, which has no bead, resistor, fuse or TVS of its own between the regulator and the header","JLCPCB Basic. The only Basic bead that combines >=1 A with <=150 mOhm; no Basic bead reaches 600 ohm at that current, and 120 ohm is ample for a rail filter."
 FB2,120R/2A,L_0603_1608Metric,C14709,BLM18PG121SN1D,DNP,Input filter for the OPTIONAL Vlvds tap,NOT FITTED. Only fit together with SL_VLVDS and only with U12 removed.
 J1,SlimSAS 8i 74P R/A,SlimSAS_SFF-8654_8i_74P_RightAngle,C5432262,Amphenol ICC U10A474240T,yes,"SlimSAS SFF-8654 8i, 74 position, right angle. 16 differential pairs plus 16 sideband contacts. Row A is driven by this board, row B is received; the cable crosses A(n) to B(n), which is what lets ONE design sit at both ends","Reflow the 74 SMD contacts, then solder the four 2.2 mm through-hole shell tails. Mating face nominally 0.20 mm behind the board edge - see the SLIMSAS comment block for the one dimension no document gave and check it before cutting the panel window. Insertion force 55.5 N max, 250 mating cycles min."
@@ -45,54 +57,73 @@ J3,DB12 2x03 socket,PinSocket_2x03_P2.54mm_Vertical,,"2.54 mm 2x3P female header
 J4,CN1 2x05 socket,PinSocket_2x05_P2.54mm_Vertical,,PM254V-12-10P-H85 (LCSC C492399) or any 2.54 mm 2x5 vertical female socket,DNP,"Mates HL2 CN1, the USB-Blaster JTAG header","NOT PLACED BY JLCPCB - hand soldered on the underside. THE TOLERANCE WARNING: this is the third rigid 2.54 mm socket on one board, 54.19 mm from DB1, and HL2_MECHANICAL_ENVELOPE.md 12.2 puts the worst-case misalignment at CN1 relative to DB1 at about +/-0.8 mm against the +/-0.35 mm a 2.54 mm socket takes comfortably. If it will not engage, LEAVE J4 OFF and run a flying 10-way IDC ribbon from CN1 to J5 instead - J5 carries the same ten nets and needs no other change."
 J5,JTAG pass-through,PinHeader_2x05_P2.54mm_Vertical,,"PZ254V-12-10P (LCSC C492422) 2.54 mm 2x5 vertical male header, or DC3-2.54-10PAS (LCSC C2977596) if a keyed boxed header is preferred",DNP,"Straight passive pass-through of all ten CN1 nets, so a USB Blaster still plugs in locally with this board fitted. Also the alternative CN1 connection: a flying 10-way IDC ribbon from CN1 to here replaces J4","PURELY PASSIVE: socket straight through to header, ten nets, no branches other than the four buffered taps. Pins 6, 7 and 8 are left open - unconnected on the HL2 today but nCE/nCS/nCONFIG in Active Serial mode. DO NOT draw supply current from pin 4: it is the programmer VTREF sense line and expects microamps. This board's power comes from DB1 pins 19/20."
 J6,GND CLIP,PinHeader_1x02_P2.54mm_Vertical,,2.54 mm 1x2P vertical pin header (LCSC C52016390),DNP,Ground clip / scope reference,Hand soldered.
+J101,SlimSAS 8i 74P R/A,SlimSAS_SFF-8654_8i_74P_RightAngle_M3,C5432262,Amphenol ICC U10A474240T,yes,"SlimSAS SFF-8654 8i at the Gowin end. Same part and same contact land pattern as J1 at the radio end, plus the M3 spacer hole over dock hole H7_LU1. Row A is driven by this end, row B is received; the cable crosses A(n) to B(n)","Mating face at dock x 89.73, flush with the dock RJ45 face. Reflow the 74 contacts, hand-solder the four shell tails. The M3 hole under the housing takes a spacer fixed from BELOW: the housing covers the top of it."
+J102,"TANG J14 pos 5-40, 2x18",PinSocket_2x18_P2.54mm_Vertical,,"SCHEME 1: Hong Cheng HC-PZ254-11.5L-2X18PZ, LCSC C41376109, 2x18 male (3.0 mm tail, 2.5 mm insulator, 6.0 mm mating), fitted UPSIDE DOWN: the 3.0 mm end goes down into the dock socket, the 6.0 mm end up through the adapter, soldered on top and clipped. SCHEME 2: hanxia HX PM2.54-2x18P ZC, LCSC C42372542, 2x18 female, 8.5 mm body, on the adapter underside",DNP,"Mates Tang Mega 138K dock J14 positions 5-40 (FPGA Bank 4). Pin k of this part is J14 position k+4. HAND SOLDERED, bottom side","NOT PLACED BY JLCPCB. J14 positions 1-4 lie under the SlimSAS connector and are NOT fitted on either side of the stack. Position 11 (pin 7 here) is the dock 5 V rail and is left unconnected; position 12 (pin 8 here) is the only ground. Positions 5-8 are PMOD0 and 21-28 are PMOD1 and the camera: nothing may be plugged into either PMOD socket or the camera connector while fitted. Dock side, scheme 1: kinghelm KH-2.54FH-2X18P-H5.0, LCSC C55160396, 2x18 female, 5.0 mm body, soldered into dock J14 positions 5-40. Dock side, scheme 2: Hong Cheng HC-PZ254-11.5L-2X18PZ, LCSC C41376109, 2x18 male, 2.5 mm insulator, soldered into dock J14 positions 5-40."
 R_CLKSEL_A,0R,R_0402_1005Metric,C17168,,yes,Reverse clock into FPGA pin 88 from the PRIMARY clock lane. FITTED by default,
 R_CLKSEL_B,0R,R_0402_1005Metric,C17168,,DNP,Reverse clock into FPGA pin 88 from the DUPLICATE clock lane instead,"NOT FITTED. FIT EXACTLY ONE OF R_CLKSEL_A AND R_CLKSEL_B. This is the hardware half of the duplicate clock: if the primary clock lane loses a trace, a contact or a solder joint, move the link."
 R_DRVEN_ON,0R,R_0402_1005Metric,C17168,,yes,LVDS drivers always enabled. FITTED by default,
 R_DRVEN_PRSNT,0R,R_0402_1005Metric,C17168,,DNP,LVDS drivers enabled only while the far end is present and powered,"NOT FITTED. FIT AT MOST ONE OF R_DRVEN_ON AND R_DRVEN_PRSNT. Saves about 60 mA with no cable, but depends on the cable wiring its sidebands - and 10Gtek sell a no-sideband variant that would leave the link dead with no clue why."
 R_SHELL,0R,R_0805_2012Metric,C17477,,yes,Connector shell and its four through-hole tails to board ground. 0805 so the shield can be lifted if a ground loop ever appears,
-R1,330R,R_0402_1005Metric,C25104,,yes,"AUXIO line 0 series resistor, DB1-10 = FPGA pin 90. Limits contention to 7.4 mA worst case if the radio drives this pin while the DRIVE path is enabled. CW/PTT ring. 2.2k pull-up to +3V3 (R75), 100R to the KEY jack (R77) and 1 uF to ground (C71) on the radio, so its own time constant is 2.2 ms - a DC/slow input, not a signalling pin",
 R1,100R,R_0402_1005Metric,C25076,,yes,"Forward clock divider, series leg. 3.3 V FPGA pin 98 down to 2.50 V for the translator A-side input",
-R2,330R,R_0402_1005Metric,C25104,,yes,"AUXIO line 1 series resistor, DB1-12 = FPGA pin 91. Limits contention to 7.4 mA worst case if the radio drives this pin while the DRIVE path is enabled. CW/PTT tip. Same network: 2.2k (R76), 100R (R78), 1 uF (C72)",
 R2,470R,R_0402_1005Metric,C25117,,yes,"Forward clock divider, shunt leg. 5.8 mA from pin 98, Thevenin 132 ohm, 320 mV under the 3.0 V A-side absolute maximum at the worst corner",
-R3,330R,R_0402_1005Metric,C25104,,yes,"AUXIO line 2 series resistor, DB1-16 = FPGA pin 103. Limits contention to 7.4 mA worst case if the radio drives this pin while the DRIVE path is enabled. I2C1 SCL. 4.7k pull-up (R43) and it is a BUS: U6, the IDT 5P49V5923 VersaClock that generates the radio master clock, is on it",
-R4,330R,R_0402_1005Metric,C25104,,yes,"AUXIO line 3 series resistor, DB1-18 = FPGA pin 104. Limits contention to 7.4 mA worst case if the radio drives this pin while the DRIVE path is enabled. I2C1 SDA. 4.7k pull-up (R44), same bus as SCL1",
-R5,330R,R_0402_1005Metric,C25104,,yes,"JTAG TCK series resistor, buffer output into CN1 pin 1. Bounds a fight with a locally plugged USB Blaster to about 8 mA, and 330 R into the 15 pF of CN1 plus trace is 5 ns against the 41.7 ns period of a 24 MHz TCK",
-R6,330R,R_0402_1005Metric,C25104,,yes,"JTAG TMS series resistor, buffer output into CN1 pin 5",
-R7,330R,R_0402_1005Metric,C25104,,yes,"JTAG TDI series resistor, buffer output into CN1 pin 9",
-R8,330R,R_0402_1005Metric,C25104,,yes,"JTAG TDO series resistor, CN1 pin 3 into a buffer input. Isolates the HL2 FPGA TDO pin from the cable entirely",
-R9,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_ADC_D0 (ADC data 0) while nothing drives it,
-R10,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_ADC_D1 (ADC data 1) while nothing drives it,
-R11,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_ADC_D2 (ADC data 2) while nothing drives it,
-R12,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_AUX_CLK_OUT (auxiliary clock out) while nothing drives it,
-R13,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_AUX_DAT_OUT (auxiliary data out) while nothing drives it,
-R14,10k,R_0402_1005Metric,C25744,,yes,"JTAG-over-cable enable, HL2 side pull-UP. FPGA pin 80 (DB1-4) drives this LOW to enable. The direction matters: pulled up means disabled",
-R15,10k,R_0402_1005Metric,C25744,,yes,"JTAG-over-cable enable, logic side pull-UP. A missing or unpowered U2 leaves the JTAG buffers tri-stated",
-R16,10k,R_0402_1005Metric,C25744,,yes,"AUXIO drive enable, HL2 side pull-UP. FPGA pin 72 (DB1-1, through HL2 jumper J25) drives this LOW to enable. With J25 open the feature is simply unavailable",
-R17,10k,R_0402_1005Metric,C25744,,yes,"AUXIO drive enable, logic side pull-UP. READ-ONLY is the power-up state and the failure state",
-R18,1k,R_0402_1005Metric,C11702,,DNP,"JTAG_FORCE: fit to enable JTAG over the cable WITHOUT working HL2 gateware, which is the case you most want it in. 1 k beats the 10 k pull-up (0.23 V) and costs the FPGA only 2.5 mA if the gateware drives the pin high anyway","NOT FITTED. This is the recovery path for a radio whose gateware will not run: without it, remote reflashing depends on the gateware you are trying to replace."
-R19,0R,R_0402_1005Metric,C17168,,yes,auxiliary clock (2.5 V) into HL2 pin 89 = DB12-5,
-R20,0R,R_0402_1005Metric,C17168,,yes,auxiliary data (2.5 V) into HL2 pin 87 = DB12-2,
-R21,0R,R_0402_1005Metric,C17168,,yes,"Transmit data lane 0 into DB1-11 (FPGA pin 99, a 3.3 V bank pin carrying LED D3 through 1 k). 0402 pads take 22 R instead if damping is ever wanted",
-R22,0R,R_0402_1005Metric,C17168,,yes,"Transmit data lane 1 into DB1-15 (FPGA pin 100, a 3.3 V bank pin carrying LED D4 through 1 k). 0402 pads take 22 R instead if damping is ever wanted",
-R23,0R,R_0402_1005Metric,C17168,,yes,"Transmit data lane 2 into DB1-17 (FPGA pin 101, a 3.3 V bank pin carrying LED D5 through 1 k). 0402 pads take 22 R instead if damping is ever wanted",
-R24,1k,R_0402_1005Metric,C11702,,yes,"Presence assert: 1 k to +3V3, so the far end reads this board as present ONLY while it is powered. Against the far 10 k it gives 3.0 V at 0.3 mA",
-R25,10k,R_0402_1005Metric,C25744,,yes,Presence detect: HIGH = the far end is plugged in AND powered. Also the link-reset input - the far end pulls it low,
-R26,10k,R_0402_1005Metric,C25744,,yes,"JTAG TCK from the cable, pulled LOW so the buffer input is defined and TCK idles low with nothing plugged in",
-R27,10k,R_0402_1005Metric,C25744,,yes,"JTAG TMS from the cable, pulled HIGH - the direction that walks a TAP controller to Test-Logic-Reset rather than into it",
-R28,10k,R_0402_1005Metric,C25744,,yes,"JTAG TDI from the cable, pulled low so the buffer input is defined",
-R29,10k,R_0402_1005Metric,C25744,,yes,"AUXIO line 0 from the cable, pulled low so the DRIVE buffer input is defined with no cable",
-R30,10k,R_0402_1005Metric,C25744,,yes,"AUXIO line 1 from the cable, pulled low so the DRIVE buffer input is defined with no cable",
-R31,10k,R_0402_1005Metric,C25744,,yes,"AUXIO line 2 from the cable, pulled low so the DRIVE buffer input is defined with no cable",
-R32,10k,R_0402_1005Metric,C25744,,yes,"AUXIO line 3 from the cable, pulled low so the DRIVE buffer input is defined with no cable",
-R33,10k,R_0402_1005Metric,C25744,,yes,Defines the spare driver channel input,
-R34,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received AUXCLK pair (connector B2/B3). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
-R35,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received AUXDAT pair (connector B5/B6). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
-R36,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received REVCLK pair (connector B14/B15). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
-R37,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received TXD0 pair (connector B17/B18). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
-R38,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received TXD1 pair (connector B20/B21). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
-R39,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received TXD2 pair (connector B23/B24). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
-R40,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received DUPCLK pair (connector B32/B33). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
-R41,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received SPARE pair (connector B35/B36). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
+R3,330R,R_0402_1005Metric,C25104,,yes,"AUXIO line 0 series resistor, DB1-10 = FPGA pin 90. Limits contention to 7.4 mA worst case if the radio drives this pin while the DRIVE path is enabled. CW/PTT ring. 2.2k pull-up to +3V3 (R75), 100R to the KEY jack (R77) and 1 uF to ground (C71) on the radio, so its own time constant is 2.2 ms - a DC/slow input, not a signalling pin",
+R4,330R,R_0402_1005Metric,C25104,,yes,"AUXIO line 1 series resistor, DB1-12 = FPGA pin 91. Limits contention to 7.4 mA worst case if the radio drives this pin while the DRIVE path is enabled. CW/PTT tip. Same network: 2.2k (R76), 100R (R78), 1 uF (C72)",
+R5,330R,R_0402_1005Metric,C25104,,yes,"AUXIO line 2 series resistor, DB1-16 = FPGA pin 103. Limits contention to 7.4 mA worst case if the radio drives this pin while the DRIVE path is enabled. I2C1 SCL. 4.7k pull-up (R43) and it is a BUS: U6, the IDT 5P49V5923 VersaClock that generates the radio master clock, is on it",
+R6,330R,R_0402_1005Metric,C25104,,yes,"AUXIO line 3 series resistor, DB1-18 = FPGA pin 104. Limits contention to 7.4 mA worst case if the radio drives this pin while the DRIVE path is enabled. I2C1 SDA. 4.7k pull-up (R44), same bus as SCL1",
+R7,330R,R_0402_1005Metric,C25104,,yes,"JTAG TCK series resistor, buffer output into CN1 pin 1. Bounds a fight with a locally plugged USB Blaster to about 8 mA, and 330 R into the 15 pF of CN1 plus trace is 5 ns against the 41.7 ns period of a 24 MHz TCK",
+R8,330R,R_0402_1005Metric,C25104,,yes,"JTAG TMS series resistor, buffer output into CN1 pin 5",
+R9,330R,R_0402_1005Metric,C25104,,yes,"JTAG TDI series resistor, buffer output into CN1 pin 9",
+R10,330R,R_0402_1005Metric,C25104,,yes,"JTAG TDO series resistor, CN1 pin 3 into a buffer input. Isolates the HL2 FPGA TDO pin from the cable entirely",
+R11,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_ADC_D0 (ADC data 0) while nothing drives it,
+R12,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_ADC_D1 (ADC data 1) while nothing drives it,
+R13,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_ADC_D2 (ADC data 2) while nothing drives it,
+R14,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_AUX_CLK_OUT (auxiliary clock out) while nothing drives it,
+R15,10k,R_0402_1005Metric,C25744,,yes,Defines HL2_AUX_DAT_OUT (auxiliary data out) while nothing drives it,
+R16,10k,R_0402_1005Metric,C25744,,yes,"JTAG-over-cable enable, HL2 side pull-UP. FPGA pin 80 (DB1-4) drives this LOW to enable. The direction matters: pulled up means disabled",
+R17,10k,R_0402_1005Metric,C25744,,yes,"JTAG-over-cable enable, logic side pull-UP. A missing or unpowered U2 leaves the JTAG buffers tri-stated",
+R18,10k,R_0402_1005Metric,C25744,,yes,"AUXIO drive enable, HL2 side pull-UP. FPGA pin 72 (DB1-1, through HL2 jumper J25) drives this LOW to enable. With J25 open the feature is simply unavailable",
+R19,10k,R_0402_1005Metric,C25744,,yes,"AUXIO drive enable, logic side pull-UP. READ-ONLY is the power-up state and the failure state",
+R20,1k,R_0402_1005Metric,C11702,,DNP,"JTAG_FORCE: fit to enable JTAG over the cable WITHOUT working HL2 gateware, which is the case you most want it in. 1 k beats the 10 k pull-up (0.23 V) and costs the FPGA only 2.5 mA if the gateware drives the pin high anyway","NOT FITTED. This is the recovery path for a radio whose gateware will not run: without it, remote reflashing depends on the gateware you are trying to replace."
+R21,0R,R_0402_1005Metric,C17168,,yes,auxiliary clock (2.5 V) into HL2 pin 89 = DB12-5,
+R22,0R,R_0402_1005Metric,C17168,,yes,auxiliary data (2.5 V) into HL2 pin 87 = DB12-2,
+R23,0R,R_0402_1005Metric,C17168,,yes,"Transmit data lane 0 into DB1-11 (FPGA pin 99, a 3.3 V bank pin carrying LED D3 through 1 k). 0402 pads take 22 R instead if damping is ever wanted",
+R24,0R,R_0402_1005Metric,C17168,,yes,"Transmit data lane 1 into DB1-15 (FPGA pin 100, a 3.3 V bank pin carrying LED D4 through 1 k). 0402 pads take 22 R instead if damping is ever wanted",
+R25,0R,R_0402_1005Metric,C17168,,yes,"Transmit data lane 2 into DB1-17 (FPGA pin 101, a 3.3 V bank pin carrying LED D5 through 1 k). 0402 pads take 22 R instead if damping is ever wanted",
+R26,1k,R_0402_1005Metric,C11702,,yes,"Presence assert: 1 k to +3V3, so the far end reads this board as present ONLY while it is powered. Against the far 10 k it gives 3.0 V at 0.3 mA",
+R27,10k,R_0402_1005Metric,C25744,,yes,Presence detect: HIGH = the far end is plugged in AND powered. Also the link-reset input - the far end pulls it low,
+R28,10k,R_0402_1005Metric,C25744,,yes,"JTAG TCK from the cable, pulled LOW so the buffer input is defined and TCK idles low with nothing plugged in",
+R29,10k,R_0402_1005Metric,C25744,,yes,"JTAG TMS from the cable, pulled HIGH - the direction that walks a TAP controller to Test-Logic-Reset rather than into it",
+R30,10k,R_0402_1005Metric,C25744,,yes,"JTAG TDI from the cable, pulled low so the buffer input is defined",
+R31,10k,R_0402_1005Metric,C25744,,yes,"AUXIO line 0 from the cable, pulled low so the DRIVE buffer input is defined with no cable",
+R32,10k,R_0402_1005Metric,C25744,,yes,"AUXIO line 1 from the cable, pulled low so the DRIVE buffer input is defined with no cable",
+R33,10k,R_0402_1005Metric,C25744,,yes,"AUXIO line 2 from the cable, pulled low so the DRIVE buffer input is defined with no cable",
+R34,10k,R_0402_1005Metric,C25744,,yes,"AUXIO line 3 from the cable, pulled low so the DRIVE buffer input is defined with no cable",
+R35,10k,R_0402_1005Metric,C25744,,yes,Defines the spare driver channel input,
+R36,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received AUXCLK pair (connector B2/B3). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
+R37,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received AUXDAT pair (connector B5/B6). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
+R38,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received REVCLK pair (connector B14/B15). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
+R39,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received TXD0 pair (connector B17/B18). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
+R40,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received TXD1 pair (connector B20/B21). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
+R41,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received TXD2 pair (connector B23/B24). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
+R42,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received DUPCLK pair (connector B32/B33). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
+R43,100R,R_0402_1005Metric,C25076,,yes,100 ohm differential termination on the received SPARE pair (connector B35/B36). PLACE WITHIN 5 mm OF THE RECEIVER PINS,
+R101,1k,R_0402_1005Metric,C11702,,yes,"Presence assert and link reset, from J14 position 30. The gateware drives HIGH for present and LOW for link reset; the radio end reads it against its own 10 k pull-down, 3.0 V high",
+R102,10k,R_0402_1005Metric,C25744,,yes,"Presence detect pull-down, as at the radio end: HIGH only while the radio end is plugged in and powered",
+R103,1k,R_0402_1005Metric,C11702,,yes,Presence detect into J14 position 29. Limits injection into an unpowered FPGA to 0.3 mA,
+R104,330R,R_0402_1005Metric,C25104,,yes,"JTAG TCK to the radio, from J14 position 34",
+R105,1k,R_0402_1005Metric,C11702,,yes,"TCK pull-DOWN. Holds TCK low while the Gowin is unconfigured, even against its strongest 400 uA pull-up (0.4 V), so no TCK edge leaves this end until the gateware makes one",
+R106,330R,R_0402_1005Metric,C25104,,yes,"JTAG TMS to the radio, from J14 position 8",
+R107,330R,R_0402_1005Metric,C25104,,yes,"JTAG TDI to the radio, from J14 position 33",
+R108,330R,R_0402_1005Metric,C25104,,yes,JTAG TDO from the radio into J14 position 7,
+R109,10k,R_0402_1005Metric,C25744,,yes,Defines TDO with no radio attached,
+R110,100R,R_0402_1005Metric,C25076,,DNP,OPTIONAL external 100 ohm termination on the received AUXCLK pair,NOT FITTED. The FPGA terminates on-die (DIFF_RESISTOR=ON). Fit only if that is ever found not to work.
+R111,100R,R_0402_1005Metric,C25076,,DNP,OPTIONAL external 100 ohm termination on the received AUXDAT pair,NOT FITTED. The FPGA terminates on-die (DIFF_RESISTOR=ON). Fit only if that is ever found not to work.
+R112,100R,R_0402_1005Metric,C25076,,DNP,OPTIONAL external 100 ohm termination on the received FWDCLK pair,NOT FITTED. The FPGA terminates on-die (DIFF_RESISTOR=ON). Fit only if that is ever found not to work.
+R113,100R,R_0402_1005Metric,C25076,,DNP,OPTIONAL external 100 ohm termination on the received ADCD0 pair,NOT FITTED. The FPGA terminates on-die (DIFF_RESISTOR=ON). Fit only if that is ever found not to work.
+R114,100R,R_0402_1005Metric,C25076,,DNP,OPTIONAL external 100 ohm termination on the received ADCD1 pair,NOT FITTED. The FPGA terminates on-die (DIFF_RESISTOR=ON). Fit only if that is ever found not to work.
+R115,100R,R_0402_1005Metric,C25076,,DNP,OPTIONAL external 100 ohm termination on the received ADCD2 pair,NOT FITTED. The FPGA terminates on-die (DIFF_RESISTOR=ON). Fit only if that is ever found not to work.
+R116,100R,R_0402_1005Metric,C25076,,DNP,OPTIONAL external 100 ohm termination on the received DUPCLK pair,NOT FITTED. The FPGA terminates on-die (DIFF_RESISTOR=ON). Fit only if that is ever found not to work.
+R117,0R,R_0805_2012Metric,C17477,,yes,"Connector shell to ground, as R_SHELL at the radio end",
 SL_VLVDS,0R,R_0402_1005Metric,C17168,,DNP,Reference the translators' 2.5 V side to the radio's own Vlvds rail (DB1 pins 7/8) instead of U12,"NOT FITTED, and think before you do. Electrically ideal - the thresholds then track the FPGA bank supply exactly - but it draws this board's 50 mA from a 200 mA TPS73025 that already carries the Ethernet PHY RGMII I/O supply, four PLL supplies and VCCIO5 itself, with maybe 50 mA genuinely spare. Do not fit together with U12. Fit FB2 as well if you do."
 TP1,TP_HL2_FWD_CLK_RAW,TestPoint_Pad_D1.5mm,,,yes,,
 TP2,TP_HL2_FWD_CLK,TestPoint_Pad_D1.5mm,,,yes,,
@@ -145,6 +176,27 @@ TP48,TP_+3V3,TestPoint_Pad_D1.5mm,,,yes,,
 TP49,TP_+2V5,TestPoint_Pad_D1.5mm,,,yes,,
 TP50,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
 TP51,TP_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
+TP101,TP_G_SB_PRSNT_OUT,TestPoint_Pad_D1.5mm,,,yes,,
+TP102,TP_G_SB_PRSNT_IN,TestPoint_Pad_D1.5mm,,,yes,,
+TP103,TP_G_SB_TCK_OUT,TestPoint_Pad_D1.5mm,,,yes,,
+TP104,TP_G_SB_TMS_OUT,TestPoint_Pad_D1.5mm,,,yes,,
+TP105,TP_G_SB_TDI_OUT,TestPoint_Pad_D1.5mm,,,yes,,
+TP106,TP_G_SB_TDO_IN,TestPoint_Pad_D1.5mm,,,yes,,
+TP107,TP_G_SB_NC_B9,TestPoint_Pad_D1.5mm,,,yes,,
+TP108,TP_G_SB_NC_B29,TestPoint_Pad_D1.5mm,,,yes,,
+TP109,TP_G_SB_NC_A11,TestPoint_Pad_D1.5mm,,,yes,,
+TP110,TP_G_SB_NC_A12,TestPoint_Pad_D1.5mm,,,yes,,
+TP111,TP_G_SB_NC_A26,TestPoint_Pad_D1.5mm,,,yes,,
+TP112,TP_G_SB_NC_A27,TestPoint_Pad_D1.5mm,,,yes,,
+TP113,TP_G_SB_NC_B11,TestPoint_Pad_D1.5mm,,,yes,,
+TP114,TP_G_SB_NC_B12,TestPoint_Pad_D1.5mm,,,yes,,
+TP115,TP_G_SB_NC_B26,TestPoint_Pad_D1.5mm,,,yes,,
+TP116,TP_G_SB_NC_B27,TestPoint_Pad_D1.5mm,,,yes,,
+TP117,TP_G_A_SPARE_P,TestPoint_Pad_D1.5mm,,,yes,,
+TP118,TP_G_A_SPARE_N,TestPoint_Pad_D1.5mm,,,yes,,
+TP119,TP_G_B_SPARE_P,TestPoint_Pad_D1.5mm,,,yes,,
+TP120,TP_G_B_SPARE_N,TestPoint_Pad_D1.5mm,,,yes,,
+TP121,TP_G_GND,TestPoint_THTPad_D2.0mm_Drill1.0mm,,,yes,,
 U1,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply translator, VCCA 2.5 V / VCCB 3.3 V. THE FORWARD GROUP: the 153.6 MHz forward clock and ADC data lanes 0, 1 and 2 - exactly four signals in exactly one package, so the clock cannot lead its data by the 1.1 to 3.7 ns part-to-part propagation delay. Within one package they share a channel-to-channel skew instead","Both DIR tied to VCCA (A->B), both OE* to GND - always enabled. The forward clock arrives on FPGA pin 98, which is a 3.3 V bank pin, so it comes through the R1/R2 divider first: the A-side absolute maximum is VCCA+0.5 = 3.0 V and 3.3 V direct would be out of spec."
 U2,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply translator, VCCA 2.5 V / VCCB 3.3 V. Port 1 is the auxiliary transmit pair - clock and data in one port so they share a skew. Port 2 carries the two ENABLE LEVELS the gateware controls: JTAG over the cable and the AUXIO drive direction, both active LOW, both DC","Both DIR to VCCA (A->B), both OE* to GND. The two enable channels are static levels, not signals. Each enable is pulled UP at BOTH ends - to +2V5 on the HL2 side and to +3V3 on the logic side - so a missing part, an unpowered part, an unconfigured FPGA or an open HL2 jumper J25 all leave the feature DISABLED."
 U3,SN74AVC4T245PW,TSSOP-16_4.4x5mm_P0.65mm,C81461,SN74AVC4T245PWR,yes,"4-bit dual-supply translator, VCCA 3.3 V / VCCB 2.5 V. Port 1 carries the two candidate reverse clocks - the primary and the duplicate - so whichever is selected has the same delay. Port 2 carries the auxiliary receive pair, clock and data together","Both DIR to VCCA (A->B), both OE* to GND. The duplicate clock output goes nowhere unless R_CLKSEL_B is fitted and R_CLKSEL_A removed; driving an open pad is harmless."

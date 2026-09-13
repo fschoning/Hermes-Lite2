@@ -1,9 +1,12 @@
 # gowin-bridge pin map, rev D
 
-**One design.** One schematic, one PCB, one BOM. Two copies of this board and
-one cable make a radio-to-radio link; one copy plus a Gowin-side board makes a
-radio-to-FPGA link. There is no board A and no board B — rev C's two designs,
-three HDMI cables, upright riser and production panel are in git history.
+**One design with two ends, on one panel.** One schematic, one PCB, one BOM.
+The **radio end** (connector J1) plugs onto the Hermes-Lite 2; the **Gowin
+end** (connector J101) plugs onto the Tang Mega 138K dock's J14. They are
+fabricated together and snapped apart. Two radio ends and one cable make a
+radio-to-radio link; a radio end, a Gowin end and one cable make a
+radio-to-FPGA link. Sections 1–10 are the radio end and the contract both ends
+share; **section 11 is the Gowin end.**
 
 Authoritative. `tools/check_netlist.py` retypes every table below from this
 file and asserts it against the generated netlist, so the two cannot drift.
@@ -12,7 +15,7 @@ file and asserts it against the generated netlist, so the two cannot drift.
 |---|---|
 | Connector | **Amphenol ICC U10A474240T**, LCSC **C5432262**, SlimSAS SFF-8654 8i, 74 position, right angle, 23.50 mm wide, 9.90 mm above the board, 15.80 mm deep |
 | Cable | **10Gtek CAB-8654/8654-8i-P**, 8i to 8i, 0.5 m, $15. Twinax construction, 32 AWG, 100 Ω |
-| Pairs | 16 differential, of which 14 used and 2 spare |
+| Pairs | 16 differential: 14 used and 2 spare at the radio end; 14 used and the spare pair not wired at the Gowin end |
 | Sidebands | 16 single-ended, all 16 wired or clamped |
 | Lane rate | DDR at 153.6 MHz = **307.2 Mbit/s** per lane, both directions simultaneously |
 | Payload | 3 lanes each way = **921.6 Mbit/s** = the complete raw 12-bit 76.8 MSPS ADC stream |
@@ -485,3 +488,140 @@ What the gateware must do that the hardware cannot enforce:
 | One of the 16 differential pairs, positions 35/36 | a spare full-duplex lane; driver input and receiver output both on test pads |
 | Two of 48 ESD channels | the twelfth array's spare channels |
 | Three of 28 translator channels | U11's port 2 is disabled with its inputs grounded and its outputs on test pads, and one channel of U11 port 1 is spare. Three gated 3.3 V channels available for a future revision |
+
+---
+
+## 11. The Gowin end — Tang Mega 138K dock J14
+
+### 11.1 It is passive, and why
+
+| | |
+|---|---|
+| J14 bank | FPGA **Bank 4** (Tang dock schematic net labels `BANK4_<ball>_<IO name>`) |
+| **Bank 4 VCCIO** | **3.3 V, fixed.** Dock schematic sheet 2/21 (PWR_TREE): the SOM's one 3.3 V rail feeds VCCIO2, 3, 4 and 5 through filters and the board-to-board connector. The only alternative drawn is an unfitted resistor to a dock 1.8 V rail |
+| **LVDS output at 3.3 V** | **Allowed, native.** Gowin DS1239 1.0.3E §2.3.1 **Table 2-1**: LVDS25 (true LVDS) output at Bank VCCIO **2.5/3.3 V**, drive 3.5/2.5/4.5/6 mA. §3.2.3 **Table 3-10** gives the LVDS25 output VCCIO range as 2.375–2.625 V **and 3.135–3.465 V** |
+| Which pins | Gowin UG1102 1.0.8E §2.4.1 **Table 2-3**: the PG484A package has 143 differential pairs and **143 True LVDS Output** pairs — all of them |
+| **LVDS input at 3.3 V** | **Allowed, native.** DS1239 **Table 2-2**: LVDS25 input at VCCIO 1.0–3.3 V. UG304 1.3.8E §3.1: all banks support differential input |
+| Termination | **On-die.** UG304 §3.3.2: the bottom banks of the 138K have programmable 100 Ω input termination (`DIFF_RESISTOR=ON`); DS1239 Table 3-8 note 1 agrees |
+| **Tool check** | **Gowin EDA 1.9.11.03 Education placed, routed and generated a bitstream for exactly this pin map** — seven LVDS25 inputs with Diff Resistor ON and seven LVDS25 outputs at 3.5 mA, all at BANK_VCCIO 3.3 — with no error |
+
+**So both directions are native.** No level translator, no LVDS driver, no
+LVDS receiver and no termination resistor. The Gowin end is the connector, 12
+ESD arrays, nine resistors and a hand-soldered 2×18. `gowin_end_j14.cst` is the
+paste-ready constraint file. **The Gowin project needs `set_option
+-use_sspi_as_gpio 1` and `set_option -use_cpu_as_gpio 1`**: Bank 4 is also the
+CPU and SSPI configuration bank, and without those options Gowin EDA refuses
+five of these balls.
+
+### 11.2 J14 positions 1–4 are not used
+
+In the 40 mm case position the SlimSAS contact field sits directly over J14
+positions 1 and 2, and its outline over 3 and 4. **Neither the dock-side part
+nor the adapter-side part has anything at positions 1–4: both are 2×18.**
+Adapter part pin *k* is J14 position *k*+4. The cost is the spare lane
+(section 11.4).
+
+### 11.3 The J14 map
+
+Even J14 position = Gowin A leg = P. **Rx** = received from the radio (row B),
+**Tx** = driven to the radio (row A).
+
+| J14 | Net | Ball | Gowin IO | Use | Clock function |
+|---|---|---|---|---|---|
+| 1–4 | — | — | — | **not fitted** (PMOD0) | |
+| 5 / 6 | `G_A_DUPCLK_N/P` | R17 / P16 | IOB144B/A | Tx duplicate reverse clock | |
+| 7 | `G_TDO_RD` | T18 | IOB138B | JTAG TDO in, via R108 330 Ω | |
+| 8 | `G_TMS_DRV` | R18 | IOB138A | JTAG TMS out, via R106 330 Ω | |
+| 9 / 10 | `G_A_REVCLK_N/P` | W17 / V17 | IOB106B/A | **Tx reverse clock** | |
+| 11 | — | — | — | dock 5 V, **left open** | |
+| 12 | `G_GND` | — | — | the only ground | |
+| 13 / 14 | `G_B_ADCD2_N/P` | W22 / W21 | IOB124B/A | Rx ADC data 2 | |
+| 15 / 16 | `G_B_ADCD1_N/P` | P17 / N17 | IOB135B/A | Rx ADC data 1 | |
+| 17 / 18 | `G_B_ADCD0_N/P` | N14 / N13 | IOB142B/A | Rx ADC data 0 | |
+| **19 / 20** | `G_B_FWDCLK_N/P` | **V20 / U20** | IOB120B/A | **Rx forward clock** | **SGCLKC_5 / SGCLKT_5, also BPLL2/BPLL3 CLKIN0** |
+| 21 / 22 | `G_A_AUXDAT_N/P` | Y22 / Y21 | IOB131B/A | Tx aux data | |
+| 23 / 24 | `G_B_AUXCLK_N/P` | AB22 / AB21 | IOB129B/A | Rx aux clock | |
+| 25 / 26 | `G_B_AUXDAT_N/P` | AA21 / AA20 | IOB126B/A | Rx aux data | |
+| 27 / 28 | `G_A_AUXCLK_N/P` | AB20 / AA19 | IOB110B/A | Tx aux clock | |
+| 29 | `G_PRSNT_RD` | AA18 | IOB108A | presence in, via R103 1 k; reaches J14 through the dock's fitted 0 Ω R72 | |
+| 30 | `G_PRSNT_DRV` | AB18 | IOB108B | presence out and link reset, via R101 1 k; through the dock's R74 | |
+| **31 / 32** | `G_B_DUPCLK_N/P` | **Y19 / Y18** | IOB116B/A | **Rx duplicate forward clock** | **MGCLKC_4 / MGCLKT_4, also BPLL2/BPLL3 FB0** |
+| 33 | `G_TDI_DRV` | T20 | IOB102B | JTAG TDI out, via R107 330 Ω | |
+| 34 | `G_TCK_DRV` | N15 | IOB146A | JTAG TCK out, via R104 330 Ω; R105 1 k pull-down | none, and no configuration function |
+| 35 / 36 | `G_A_TXD0_N/P` | U18 / U17 | IOB112B/A | Tx transmit data 0 | |
+| 37 / 38 | `G_A_TXD1_N/P` | R16 / P15 | IOB140B/A | Tx transmit data 1 | |
+| 39 / 40 | `G_A_TXD2_N/P` | R14 / P14 | IOB133B/A | Tx transmit data 2 | |
+
+**The two clock pins.** J14 has exactly two clock-capable pairs. The forward
+clock takes **U20/V20**, a global clock input that is also the reference input
+of PLLs BPLL2 and BPLL3. The duplicate takes **Y18/Y19**, a global clock input
+that is also those PLLs' feedback input. The gateware trains on whichever
+arrives. **The auxiliary clock is on ordinary pins (AB21/AB22)** because there
+is no third clock pair. It is frequency-locked to the forward clock, so the
+gateware can clock the aux lane from the forward-clock PLL and use the aux
+clock only to find the phase.
+
+### 11.4 The Gowin end's lanes and sidebands
+
+The lane table is **the radio end's table with the two rows swapped**: at
+every position the Gowin end drives what the radio end receives.
+
+| Pos | Row A — Gowin drives | Row B — Gowin receives | Radio end, same position |
+|---|---|---|---|
+| 2/3 | aux clock | aux clock | aux clock out / in |
+| 5/6 | aux data | aux data | aux data out / in |
+| 14/15 | **reverse clock** | **forward clock** | forward clock out / reverse clock in |
+| 17/18, 20/21, 23/24 | transmit data 0, 1, 2 | ADC data 0, 1, 2 | ADC data out / transmit data in |
+| 32/33 | duplicate reverse clock | duplicate forward clock | duplicate out / second receiver in |
+| 35/36 | **spare — not wired, test pads only** | **spare — not wired, test pads only** | spare, test pads only |
+
+| Pos | Row A — Gowin drives | Row B — Gowin receives |
+|---|---|---|
+| 8 | presence and link reset, from J14-30 through 1 k | presence, 10 k pull-down, to J14-29 through 1 k |
+| 9 | **JTAG TCK** | nothing — faces the radio end's undriven A9 |
+| 11, 12, 26, 27 | nothing — AUXIO not implemented | nothing — AUXIO not implemented |
+| 29 | **JTAG TMS** | nothing — faces the radio end's undriven A29 |
+| 30 | **JTAG TDI** | **JTAG TDO** |
+
+**What the Gowin end gives up, and why.** Without positions 1–4 J14 has 34
+usable pins, and fourteen working pairs plus six sideband lines is exactly 34.
+Left out: the **spare lane** (at the radio end it reaches only test pads, so
+nothing that works today is lost) and the **AUXIO lines** (remote CW/PTT and
+the radio's I2C bus, which the radio's own gateware can drive on a command
+sent over the aux lane). Every one of those conductors is still ESD-clamped
+and on a test pad.
+
+**Presence is driven by the gateware**, not by a resistor to 3.3 V: J14 has no
+3.3 V pin. HIGH through 1 k means present, LOW means link reset. An
+unconfigured Gowin reads as absent or weakly present, which only matters if
+the radio end's optional driver-gating link is fitted.
+
+**JTAG from this end keeps the radio end's safety properties.** The radio
+end's TCK, TMS and TDI inputs still pass through its gated buffer, still
+disabled at power-up by its pull-ups, so the Gowin can only program the radio
+after the radio's gateware — or the not-fitted recovery link R_JTAG_FORCE —
+enables the path. At the Gowin end **R105 holds TCK low** while the FPGA is
+unconfigured, even against its strongest 400 µA pull-up (DS1239 Table 3-8,
+0.4 V), so no TCK edge leaves until gateware makes one. Radio to radio is
+untouched: the radio end still leaves A9 and A29 undriven.
+
+**One caution.** The Gowin end leaves the four AUXIO drive conductors
+undriven, so the radio end's 10 k pull-downs hold its AUXIO drive inputs low.
+Lines 0 and 1 are CW/PTT: **never enable AUXIO drive on a radio linked to a
+Gowin end**, or it will key the transmitter.
+
+### 11.5 The stack onto the dock
+
+The geometry is identical for both mounting schemes in
+`franz-claude-analysis/TANG_IN_40MM_CASE.md`; only the parts change.
+
+| | Scheme 1: dock on a carrier plate | Scheme 2: dock screwed to the case floor |
+|---|---|---|
+| On the dock, J14 positions 5–40 | 2×18 **female, 5.0 mm**, kinghelm KH-2.54FH-2X18P-H5.0, **LCSC C55160396**, $0.45, **only 10 in stock** | 2×18 male, Hong Cheng HC-PZ254-11.5L-2X18PZ, **LCSC C41376109**, $0.19 |
+| On the adapter (J102) | 2×18 male **C41376109** fitted **upside down**: its 3.0 mm end down into the socket, its 6.0 mm end up through the adapter, soldered on top and clipped | 2×18 female, 8.5 mm, hanxia HX PM2.54-2x18P ZC, **LCSC C42372542**, $0.47 |
+| Dock top to adapter underside | **7.5 mm** with the 2.5 mm insulator left on (3.0 mm of pin in the socket), or **7.0 mm** with the insulator slid off and the spacer setting the height (3.5 mm in the socket) | **11.0 mm** |
+| M3 spacer at dock (97.67, 62.66) | 7.0 mm (7.5 mm with the insulator on) | 11.0 mm |
+
+A normal-way-up male header does not work in scheme 1: its 6.0 mm end would
+bottom out in a 5.0 mm socket. No stocked square-pin 2.54 mm 2×18 pair at LCSC
+stacks lower.

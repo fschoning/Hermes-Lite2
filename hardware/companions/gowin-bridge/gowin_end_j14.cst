@@ -1,0 +1,53 @@
+// Tang Mega 138K dock J14 (FPGA Bank 4, VCCIO 3.3 V) - the Gowin end of the
+// gowin-bridge SlimSAS link.  Generated from PINMAP.md section 11.
+// Placed and routed without error by Gowin EDA 1.9.11.03 Education,
+// device GW5AST-LV138PG484AC1/I0, 13 Sep 2026.
+// Several of these balls are CPU/SSPI configuration pins, so the project
+// needs:   set_option -use_sspi_as_gpio 1   and   set_option -use_cpu_as_gpio 1
+// J14 positions 1-4 are not used: they lie under the SlimSAS connector.
+
+// received from the radio: LVDS25 inputs, on-die 100 ohm termination
+IO_LOC  "gl_fwd_clk"   U20,V20;   // J14 20/19  SGCLKT_5 = BPLL2/BPLL3 CLKIN0
+IO_PORT "gl_fwd_clk"   IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+IO_LOC  "gl_dup_clk"   Y18,Y19;   // J14 32/31  MGCLKT_4 (duplicate forward clock)
+IO_PORT "gl_dup_clk"   IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+IO_LOC  "gl_adc_d[0]"  N13,N14;   // J14 18/17
+IO_PORT "gl_adc_d[0]"  IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+IO_LOC  "gl_adc_d[1]"  N17,P17;   // J14 16/15
+IO_PORT "gl_adc_d[1]"  IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+IO_LOC  "gl_adc_d[2]"  W21,W22;   // J14 14/13
+IO_PORT "gl_adc_d[2]"  IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+IO_LOC  "gl_aux_clk_in" AB21,AB22; // J14 24/23
+IO_PORT "gl_aux_clk_in" IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+IO_LOC  "gl_aux_dat_in" AA20,AA21; // J14 26/25
+IO_PORT "gl_aux_dat_in" IO_TYPE=LVDS25 DIFF_RESISTOR=ON BANK_VCCIO=3.3;
+
+// driven to the radio: LVDS25 outputs, 3.5 mA
+IO_LOC  "gl_rev_clk"   V17,W17;   // J14 10/9
+IO_PORT "gl_rev_clk"   IO_TYPE=LVDS25 DRIVE=3.5 BANK_VCCIO=3.3;
+IO_LOC  "gl_tx_d[0]"   U17,U18;   // J14 36/35
+IO_PORT "gl_tx_d[0]"   IO_TYPE=LVDS25 DRIVE=3.5 BANK_VCCIO=3.3;
+IO_LOC  "gl_tx_d[1]"   P15,R16;   // J14 38/37
+IO_PORT "gl_tx_d[1]"   IO_TYPE=LVDS25 DRIVE=3.5 BANK_VCCIO=3.3;
+IO_LOC  "gl_tx_d[2]"   P14,R14;   // J14 40/39
+IO_PORT "gl_tx_d[2]"   IO_TYPE=LVDS25 DRIVE=3.5 BANK_VCCIO=3.3;
+IO_LOC  "gl_aux_clk_out" AA19,AB20; // J14 28/27
+IO_PORT "gl_aux_clk_out" IO_TYPE=LVDS25 DRIVE=3.5 BANK_VCCIO=3.3;
+IO_LOC  "gl_aux_dat_out" Y21,Y22; // J14 22/21
+IO_PORT "gl_aux_dat_out" IO_TYPE=LVDS25 DRIVE=3.5 BANK_VCCIO=3.3;
+IO_LOC  "gl_dup_clk_out" P16,R17; // J14 6/5
+IO_PORT "gl_dup_clk_out" IO_TYPE=LVDS25 DRIVE=3.5 BANK_VCCIO=3.3;
+
+// sidebands, 3.3 V CMOS, each through a series resistor on the adapter
+IO_LOC  "gl_tck"       N15;       // J14 34, 330 R, 1 k pull-down on the adapter
+IO_PORT "gl_tck"       IO_TYPE=LVCMOS33 DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC  "gl_tms"       R18;       // J14 8, 330 R
+IO_PORT "gl_tms"       IO_TYPE=LVCMOS33 DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC  "gl_tdi"       T20;       // J14 33, 330 R
+IO_PORT "gl_tdi"       IO_TYPE=LVCMOS33 DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC  "gl_tdo"       T18;       // J14 7, 330 R, 10 k pull-down on the adapter
+IO_PORT "gl_tdo"       IO_TYPE=LVCMOS33 PULL_MODE=DOWN BANK_VCCIO=3.3;
+IO_LOC  "gl_prsnt_in"  AA18;      // J14 29, via dock R72; 1 k, 10 k pull-down
+IO_PORT "gl_prsnt_in"  IO_TYPE=LVCMOS33 PULL_MODE=DOWN BANK_VCCIO=3.3;
+IO_LOC  "gl_prsnt_out" AB18;      // J14 30, via dock R74; 1 k. HIGH = present, LOW = link reset
+IO_PORT "gl_prsnt_out" IO_TYPE=LVCMOS33 DRIVE=8 BANK_VCCIO=3.3;

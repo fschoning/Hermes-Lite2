@@ -1,9 +1,9 @@
 # gowin-bridge design notes, rev D
 
-Why the board is the way it is, with the numbers. `PINMAP.md` is the pin
-contract; this is the reasoning. **One design**, one schematic, one PCB, one
-BOM — rev C's two boards, three HDMI cables, riser and panel are in git
-history.
+Why the design is the way it is, with the numbers. `PINMAP.md` is the pin
+contract; this is the reasoning. **One design with two ends on one panel**:
+the radio end (sections 1-10) and the Gowin end (section 11). One schematic,
+one PCB, one BOM. rev C's three HDMI cables and riser are in git history.
 
 ---
 
@@ -664,7 +664,8 @@ what §12.2 recommends.
 | FPGA pin 72 unused, so J25 need not be soldered | pin 72 carries a DC enable level | soldering J25 stays **optional**: leave it open and the AUXIO drive feature simply does not exist. `PINMAP.md` §8 |
 | pins 90, 91, 103, 104 are "the four indicator LED pins" | the mechanism is built on those four pins, but they are CW/PTT and the clock-generator I2C bus | the LEDs are on pins 98–101, which the link already owns. `PINMAP.md` §7 |
 | bidirectional translator channels with direction control | two one-way paths with an enable on the DRIVE path only | the READ path then physically cannot drive an HL2 pin, and there is no direction net whose halves could disagree |
-| "snapped apart after manufacture" | one design, ordered at quantity 5 as five separate boards | with one design there is nothing to snap. `COST.md` §2 |
+| the Gowin end on J14 with 16 pairs | 14 pairs; the spare lane and the AUXIO lines are not wired at the Gowin end | the 40 mm case position puts J14 positions 1-4 under the connector, leaving 34 pins. §11.5 |
+| a 7 mm or lower J14 stack | 7.5 mm as built, 7.0 mm with the header insulator removed | no stocked square-pin pair is lower. §11.4 |
 
 ---
 
@@ -686,3 +687,157 @@ The ones that could stop the build are first.
 | **The cable's shield stack-up** | Confirmed twinax; the layer-by-layer construction is not confirmable from any openable document | Ask 10Gtek, or cut one open. Only matters for a formal EMC case |
 | **The A1 end of the connector** | Which physical end carries contact A1 is not stated in anything readable | It cannot scrap the board — `PINMAP.md` §1.1 — but knowing it saves a gateware polarity inversion |
 | **The exact assembly fee** | JLCPCB will not compute the solder-joint fee without a login and an uploaded position file, and two of their own pages disagree on the setup fee ($8.18 vs $8.00) and the per-joint rate ($0.0016 vs $0.0017) | Upload and look. It is a few dollars |
+| **The Gowin-end M3 spacer** | Its hole is under the connector housing and 0.66 mm from the connector's locating-peg hole, so the spacer must be fixed from below and must fit a 3.2 mm hole | Choose the part before ordering. §11.3 |
+| **Dock coordinates on rev 31005** | Every Gowin-end position comes from Sipeed's interactive BOM for dock rev 31004 | Measure J14 pin 1 and hole H7_LU1 on the dock in hand, or offer up the 1:1 template |
+| **C55160396 stock** | The only 5.0 mm 2×18 socket found for the scheme 1 stack; 10 in stock | Buy early. §11.4 |
+| **Gowin on-die termination at VCCIO 3.3 V** | Documented for the bottom banks with no voltage restriction, accepted by Gowin EDA, not yet measured | Seven not-fitted 100 Ω footprints are on the Gowin end as the fallback |
+
+---
+
+## 11. The Gowin end
+
+The far end of the same design, on the Sipeed Tang Mega 138K dock. It is on the
+same schematic, the same PCB and the same panel as the radio end, and is
+snapped off it. `PINMAP.md` §11 is its pin contract; this is the reasoning.
+
+### 11.1 The question that set the cost: can Bank 4 do LVDS at 3.3 V?
+
+**Yes, in both directions, with no parts.**
+
+| Step | Finding | Source |
+|---|---|---|
+| What bank is J14 | Bank 4, a bottom bank | dock schematic net labels `BANK4_<ball>_<IO>`; `TANG_MEGA_138K_FACTS.md` §2.5 |
+| Its VCCIO | **3.3 V**, generated on the SOM, fed through a filter and the board-to-board connector to VCCIO2/3/4/5 together. No jumper, no regulator option on the dock except an unfitted resistor from a dock 1.8 V rail | dock schematic **sheet 2/21, PWR_TREE** |
+| LVDS output at 3.3 V | **Allowed.** LVDS25, "Differential (TLVDS)", Bank VCCIO **2.5/3.3**, drive 3.5/2.5/4.5/6 mA | Gowin **DS1239** 1.0.3E §2.3.1 **Table 2-1** |
+| …and not only a table header | LVDS25 appears twice in the output VCCIO table: 2.375–2.625 V and **3.135–3.465 V** | DS1239 §3.2.3 **Table 3-10** |
+| On which pins | All 143 differential pairs of the PG484A package are True LVDS Output | Gowin **UG1102** 1.0.8E §2.4.1 **Table 2-3** |
+| LVDS input at 3.3 V | Allowed, VCCIO 1.0–3.3 V | DS1239 **Table 2-2**; UG304 1.3.8E §3.1 |
+| Input termination | 100 Ω on-die, bottom banks of the 138K | UG304 §3.3.2; DS1239 §3.2.1 Table 3-8 note 1 |
+| **The tool agrees** | Gowin EDA 1.9.11.03 Education, device GW5AST-LV138PG484AC1/I0, placed, routed and wrote a bitstream for the final pin map: LVDS25 inputs with Diff Resistor ON, LVDS25 outputs at 3.5 mA, BANK_VCCIO 3.3, no errors | run on this machine, 13 Sep 2026 |
+| Corroboration | Sipeed's own HDMI transmitter on the same dock drives true LVDS pairs from 3.3 V Bank 3 at `DRIVE=3.5` | `tang_mega_138K_pins.cst` |
+
+**So J13 and the "change Bank 4's VCCIO" options were not needed** and were
+not pursued. Bank 2 (J13) would in any case have been worse: no on-die
+termination, and it shares its bank with the Ethernet RGMII bus.
+
+**Electrical compatibility with the radio end.** The Gowin LVDS25 output is
+VOD 250–600 mV at VOS 1.000–1.425 V into 100 Ω (DS1239 Table 3-12); the radio
+end's DS90LV048A accepts any differential input over 100 mV. The radio end's
+DS90LV047A drives 250–450 mV at 1.125–1.375 V; the Gowin input threshold is
+±100 mV. Both ends are DC-coupled and share ground through the cable's 26
+ground conductors.
+
+**What one tool run found that no document said.** Bank 4 is also the CPU and
+SSPI configuration bank. Gowin EDA refuses five of the chosen balls unless the
+project sets `-use_sspi_as_gpio 1` and `-use_cpu_as_gpio 1`. TCK is on N15,
+the one chosen ball with no configuration function at all.
+
+### 11.2 What is on the Gowin end
+
+| Part | Qty | LCSC | Tier | Why |
+|---|---|---|---|---|
+| SlimSAS 8i receptacle | 1 | C5432262 | Extended, **already paid for by the radio end** | same part both ends |
+| TPD4E05U06 ESD array | 12 | C138714 | Extended, **already paid for** | every one of the 48 conductors |
+| 330 Ω 0402 | 4 | C25104 | Basic | TCK, TMS, TDI, TDO series |
+| 1 kΩ 0402 | 3 | C11702 | Basic | presence out and in series, TCK pull-down |
+| 10 kΩ 0402 | 2 | C25744 | Basic | presence and TDO pull-downs |
+| 0 Ω 0805 | 1 | C17477 | Basic | shell to ground |
+| 100 Ω 0402, **not fitted** | 7 | C25076 | — | optional external termination per received pair |
+| 2×18 socket or header | 1 | see §11.4 | hand-fitted | onto J14 positions 5–40 |
+
+**No new part number.** Every factory-placed part number on the Gowin end is
+already on the radio end, so the Gowin end adds **no** $3.07 Extended-part
+fee. Components come to **$4.04 per Gowin end**, $3.17 of it the connector.
+
+### 11.3 Position: the 40 mm case position, which also serves the bench
+
+From `franz-claude-analysis/TANG_IN_40MM_CASE.md`, in Sipeed's dock
+board-file coordinates:
+
+| | Dock coordinates | Why |
+|---|---|---|
+| SlimSAS mating face | **x 89.73**, facing the dock's short (Ethernet) edge | flush with the dock RJ45 face; both leave through the front panel |
+| SlimSAS centreline | **y 53.73** | 10.11 mm from J14 pin 1 toward the PMOD edge |
+| Board | x 89.43–153.93, y 41.17–66.29 = **64.50 × 25.12 mm** | 64.50 long so it shares a straight V-score with the radio end; 25.12 wide is the minimum that keeps both rows of shell-tail pads 0.30 mm inside the edges; y ≤ 66.5 keeps clear of the USB3 bridge and the core module |
+| HDMI notch | x ≥ 148.50, y ≤ 57.50 removed | a cable can stay in the dock's HDMI socket J29 |
+| M3 spacer hole | (97.67, 62.66), over dock corner hole H7_LU1 | the connector takes 55.5 N on insertion |
+| J14 | positions 5–40 only | positions 1 and 2 are under the contact field, 3 and 4 under the housing |
+
+**Two things the case position forces that the owner should know.**
+
+1. **The spacer hole is under the connector housing.** Nothing can be
+   screwed into it from above. The spacer has to be fixed to the adapter from
+   below (a surface-mount threaded spacer, or a standoff bonded in place) and
+   the screw comes up from under the carrier plate or case floor. The hole is
+   0.66 mm from the connector's own locating-peg hole, so a spacer that needs a
+   mounting hole larger than 3.2 mm will not fit; the common PEM-style SMT
+   spacers want 4.2 mm. **Choose the spacer before ordering.** The hole is part
+   of the Gowin end's copy of the connector land pattern, which is why DRC
+   accepts a hole inside the connector's outline.
+2. **The J14 PMOD pins, the camera and the two PMOD sockets are unusable**
+   while the adapter is fitted: J14 positions 5–8 are PMOD0, 21–28 are PMOD1
+   and the camera. In scheme 1 the adapter underside clears PMOD socket J9 by
+   about 0.6 mm (its 6.4 mm height is an estimate).
+
+**Height.** The tallest thing on the adapter is the SlimSAS at 9.90 mm. In
+scheme 1 the seat is 8.6 mm (7.0 mm stack) or 9.1 mm (7.5 mm stack) above the
+dock, so the connector top is at case height 33.3 or 33.8 mm against the
+study's worst-case 36.9 mm ceiling: 3.6 or 3.1 mm spare. **The 7.5 mm stack
+lowers nothing but moves the plug 0.5 mm up against a front-panel window with
+0.3 mm of clearance: if the insulator is left on, the window must move up
+0.5 mm.** In scheme 1 the upside-down header's 6.0 mm ends stand 4.4 mm above
+the adapter before clipping, beside the connector, not over it.
+
+### 11.4 The stack, and the search for a 7 mm one
+
+A standard 2.54 mm male header plus female socket is 11.0 mm. LCSC was
+searched for anything lower in 2×18 or 2×20:
+
+| Candidate | Height | Stock | Verdict |
+|---|---|---|---|
+| **kinghelm KH-2.54FH-2X18P-H5.0, C55160396** | 5.0 mm female, square hole | **10** | **chosen for scheme 1**, with C41376109 upside down |
+| chxunda XDM254C-2-18-Z-3.0-G0, C19184331 | 3.0 mm machined round-hole female | 66 | accepts only 0.40–0.60 mm round pins; no stocked 2×18 round-pin male found to mate it |
+| XKB X5521FV-2x18-C70D30, C2682207 | 7.0 mm round-hole female | 170 | same round-pin problem, and 7.0 mm on its own |
+| every 8.5 mm 2×18 female | 8.5 mm | thousands | scheme 2 |
+
+**Scheme 1 is 7.5 mm as built, or 7.0 mm with the header insulator slid off**
+and the spacer setting the height. **C55160396 has only 10 in stock: buy them
+now if scheme 1 is chosen.**
+
+### 11.5 The sidebands, and JTAG driven from this end
+
+J14 has 38 usable pins; positions 1–4 remove four. Fourteen pairs take 28. The
+remaining six carry presence in, presence out/link reset, TCK, TMS, TDI and
+TDO. **The spare lane and the four AUXIO lines are not wired at this end** —
+PINMAP.md §11.4 explains why nothing that works today is lost.
+
+| Property the radio end has | Kept at the Gowin end by |
+|---|---|
+| Radio-to-radio cannot touch programming pins | untouched: the radio end still leaves A9 and A29 undriven |
+| JTAG disabled at power-up by a pull resistor | the radio end's gated buffer and its pull-ups still decide; the Gowin can drive TCK/TMS/TDI but they reach the radio's CN1 only once the radio enables the path |
+| No TCK edge from an unconfigured controller | **R105, 1 kΩ to ground on the FPGA side of TCK**: against the Gowin's strongest 400 µA configuration pull-up it holds 0.4 V |
+| A fight is bounded | 330 Ω in every JTAG line at this end too |
+| Unpowered end does not back-feed | 1 k in the presence input and 330 Ω in TDO limit injection into an unpowered FPGA |
+
+**Presence here is driven by the gateware** because J14 has no 3.3 V pin:
+HIGH through 1 k is present, LOW is link reset. The radio end only uses its
+presence input for the optional driver-gating link, so an unconfigured Gowin
+reading as absent is harmless.
+
+### 11.6 One design on one panel
+
+| | |
+|---|---|
+| Panel | **64.50 × 100.07 mm**, 4 layer, 1.6 mm |
+| Top to bottom | 5.00 mm rail, V-score, Gowin end 25.12 mm, V-score, radio end 64.95 mm, V-score, 5.00 mm rail |
+| Connectors | both on the panel's left edge, which is a routed outer edge, so no score runs under a connector housing |
+| Scores crossing air | y 5.00 over the 3.4 mm HDMI notch at the right edge; y 95.07 over the radio end's 3.4 mm M3 notch |
+| Electrical separation | every Gowin-end net is prefixed `G_`; `check_netlist.py` asserts that no net touches both ends; ground pours are per end |
+| Designators | radio end as before; Gowin end numbered from 101 (J101, J102, D101–D112, R101–R117, TP101–TP121) |
+
+**A pre-existing bug fixed on the way.** The committed rev D BOM carried two
+R1s and two R2s: the generator named the forward-clock divider R1/R2 by hand
+and also handed out R1 and R2 automatically to two 330 Ω AUXIO resistors.
+JLCPCB's placement file cannot hold duplicate designators. The automatic
+numbering now skips R1 and R2, so every automatically numbered radio-end
+resistor moved up by two; no net changed.

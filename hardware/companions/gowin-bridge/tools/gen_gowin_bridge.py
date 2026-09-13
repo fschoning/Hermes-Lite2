@@ -222,6 +222,10 @@ def build_slimsas_fp(name):
         a('  (pad "SH%d" thru_hole circle (at %.3f %.3f) (size %.3f %.3f) '
           '(drill %.3f) (layers "*.Cu" "*.Mask"))'
           % (k, tx, ty, s['tail_pad'], s['tail_pad'], s['tail_d']))
+    if name.endswith('_M3'):
+        hx, hy = GOWIN_MH_IN_FP
+        a('  (pad "" np_thru_hole circle (at %.3f %.3f) (size 3.2 3.2) '
+          '(drill 3.2) (layers "F&B.Cu" "*.Mask"))' % (hx, hy))
     for ly in (s['j01'], -s['j01']):
         a('  (pad "" np_thru_hole circle (at 0 %.3f) (size %.3f %.3f) '
           '(drill %.3f) (layers "F&B.Cu" "*.Mask"))'
@@ -263,12 +267,18 @@ TYPES = {
     'LDO25':    ('Regulator_Linear', 'ME6211C25M5', 'Package_TO_SOT_SMD',
                  'SOT-23-5'),
     'SLIMSAS':  (None, 'SLIMSAS_8I', None, SLIMSAS_FP),
+    # The Gowin end's copy: identical contacts, plus the M3 spacer hole that
+    # the case position puts under the housing.
+    'SLIMSAS_M3': (None, 'SLIMSAS_8I', None, SLIMSAS_FP + '_M3'),
     'SKT2x10':  ('Connector_Generic', 'Conn_02x10_Odd_Even',
                  'Connector_PinSocket_2.54mm',
                  'PinSocket_2x10_P2.54mm_Vertical'),
     'SKT2x05':  ('Connector_Generic', 'Conn_02x05_Odd_Even',
                  'Connector_PinSocket_2.54mm',
                  'PinSocket_2x05_P2.54mm_Vertical'),
+    'SKT2x18':  ('Connector_Generic', 'Conn_02x18_Odd_Even',
+                 'Connector_PinSocket_2.54mm',
+                 'PinSocket_2x18_P2.54mm_Vertical'),
     'SKT2x03':  ('Connector_Generic', 'Conn_02x03_Odd_Even',
                  'Connector_PinSocket_2.54mm',
                  'PinSocket_2x03_P2.54mm_Vertical'),
@@ -699,12 +709,20 @@ def esd_arrays(prefix, start_index, lines, note):
 class RefGen:
     """Hands out reference designators so nothing collides."""
 
-    def __init__(self):
+    def __init__(self, reserved=()):
         self.n = {}
+        # Designators that are also given out BY HAND must be reserved here.
+        # rev D as first committed handed out R1 and R2 automatically AND
+        # named the forward-clock divider R1/R2 by hand, so the BOM carried
+        # two R1s and two R2s - which JLCPCB's placement file cannot hold.
+        self.reserved = set(reserved)
 
     def __call__(self, prefix):
-        self.n[prefix] = self.n.get(prefix, 0) + 1
-        return '%s%d' % (prefix, self.n[prefix])
+        while True:
+            self.n[prefix] = self.n.get(prefix, 0) + 1
+            r = '%s%d' % (prefix, self.n[prefix])
+            if r not in self.reserved:
+                return r
 
 
 _CRT_CACHE = {}
@@ -1033,7 +1051,7 @@ def bridge():
               % REV,
               OUT, (BOARD_W, BOARD_H),
               origin_note='local (0,0) = HL2 main board (70.00, 73.30)')
-    ref = RefGen()
+    ref = RefGen(reserved=('R1', 'R2'))
     cx0, cy0, cx1, cy1 = CUTOUT
     b.edge_extra += [(cx0, cy0, cx1, cy0), (cx1, cy0, cx1, cy1),
                      (cx1, cy1, cx0, cy1), (cx0, cy1, cx0, cy0)]
@@ -1849,6 +1867,465 @@ def bridge():
     return b
 
 # ==========================================================================
+#  THE GOWIN END.  The same design's far end, on the Tang Mega 138K dock.
+# ==========================================================================
+#
+# One schematic, one PCB, one panel: the radio end above and this end are
+# fabricated together and snapped apart.  This end plugs onto J14 of the
+# Sipeed Tang Mega 138K dock (bare plated holes as shipped) and carries the
+# same SlimSAS receptacle, LCSC C5432262, and the same ESD array, LCSC
+# C138714, as the radio end.
+#
+# IT IS PASSIVE.  J14 is FPGA Bank 4.  The dock's own power-tree sheet
+# (Tang_Mega_NEO_Dock-138K schematic sheet 2/21, PWR_TREE) feeds VCCIO2, 3,
+# 4 and 5 from the SOM's single 3.3 V rail, so Bank 4 runs at 3.3 V.  Gowin
+# DS1239 1.0.3E section 2.3.1 Table 2-1 lists LVDS25 (true LVDS, TLVDS) as an
+# OUTPUT standard at Bank VCCIO 2.5 or 3.3 V, section 3.2.3 Table 3-10 gives
+# its output VCCIO range as 3.135-3.465 V as well as 2.375-2.625 V, Table 2-2
+# lists LVDS25 as an INPUT at any VCCIO including 3.3 V, and UG1102 1.0.8E
+# Table 2-3 counts all 143 PG484A differential pairs as True LVDS Output.
+# Gowin EDA 1.9.11.03 placed and routed exactly this pin map - LVDS25 outputs
+# at 3.5 mA and LVDS25 inputs with DIFF_RESISTOR=ON, BANK_VCCIO 3.3 - with no
+# error.  So both directions are native: no translator, no driver, no
+# receiver and no termination resistor (UG304 1.3.8E section 3.3.2: the
+# bottom banks of the 138K have on-die 100 ohm differential termination).
+#
+# POSITION: THE 40 mm CASE POSITION, which also works on a bench.  From
+# franz-claude-analysis/TANG_IN_40MM_CASE.md, in Sipeed's dock board-file
+# coordinates (mm, y down):
+#   SlimSAS mating face  x 89.73 (13.97 mm in -x from J14 pin 1), flush with
+#                        the dock's RJ45 face, facing the dock's short edge
+#   SlimSAS centreline   y 53.73 (10.11 mm from pin 1 toward the PMOD edge)
+#   J14 pin n            (103.70 + 2.54*((n-1)//2), 63.84 odd / 61.30 even)
+#   M3 spacer            (97.67, 62.66), over dock corner hole H7_LU1
+# J14 pins 1 and 2 sit under the SlimSAS contact field and pins 3 and 4
+# under its courtyard, so THIS END USES J14 PINS 5-40 ONLY: a 2x18 part at
+# each side of the stack.  Positions 1-4 are PMOD0 and nothing of the link
+# is lost by giving them up except the spare lane, below.
+#
+# LOCAL COORDINATES.  (gx, gy) = dock coordinates minus (89.43, 41.17).
+# gx = 0 is the connector edge, 0.30 mm ahead of the mating face; gy runs
+# from the PMOD side toward J14.  The board is 64.50 x 25.12 mm, the narrowest that keeps the connector's
+# shell-tail pads 0.30 mm inside both long edges, and 64.50 long, 64.50 so
+# that it shares a straight V-score with the radio end on the panel, with a
+# notch at the far PMOD-side corner (dock x >= 148.50, y <= 57.50) so a cable
+# can stay plugged into the dock's HDMI socket J29.
+#
+# HEIGHT: the geometry is identical for both mounting schemes in the case
+# study; only the stacking parts change - see J102 and GOWIN_STACKS.
+
+GOWIN_ORIGIN = (89.43, 41.17)        # dock coordinates of local (0, 0)
+GOWIN_W, GOWIN_H = 64.50, 25.12
+J14_PIN1_DOCK = (103.70, 63.84)      # odd row; even row is 2.54 toward gy 0
+H7LU1_DOCK = (97.67, 62.66)
+GOWIN_SS_DOCK_Y = 53.73              # connector centreline, dock y
+GOWIN_NOTCH = (148.50, 57.50)        # dock x from, dock y to
+J14_FIRST = 5                        # lowest J14 position this end uses
+
+
+def _gloc(dx, dy):
+    return (round(dx - GOWIN_ORIGIN[0], 3), round(dy - GOWIN_ORIGIN[1], 3))
+
+
+GOWIN_SS_AT = _gloc(GOWIN_ORIGIN[0] + SLIMSAS_SETBACK, GOWIN_SS_DOCK_Y)
+GOWIN_MH_AT = _gloc(*H7LU1_DOCK)
+# The spacer hole lies inside the connector's own outline, so it is part of
+# this end's copy of the land pattern rather than a separate footprint.
+GOWIN_MH_IN_FP = (round(GOWIN_MH_AT[0] - GOWIN_SS_AT[0], 3),
+                  round(GOWIN_MH_AT[1] - GOWIN_SS_AT[1], 3))
+
+# The two stacking schemes.  Retyped into COST.md and STATUS.md.
+GOWIN_STACKS = {
+    'scheme 1 - dock on a carrier plate (case study limit 7.0 mm)': dict(
+        dock='kinghelm KH-2.54FH-2X18P-H5.0, LCSC C55160396, 2x18 female, '
+             '5.0 mm body, soldered into dock J14 positions 5-40',
+        adapter='Hong Cheng HC-PZ254-11.5L-2X18PZ, LCSC C41376109, 2x18 '
+                'male (3.0 mm tail, 2.5 mm insulator, 6.0 mm mating), fitted '
+                'UPSIDE DOWN: the 3.0 mm end goes down into the dock socket, '
+                'the 6.0 mm end up through the adapter, soldered on top and '
+                'clipped',
+        stack='7.5 mm with the insulator left on the underside (3.0 mm of '
+              'pin in the socket); 7.0 mm if the insulator is slid off and '
+              'the M3 spacer sets the height (3.5 mm of pin in the socket). '
+              'A normal-way-up header does NOT fit: its 6.0 mm end would '
+              'bottom out in a 5.0 mm socket',
+        spacer='M3 x 7 mm (or 7.5 mm with the insulator left on)'),
+    'scheme 2 - dock screwed to the case floor': dict(
+        dock='Hong Cheng HC-PZ254-11.5L-2X18PZ, LCSC C41376109, 2x18 male, '
+             '2.5 mm insulator, soldered into dock J14 positions 5-40',
+        adapter='hanxia HX PM2.54-2x18P ZC, LCSC C42372542, 2x18 female, '
+                '8.5 mm body, on the adapter underside',
+        stack='11.0 mm',
+        spacer='M3 x 11 mm'),
+}
+
+
+# The Gowin end's lanes: THE RADIO END'S TABLE WITH OUT AND IN SWAPPED.  At
+# every position this end drives what the radio end receives and receives
+# what the radio end drives, so the crossover delivers each radio output to
+# the Gowin input of the same name and each Gowin output to the radio input
+# of the same name.  Radio to radio never meets this table.
+GLANES = tuple((pos, inet, onet, desc) for pos, onet, inet, desc in LANES)
+
+# J14 pin allocation, lane -> (P pin, N pin).  Balls and Gowin IO names from
+# TANG_MEGA_138K_FACTS.md section 2.5, i.e. the dock schematic's own
+# BANK4_<ball>_<IO name> labels.  Even J14 pin = Gowin A leg = P.
+GJ14_RX = {   # row B, received: LVDS25 input, DIFF_RESISTOR=ON
+    'FWDCLK': (20, 19),   # U20/V20 IOB120A/B  SGCLKT_5 = BPLL2/BPLL3 CLKIN0
+    'DUPCLK': (32, 31),   # Y18/Y19 IOB116A/B  MGCLKT_4 = BPLL2/BPLL3 FB0
+    'ADCD0':  (18, 17),   # N13/N14 IOB142A/B
+    'ADCD1':  (16, 15),   # N17/P17 IOB135A/B
+    'ADCD2':  (14, 13),   # W21/W22 IOB124A/B
+    'AUXCLK': (24, 23),   # AB21/AB22 IOB129A/B
+    'AUXDAT': (26, 25),   # AA20/AA21 IOB126A/B
+}
+GJ14_TX = {   # row A, driven: LVDS25 output, 3.5 mA
+    'REVCLK': (10, 9),    # V17/W17 IOB106A/B
+    'TXD0':   (36, 35),   # U17/U18 IOB112A/B
+    'TXD1':   (38, 37),   # P15/R16 IOB140A/B
+    'TXD2':   (40, 39),   # P14/R14 IOB133A/B
+    'AUXCLK': (28, 27),   # AA19/AB20 IOB110A/B
+    'AUXDAT': (22, 21),   # Y21/Y22 IOB131A/B
+    'DUPCLK': (6, 5),     # P16/R17 IOB144A/B
+}
+# The six single-ended pins: J14 7/8 (a pair, split), 33 and 34 (not a pair
+# on the header) and 29/30 (IOB108A/B, reaching the header through the
+# dock's fitted 0 ohm links R72 and R74).
+GJ14_SE = {
+    34: 'G_TCK_DRV',      # N15 IOB146A - no configuration function at all
+    8:  'G_TMS_DRV',      # R18 IOB138A
+    33: 'G_TDI_DRV',      # T20 IOB102B
+    7:  'G_TDO_RD',       # T18 IOB138B
+    29: 'G_PRSNT_RD',     # AA18 IOB108A, via dock R72
+    30: 'G_PRSNT_DRV',    # AB18 IOB108B, via dock R74
+}
+# Not wired to the FPGA at this end: the spare lane.  With J14 positions 1-4
+# under the connector there are 34 usable J14 pins, and fourteen working
+# pairs plus six sideband lines is exactly 34.  At the radio end the spare
+# lane goes only to test pads, so nothing that works today is lost.
+GOWIN_UNWIRED_LANES = ('SPARE',)
+
+# Sidebands at the Gowin end.  pos -> (driven on A, received on B).
+# JTAG is DRIVEN from here: TCK on A9, TMS on A29, TDI on A30, reading TDO
+# on B30 - the exact positions the radio end listens on.  B9 and B29 face the
+# radio's two deliberately undriven outputs and are left unused here too.
+# The four AUXIO positions are not implemented at this end: J14 has no pin
+# left.  Their eight conductors are clamped and brought to test pads.
+GSIDEBANDS = (
+    (8,  'PRSNT', 'PRSNT', 'presence and link reset'),
+    (9,  'TCK',   None,    'JTAG TCK out to the radio; B9 faces the radio '
+                           'undriven A9'),
+    (11, None,    None,    'AUXIO line 0 - not implemented at this end'),
+    (12, None,    None,    'AUXIO line 1 - not implemented at this end'),
+    (26, None,    None,    'AUXIO line 2 - not implemented at this end'),
+    (27, None,    None,    'AUXIO line 3 - not implemented at this end'),
+    (29, 'TMS',   None,    'JTAG TMS out to the radio; B29 faces the radio '
+                           'undriven A29'),
+    (30, 'TDI',   'TDO',   'JTAG TDI out to the radio, TDO back from it'),
+)
+
+
+def gowin_outline():
+    nx, ny = _gloc(*GOWIN_NOTCH)
+    return [(0, 0), (nx, 0), (nx, ny), (GOWIN_W, ny), (GOWIN_W, GOWIN_H),
+            (0, GOWIN_H)]
+
+
+def gowin_end():
+    b = Board('gowin_end', 'Gowin end', gowin_outline(), (GOWIN_W, GOWIN_H),
+              origin_note='local (0,0) = Tang dock (89.43, 41.17)')
+
+    # ---------------------------------------------------- the connector
+    ss = {}
+    for i in range(1, SS_NPOS + 1):
+        ss['A%d' % i] = 'G_GND' if i in SS_GND else None
+        ss['B%d' % i] = 'G_GND' if i in SS_GND else None
+    for pos, onet, inet, _ in GLANES:
+        ss['A%d' % pos] = 'G_A_%s_P' % onet
+        ss['A%d' % (pos + 1)] = 'G_A_%s_N' % onet
+        ss['B%d' % pos] = 'G_B_%s_P' % inet
+        ss['B%d' % (pos + 1)] = 'G_B_%s_N' % inet
+    for pos, onet, inet, _ in GSIDEBANDS:
+        ss['A%d' % pos] = ('G_SB_%s_OUT' % onet) if onet else 'G_SB_NC_A%d' % pos
+        ss['B%d' % pos] = ('G_SB_%s_IN' % inet) if inet else 'G_SB_NC_B%d' % pos
+    for k in range(1, 5):
+        ss['SH%d' % k] = 'G_SHELL'
+    b.add(Part('J101', 'SLIMSAS_M3', 'SlimSAS 8i 74P R/A', ss,
+               lcsc=SLIMSAS_LCSC, mfr=SLIMSAS_MFR,
+               desc='SlimSAS SFF-8654 8i at the Gowin end. Same part and same '
+                    'contact land pattern as J1 at the radio end, plus the M3 '
+                    'spacer hole over dock hole H7_LU1. Row A is driven by '
+                    'this end, row B is received; the cable crosses A(n) to '
+                    'B(n)',
+               at=GOWIN_SS_AT, rot=0,
+               note='Mating face at dock x 89.73, flush with the dock RJ45 '
+                    'face. Reflow the 74 contacts, hand-solder the four shell '
+                    'tails. The M3 hole under the housing takes a spacer '
+                    'fixed from BELOW: the housing covers the top of it.'))
+
+    # ---------------------------------------------------- the dock header
+    # J102 pin k is J14 position k + 4.
+    j14 = {}
+    for lane, (pp, pn) in GJ14_RX.items():
+        j14[pp] = 'G_B_%s_P' % lane
+        j14[pn] = 'G_B_%s_N' % lane
+    for lane, (pp, pn) in GJ14_TX.items():
+        j14[pp] = 'G_A_%s_P' % lane
+        j14[pn] = 'G_A_%s_N' % lane
+    for pin, net in GJ14_SE.items():
+        j14[pin] = net
+    j14[11] = None
+    j14[12] = 'G_GND'
+    assert sorted(j14) == list(range(J14_FIRST, 41)), sorted(j14)
+    s1, s2 = list(GOWIN_STACKS.values())
+    b.add(Part('J102', 'SKT2x18', 'TANG J14 pos 5-40, 2x18',
+               {str(n - J14_FIRST + 1): net for n, net in j14.items()},
+               lcsc='',
+               mfr='SCHEME 1: %s. SCHEME 2: %s' % (s1['adapter'],
+                                                   s2['adapter']),
+               desc='Mates Tang Mega 138K dock J14 positions 5-40 (FPGA Bank '
+                    '4). Pin k of this part is J14 position k+4. HAND '
+                    'SOLDERED, bottom side',
+               at=_gloc(J14_PIN1_DOCK[0] + 2.54 * 2, J14_PIN1_DOCK[1]),
+               rot=90, layer='B.Cu', mirror=True, dnp=True,
+               note='NOT PLACED BY JLCPCB. J14 positions 1-4 lie under the '
+                    'SlimSAS connector and are NOT fitted on either side of '
+                    'the stack. Position 11 (pin 7 here) is the dock 5 V rail '
+                    'and is left unconnected; position 12 (pin 8 here) is the '
+                    'only ground. Positions 5-8 are PMOD0 and 21-28 are '
+                    'PMOD1 and the camera: nothing may be plugged into either '
+                    'PMOD socket or the camera connector while fitted. Dock '
+                    'side, scheme 1: %s. Dock side, scheme 2: %s.'
+                    % (s1['dock'], s2['dock'])))
+
+    # ---------------------------------------------------- sideband parts
+    rs = [
+        R('R101', '1k', 'G_PRSNT_DRV', 'G_SB_PRSNT_OUT', lcsc=LC['r1k'],
+          desc='Presence assert and link reset, from J14 position 30. The '
+               'gateware drives HIGH for present and LOW for link reset; the '
+               'radio end reads it against its own 10 k pull-down, 3.0 V '
+               'high'),
+        R('R102', '10k', 'G_SB_PRSNT_IN', 'G_GND', lcsc=LC['r10k'],
+          desc='Presence detect pull-down, as at the radio end: HIGH only '
+               'while the radio end is plugged in and powered'),
+        R('R103', '1k', 'G_SB_PRSNT_IN', 'G_PRSNT_RD', lcsc=LC['r1k'],
+          desc='Presence detect into J14 position 29. Limits injection into '
+               'an unpowered FPGA to 0.3 mA'),
+        R('R104', '330R', 'G_TCK_DRV', 'G_SB_TCK_OUT', lcsc=LC['r330'],
+          desc='JTAG TCK to the radio, from J14 position 34'),
+        R('R105', '1k', 'G_TCK_DRV', 'G_GND', lcsc=LC['r1k'],
+          desc='TCK pull-DOWN. Holds TCK low while the Gowin is unconfigured, '
+               'even against its strongest 400 uA pull-up (0.4 V), so no TCK '
+               'edge leaves this end until the gateware makes one'),
+        R('R106', '330R', 'G_TMS_DRV', 'G_SB_TMS_OUT', lcsc=LC['r330'],
+          desc='JTAG TMS to the radio, from J14 position 8'),
+        R('R107', '330R', 'G_TDI_DRV', 'G_SB_TDI_OUT', lcsc=LC['r330'],
+          desc='JTAG TDI to the radio, from J14 position 33'),
+        R('R108', '330R', 'G_SB_TDO_IN', 'G_TDO_RD', lcsc=LC['r330'],
+          desc='JTAG TDO from the radio into J14 position 7'),
+        R('R109', '10k', 'G_SB_TDO_IN', 'G_GND', lcsc=LC['r10k'],
+          desc='Defines TDO with no radio attached'),
+    ]
+    k = 110
+    for pos, onet, inet, _ in GLANES:
+        if inet in GOWIN_UNWIRED_LANES:
+            continue
+        rs.append(R('R%d' % k, '100R', 'G_B_%s_P' % inet, 'G_B_%s_N' % inet,
+                    lcsc=LC['r100'], dnp=True,
+                    desc='OPTIONAL external 100 ohm termination on the received '
+                         '%s pair' % inet,
+                    note='NOT FITTED. The FPGA terminates on-die '
+                         '(DIFF_RESISTOR=ON). Fit only if that is ever found '
+                         'not to work.'))
+        k += 1
+    rs.append(R0805('R117', '0R', 'G_SHELL', 'G_GND', lcsc=LC['r0_0805'],
+                    desc='Connector shell to ground, as R_SHELL at the radio '
+                         'end'))
+    b.add(*rs)
+
+    # ---------------------------------------------------- ESD, every line
+    esd_lines = []
+    for pos, onet, inet, _ in GLANES:
+        esd_lines += ['G_A_%s_P' % onet, 'G_A_%s_N' % onet,
+                      'G_B_%s_P' % inet, 'G_B_%s_N' % inet]
+    for pos, onet, inet, _ in GSIDEBANDS:
+        esd_lines.append(('G_SB_%s_OUT' % onet) if onet else 'G_SB_NC_A%d' % pos)
+        esd_lines.append(('G_SB_%s_IN' % inet) if inet else 'G_SB_NC_B%d' % pos)
+    arr, _ = esd_arrays('D', 101, esd_lines,
+                        'PLACE WITHIN 5 mm OF THE SlimSAS CONTACTS.')
+    for a_ in arr:
+        for kk, v in list(a_.pins.items()):
+            if v == 'GND':
+                a_.pins[kk] = 'G_GND'
+    b.add(*arr)
+
+    # ---------------------------------------------------- test pads
+    tk = 101
+    for net in (['G_SB_PRSNT_OUT', 'G_SB_PRSNT_IN', 'G_SB_TCK_OUT',
+                 'G_SB_TMS_OUT', 'G_SB_TDI_OUT', 'G_SB_TDO_IN',
+                 'G_SB_NC_B9', 'G_SB_NC_B29'] +
+                ['G_SB_NC_A%d' % p_ for p_ in (11, 12, 26, 27)] +
+                ['G_SB_NC_B%d' % p_ for p_ in (11, 12, 26, 27)] +
+                ['G_A_SPARE_P', 'G_A_SPARE_N', 'G_B_SPARE_P', 'G_B_SPARE_N']):
+        b.add(TP('TP%d' % tk, net))
+        tk += 1
+    g = TP('TP%d' % tk, 'G_GND', t='TPBIG')
+    b.add(g)
+    for net in ('G_GND', 'G_SHELL'):
+        b.add(FLAG(net))
+
+    # ---------------------------------------------------- floor plan
+    P = {p_.ref: p_ for p_ in b.parts}
+    esd = [P['D%d' % i] for i in range(101, 113)]
+    ehw, ehh = courtyard('ESD4', 90)
+    x0 = 17.6 + ehw
+    for i, d_ in enumerate(esd):
+        col, rw = divmod(i, 4)
+        d_.at = (round(x0 + col * (2 * ehw + 0.5), 3),
+                 round(1.0 + ehh + rw * (2 * ehh + 0.5), 3))
+        d_.rot = 90
+    xa = x0 + 3 * (2 * ehw + 0.5) - ehw + 0.2
+    nx, ny = _gloc(*GOWIN_NOTCH)
+    g.at = (round(nx - 2.2, 3), 2.2)
+    autoplace(b, [(xa, 0.4, nx - 0.4, 17.9),
+                  (nx + 0.4, ny + 0.4, GOWIN_W - 0.4, 17.9)])
+    b.texts = [
+        ('B.SilkS', 40.0, 3.0, 0, 1.4,
+         'HERMES LITE 2 SlimSAS BRIDGE  rev %s  GOWIN END' % REV),
+        ('B.SilkS', 40.0, 5.5, 0, 1.0,
+         'TANG MEGA 138K DOCK J14 POSITIONS 5-40 (BANK 4, 3.3 V, NATIVE LVDS)'),
+        ('B.SilkS', 40.0, 7.5, 0, 1.0,
+         'J14 POSITIONS 1-4 EMPTY.  NOTHING IN PMOD0 / PMOD1 / CAMERA'),
+        ('B.SilkS', 40.0, 9.5, 0, 1.0,
+         'M3 SPACER TO DOCK HOLE H7_LU1, FIXED FROM BELOW'),
+        ('B.SilkS', 40.0, 11.5, 0, 1.0, 'DO NOT PLUG OR UNPLUG POWERED'),
+    ]
+    return b
+
+
+# ==========================================================================
+#  THE PANEL.  Both ends on one outline, snapped apart after manufacture.
+# ==========================================================================
+#
+#   y  0.00 ..  5.00   top assembly rail                  V-score y = 5.00
+#   y  5.00 .. 30.12   the Gowin end, unrotated           V-score y = 30.12
+#   y 30.12 .. 95.07   the radio end, unrotated           V-score y = 95.07
+#   y 95.07 .. 100.07  bottom assembly rail
+#   100.07 mm is 0.07 mm outside the 100 x 100 mm band.  JLCPCB's live quote
+#   (13 Sep 2026) prices a two-outline panel identically at 99.67 and 101 mm,
+#   so standard 5.00 mm rails cost nothing.
+#   x  0.00 .. 64.50   both ends are exactly 64.50 mm long, so every score is
+#                      straight from edge to edge
+#
+# Both connectors face the panel's left edge, x = 0, which is a routed outer
+# edge, so no score runs under a connector's overhanging housing.  Two scores
+# cross air: y = 5.00 over the Gowin end's HDMI notch (x 59.07..64.50, at the
+# panel's right edge) and y = 95.07 over the radio end's M3 U-notch
+# (x 1.30..4.70).
+
+PANEL_W = BOARD_W                    # 64.50
+RAIL = 5.0
+GOWIN_Y0 = RAIL
+RADIO_Y0 = RAIL + GOWIN_H            # 30.12
+PANEL_H = RADIO_Y0 + BOARD_H + RAIL  # 100.07
+VSCORE_Y = (RAIL, RADIO_Y0, RADIO_Y0 + BOARD_H)
+FIDUCIALS = ((4.0, 2.5), (60.0, 2.5), (10.0, PANEL_H - 2.5))
+
+
+def xf_radio(x, y):
+    return (round(x, 3), round(y + RADIO_Y0, 3))
+
+
+def xf_gowin(x, y):
+    return (round(x, 3), round(y + GOWIN_Y0, 3))
+
+
+def panel():
+    radio, gow = bridge(), gowin_end()
+    nx, ny = xf_gowin(*_gloc(*GOWIN_NOTCH))
+    out = [(0, 0), (PANEL_W, 0), (PANEL_W, GOWIN_Y0), (nx, GOWIN_Y0),
+           (nx, ny), (PANEL_W, ny), (PANEL_W, PANEL_H), (0, PANEL_H)]
+    p = Board('bridge',
+              'Hermes Lite 2 SlimSAS bridge rev %s - radio end and Gowin end, '
+              'one panel' % REV,
+              out, (PANEL_W, PANEL_H),
+              origin_note='panel (0,0) = top-left; Gowin end local (0,0) at '
+                          '(0, 5.00); radio end local (0,0) at (0, 30.12)')
+
+    def merge(board, xform):
+        for q_ in board.parts:
+            at = xform(q_.at[0], q_.at[1]) if q_.at else None
+            p.add(Part(q_.ref, q_.ptype, q_.value, q_.pins, lcsc=q_.lcsc,
+                       mfr=q_.mfr, desc=q_.desc, dnp=q_.dnp, note=q_.note,
+                       at=at, rot=q_.rot, layer=q_.layer,
+                       exclude_bom=q_.exclude_bom, mirror=q_.mirror))
+        for (layer, tx, ty, trot, tsize, txt) in board.texts:
+            nx_, ny_ = xform(tx, ty)
+            p.texts.append((layer, nx_, ny_, trot, tsize, txt))
+        for (layer, x0, y0, x1, y1, lw) in board.lines:
+            ax, ay = xform(x0, y0)
+            cx, cy = xform(x1, y1)
+            p.lines.append((layer, ax, ay, cx, cy, lw))
+        for (ex0, ey0, ex1, ey1) in board.edge_extra:
+            ax, ay = xform(ex0, ey0)
+            cx, cy = xform(ex1, ey1)
+            p.edge_extra.append((ax, ay, cx, cy))
+        for (hx, hy, hd) in board.npth:
+            nx_, ny_ = xform(hx, hy)
+            p.npth.append((nx_, ny_, hd))
+        for (zlayer, znet, zprio, zpoly, zname) in board.zones_extra:
+            p.zones_extra.append((zlayer, znet, zprio,
+                                  [xform(x, y) for (x, y) in zpoly], zname))
+        opts = [xform(x, y) for (x, y) in board.outline]
+        for i in range(len(opts)):
+            (x0, y0), (x1, y1) = opts[i], opts[(i + 1) % len(opts)]
+            p.lines.append(('Cmts.User', x0, y0, x1, y1, 0.15))
+        return opts
+
+    g_poly = merge(gow, xf_gowin)
+    r_poly = merge(radio, xf_radio)
+
+    # Each end's pours over its own outline; the two ends share no net.
+    p.zones_full = [
+        ('In1.Cu', 'GND', 0, r_poly, 'GND plane (layer 2) - DO NOT CUT'),
+        ('F.Cu', 'GND', 0, r_poly, 'top ground fill'),
+        ('B.Cu', 'GND', 0, r_poly, 'bottom ground fill'),
+        ('In2.Cu', '+3V3', 0, r_poly, 'power plane (layer 3): +3V3'),
+    ]
+    for lay in ('F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu'):
+        p.zones_full.append((lay, 'G_GND', 0, g_poly,
+                             'Gowin end ground, %s' % lay))
+
+    # The radio end's M3 U-notch opens onto the y = 95.07 score.  As a cut it
+    # has to be a closed shape, so it runs 1.00 mm on into the bottom rail.
+    n0, n1 = 3.00 - 1.70, 3.00 + 1.70
+    yb = RADIO_Y0 + BOARD_H
+    p.edge_extra += [(n0, yb - 3.0, n1, yb - 3.0), (n1, yb - 3.0, n1, yb + 1.0),
+                     (n1, yb + 1.0, n0, yb + 1.0), (n0, yb + 1.0, n0, yb - 3.0)]
+
+    for i, (fx, fy) in enumerate(FIDUCIALS, start=1):
+        p.add(Part('FID%d' % i, 'FIDUCIAL', 'Fiducial', {}, at=(fx, fy),
+                   exclude_bom=True,
+                   desc='Panel fiducial on an assembly rail, 1 mm copper, '
+                        '2 mm mask opening'))
+
+    for vy in VSCORE_Y:
+        p.lines.append(('Eco1.User', 0.0, vy, PANEL_W, vy, 0.2))
+        p.texts.append(('Eco1.User', 50.0, vy - 0.8, 0, 0.8,
+                        'V-SCORE y = %.2f' % vy))
+    p.texts += [
+        ('F.SilkS', 32.0, 2.6, 0, 1.1,
+         'HL2 SlimSAS BRIDGE rev %s  RADIO END + GOWIN END' % REV),
+        ('F.SilkS', 32.0, PANEL_H - 2.5, 0, 1.1,
+         'RAILS ARE SCRAP - SNAP ALONG THE THREE SCORES'),
+        ('Dwgs.User', 32.0, PANEL_H + 2.0, 0, 1.2,
+         'PANEL %.2f x %.2f mm, 4 layer, 1.6 mm. V-SCORES y = 5.00, 30.12, '
+         '95.07, each edge to edge.' % (PANEL_W, PANEL_H)),
+    ]
+    return p
+
+
+# ==========================================================================
 #  Library emission
 # ==========================================================================
 
@@ -2482,7 +2959,7 @@ PRO_TEMPLATE = '''{
 # of a 100 ohm differential pair: A_ is a pair this board drives onto the
 # cable, B_ is a pair it receives.  That is the whole naming convention, and
 # write_pro turns it into the LVDS100 net class.
-PAIR_PREFIXES = ('A_', 'B_')
+PAIR_PREFIXES = ('A_', 'B_', 'G_A_', 'G_B_')
 
 
 def is_pair_net(name):
@@ -2546,7 +3023,7 @@ def write_bom(outdir, board):
 
 
 def main():
-    for b in (bridge(),):
+    for b in (panel(),):
         outdir = os.path.join(ROOT, b.name)
         os.makedirs(outdir, exist_ok=True)
         fps = write_libs(outdir, b)

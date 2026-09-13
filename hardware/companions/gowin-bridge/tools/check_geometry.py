@@ -48,6 +48,47 @@ COURTYARD_TOUCH = 0.0        # courtyards may touch but not overlap
 HL2_ORIGIN = (70.00, 73.30)
 
 
+# ---------------------------------------------------------------- the panel
+# Retyped from the generator's panel block, so that a change there has to be
+# made here too.  Panel (0,0) is page (40, 40).  Both ends unrotated, both
+# connectors on the panel's left edge.
+RADIO_W, RADIO_H = 64.50, 64.95
+GOWIN_W, GOWIN_H = 64.50, 25.12
+RAIL = 5.00
+PANEL_W = RADIO_W                        # 64.50
+PANEL_H = RAIL + GOWIN_H + RADIO_H + RAIL  # 100.07
+GOWIN_BOX = (0.0, RAIL, GOWIN_W, RAIL + GOWIN_H)
+RADIO_BOX = (0.0, RAIL + GOWIN_H, RADIO_W, RAIL + GOWIN_H + RADIO_H)
+VSCORES_Y = (RAIL, RAIL + GOWIN_H, RAIL + GOWIN_H + RADIO_H)
+
+
+# The Tang Mega 138K dock, from Sipeed's interactive BOM for dock 31004
+# (Tang_Mega_NEO_Dock_31004): J14 pin 1 pad at (103.697657, 63.842586), the
+# footprint rotated 90 so odd pins run along +x at y 63.84 and even pins at
+# y 61.30.  H7_LU1, an M3 mounting hole, at (97.67, 62.66).  The case study
+# TANG_IN_40MM_CASE.md fixes the SlimSAS mating face at dock x 89.73 and its
+# centreline at dock y 53.73.
+DOCK_ORIGIN = (89.43, 41.17)      # dock coordinates of Gowin-end local (0,0)
+SS_FACE_DOCK_X = 89.73
+SS_CENTRE_DOCK_Y = 53.73
+BODY_FRONT = 10.10                # datum line to mating face, generator value
+
+
+def dock_to_panel(dx, dy):
+    return (dx - DOCK_ORIGIN[0], dy - DOCK_ORIGIN[1] + RAIL)
+
+
+def j14_grid():
+    """J102 pin k -> J14 position k + 4 -> panel coordinates."""
+    out = {}
+    for k in range(1, 37):
+        n = k + 4
+        dx = 103.697657 + 2.54 * ((n - 1) // 2)
+        dy = 63.842586 if n % 2 else 61.302586
+        out[k] = dock_to_panel(dx, dy)
+    return out
+
+
 def db1_grid():
     out = {}
     mx, my = 75.31, 89.39
@@ -246,26 +287,47 @@ def load(path):
     return fps, box
 
 
+def in_board(ref):
+    """Which piece of the panel a footprint belongs to.  The Gowin end's
+    designators are numbered from 101; the fiducials and mouse-bite drills
+    belong to the panel itself; everything else is the radio end."""
+    if ref.startswith(('FID', 'MB')):
+        return 'panel'
+    digits = ''.join(c for c in ref if c.isdigit())
+    if digits and int(digits) >= 101 and ref[0] in 'JDRTMC':
+        return 'gowin'
+    return 'radio'
+
+
 def check(name):
     path = os.path.join(ROOT, name, name + '.kicad_pcb')
     fps, box = load(path)
     bx0, by0, bx1, by1 = box
     prob = []
     print('== %s ==' % name)
-    print('   board outline  x %.2f..%.2f  y %.2f..%.2f  (%.1f x %.1f mm)'
+    print('   panel outline  x %.2f..%.2f  y %.2f..%.2f  (%.2f x %.2f mm)'
           % (bx0, bx1, by0, by1, bx1 - bx0, by1 - by0))
+    if abs((bx1 - bx0) - PANEL_W) > 0.01 or abs((by1 - by0) - PANEL_H) > 0.01:
+        prob.append('panel is %.2f x %.2f, expected %.2f x %.2f'
+                    % (bx1 - bx0, by1 - by0, PANEL_W, PANEL_H))
     print('   %d footprints, %d pads'
           % (len(fps), sum(len(f.pads) for f in fps)))
+    rects = {'radio': RADIO_BOX, 'gowin': GOWIN_BOX,
+             'panel': (0.0, 0.0, PANEL_W, PANEL_H)}
 
-    # 1. inside the outline
+    # 1. inside the outline of the piece the part belongs to
     for f in fps:
+        if f.ref.startswith('MB'):
+            continue
+        rx0, ry0, rx1, ry1 = rects[in_board(f.ref)]
+        rx0 += PAGE[0]; rx1 += PAGE[0]; ry0 += PAGE[1]; ry1 += PAGE[1]
         for (num, px, py, hx, hy, net) in f.pads:
-            if (px - hx < bx0 + EDGE_MARGIN or px + hx > bx1 - EDGE_MARGIN
-                    or py - hy < by0 + EDGE_MARGIN
-                    or py + hy > by1 - EDGE_MARGIN):
-                prob.append('OFF-BOARD pad %s.%s at local (%.2f, %.2f) '
-                            'half (%.2f, %.2f)'
-                            % (f.ref, num, px - bx0, py - by0, hx, hy))
+            if (px - hx < rx0 + EDGE_MARGIN or px + hx > rx1 - EDGE_MARGIN
+                    or py - hy < ry0 + EDGE_MARGIN
+                    or py + hy > ry1 - EDGE_MARGIN):
+                prob.append('OFF-BOARD pad %s.%s (%s end) at panel (%.2f, '
+                            '%.2f)' % (f.ref, num, in_board(f.ref),
+                                       px - PAGE[0], py - PAGE[1]))
     # 2. courtyard overlaps
     for i in range(len(fps)):
         for j in range(i + 1, len(fps)):
@@ -300,6 +362,100 @@ def check(name):
                             % (fa.ref, pa[0], pa[5], fb.ref, pb[0], pb[5],
                                gap))
     return fps, box, prob
+
+
+def check_gowin(fps):
+    prob = []
+    byref = {f.ref: f for f in fps}
+    f = byref.get('J102')
+    if f is None:
+        return ['J102, the Tang J14 socket, is missing']
+    pads = {int(p[0]): (p[1] - PAGE[0], p[2] - PAGE[1]) for p in f.pads
+            if p[0].isdigit()}
+    bad = 0
+    for k, (wx, wy) in j14_grid().items():
+        gx, gy = pads.get(k, (1e9, 1e9))
+        if abs(gx - wx) > 0.01 or abs(gy - wy) > 0.01:
+            prob.append('J102 pin %d (J14 position %d) at panel (%.3f, %.3f), '
+                        'dock grid says (%.3f, %.3f)'
+                        % (k, k + 4, gx, gy, wx, wy))
+            bad += 1
+    if not bad:
+        print('   J102: all 36 holes on dock J14 positions 5-40')
+    # nothing of this end may stand over J14 positions 1-4 except the
+    # connector's own surface-mount pads, which are on the top copper only
+    for fp in fps:
+        if fp.ref == 'J102' or not fp.tht:
+            continue
+        for (num, px, py, hx, hy, net) in fp.pads:
+            if fp.ref == 'J101' and num[:1] in ('A', 'B'):
+                continue        # surface-mount contacts, top copper only
+            x, y = px - PAGE[0], py - PAGE[1]
+            for n in (1, 2, 3, 4):
+                wx, wy = dock_to_panel(103.697657 + 2.54 * ((n - 1) // 2),
+                                       63.842586 if n % 2 else 61.302586)
+                if abs(x - wx) < hx + 1.3 and abs(y - wy) < hy + 1.3:
+                    prob.append('%s.%s has a hole over J14 position %d'
+                                % (fp.ref, num, n))
+    f = byref.get('J101')
+    if f is None:
+        return prob + ['J101, the Gowin-end SlimSAS receptacle, is missing']
+    pads = {q[0]: (q[1] - PAGE[0], q[2] - PAGE[1]) for q in f.pads}
+    dx0 = SS_FACE_DOCK_X + BODY_FRONT       # datum line, dock x
+    ox, oy = dock_to_panel(dx0, SS_CENTRE_DOCK_Y)
+    outer = SFF['j01'] - SFF['j04']
+    want = {}
+    for row, xc in (('A', SFF['j02']), ('B', SFF['j02'] + SFF['j03'])):
+        for i in range(1, SFF['npos'] + 1):
+            want['%s%d' % (row, i)] = (ox + xc,
+                                       oy + outer - (i - 1) * SFF['j05'])
+    ty = SFF['j01'] + SFF['j11']
+    for k, (tx, tyy) in enumerate([(-SFF['j09'], ty),
+                                   (-(SFF['j09'] + SFF['j10']), ty),
+                                   (-SFF['j09'], -ty),
+                                   (-(SFF['j09'] + SFF['j10']), -ty)], 1):
+        want['SH%d' % k] = (ox + tx, oy + tyy)
+    bad = 0
+    for nm, (wx, wy) in sorted(want.items()):
+        gx, gy = pads.get(nm, (1e9, 1e9))
+        if abs(gx - wx) > 0.01 or abs(gy - wy) > 0.01:
+            prob.append('J101 contact %s at (%.3f, %.3f), Table A-1 and the '
+                        'case position say (%.3f, %.3f)'
+                        % (nm, gx, gy, wx, wy))
+            bad += 1
+    if not bad:
+        print('   J101: all 74 contacts and 4 shell tails match SFF-8654 '
+              'Table A-1 with the mating face at dock x %.2f and the '
+              'centreline at dock y %.2f' % (SS_FACE_DOCK_X, SS_CENTRE_DOCK_Y))
+    hx, hy = dock_to_panel(97.67, 62.66)
+    holes = [q_ for q_ in f.pads if q_[0] == '']
+    if not any(abs(q_[1] - PAGE[0] - hx) < 0.01 and abs(q_[2] - PAGE[1] - hy)
+               < 0.01 for q_ in holes):
+        prob.append('no M3 spacer hole over dock hole H7_LU1 (97.67, 62.66)')
+    else:
+        print('   M3 spacer hole at dock (97.67, 62.66), over H7_LU1')
+    return prob
+
+
+def check_panel(fps):
+    """Every score runs edge to edge; no copper within the edge margin of
+    one."""
+    prob = []
+    for f in fps:
+        for (num, px, py, hx, hy, net) in f.pads:
+            y = py - PAGE[1]
+            for vy in VSCORES_Y:
+                if abs(y - vy) < hy + EDGE_MARGIN:
+                    prob.append('%s.%s is within %.2f mm of the y = %.2f '
+                                'V-score' % (f.ref, num, EDGE_MARGIN, vy))
+    print('   V-scores at y = %s, each from x 0 to %.2f; panel %.2f x %.2f mm'
+          % (', '.join('%.2f' % v for v in VSCORES_Y), PANEL_W, PANEL_W,
+             PANEL_H))
+    if PANEL_W > 100.0 or PANEL_H > 100.0:
+        print('   note: %.2f x %.2f mm is outside the 100 x 100 mm band; with '
+              'two outlines on the panel JLCPCB prices it the same'
+              % (PANEL_W, PANEL_H))
+    return prob
 
 
 def check_hl2_grid(fps, box):
@@ -352,16 +508,24 @@ def boot_arithmetic(fps, box, refs, body_w, label):
 
 def main():
     fps, box, prob = check('bridge')
-    prob += check_hl2_grid(fps, box)
-    prob += check_slimsas(fps, box)
-    prob += check_mech(box)
-    for s in prob:
-        print('   !! ' + s)
-    print('   %s' % ('OK - every pad and courtyard is inside the outline, no '
-                     'two courtyards overlap, no two different-net pads are '
-                     'closer than the clearance floor, all three HL2 socket '
-                     'grids match the radio, and the SlimSAS land pattern '
-                     'matches SFF-8654 Table A-1'
+    rbox = (PAGE[0] + RADIO_BOX[0], PAGE[1] + RADIO_BOX[1],
+            PAGE[0] + RADIO_BOX[2], PAGE[1] + RADIO_BOX[3])
+    print('-- the radio end --')
+    prob += check_hl2_grid(fps, rbox)
+    prob += check_slimsas(fps, rbox)
+    prob += check_mech(rbox)
+    print('-- the Gowin end --')
+    prob += check_gowin(fps)
+    print('-- the panel --')
+    prob += check_panel(fps)
+    for s_ in prob:
+        print('   !! ' + s_)
+    print('   %s' % ('OK - every pad inside its own end of the panel, no two '
+                     'courtyards overlap, no two different-net pads closer '
+                     'than the clearance floor, the radio end sockets on the '
+                     'HL2 grids, the Gowin end socket on the dock J14 grid, '
+                     'both SlimSAS land patterns match SFF-8654 Table A-1, and '
+                     'both V-scores are clean'
                      if not prob else '%d PROBLEMS' % len(prob)))
     return 1 if prob else 0
 

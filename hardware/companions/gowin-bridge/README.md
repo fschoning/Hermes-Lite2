@@ -1,10 +1,12 @@
 # gowin-bridge — Hermes Lite 2 SlimSAS bridge, rev D
 
-**One design.** One schematic, one PCB, one BOM, one project directory. Two of
-these boards and one cable make a radio-to-radio link; one plus a Gowin-side
-board makes a radio-to-FPGA link. rev C's two designs, three HDMI cables,
-upright riser card and V-scored production panel are in git history.
+**One design with two ends, on one panel.** One schematic, one PCB, one BOM,
+one project directory. The **radio end** plugs onto the Hermes-Lite 2; the
+**Gowin end** plugs onto a Tang Mega 138K dock's J14. They are made together
+and snapped apart. Two radio ends and one cable make a radio-to-radio link; a
+radio end, a Gowin end and one cable make a radio-to-FPGA link.
 
+The radio end:
 A flat companion board that plugs onto the HL2's **DB1** (2×10), **DB12** (2×3)
 and **CN1** (2×5 JTAG) headers and carries **one SlimSAS SFF-8654 8i
 receptacle** on its front edge. A single $15 cable carries 16 differential
@@ -101,21 +103,19 @@ That edit was deliberately **not** made here: it is panel layout, and layout is
 a separate session's job. `G:/proj/Hermes-Lite2/franz-claude-analysis/HL2_END_PANEL.md`
 holds the original derivation and its y-position conclusion is superseded.
 
-## What is still missing from the project
+## The Gowin end
 
-**A Gowin-side board.** Everything in rev D is HL2-side. Two of these boards
-and one cable make a radio-to-radio link today; a radio-to-Gowin link needs a
-Tang-dock board with a SlimSAS receptacle wired to the mirror of `PINMAP.md`
-§5 and §6. rev C's `tang-bridge` project is in git history and its J14 pin
-choices are still valid, but its connector, its sockets and its direction logic
-all change.
+A passive board: the same SlimSAS connector, 12 ESD arrays, 9 resistors and a
+hand-fitted 2×18 onto J14 positions 5–40. Bank 4 of the Gowin FPGA drives and
+receives true LVDS at its 3.3 V supply. Placed at the 40 mm case position.
+`PINMAP.md` §11, `DESIGN_NOTES.md` §11, `gowin_end_j14.cst`.
 
 ## To order
 
-JLCPCB, **Economic** assembly, **quantity 5**, 4 layer, 1.6 mm, lead-free HASL,
-green, 1 oz. The order form's **"different designs in this file" field is 1.**
-Do not buy impedance control — `COST.md` §5.1 explains why $33.88 buys nothing
-here. `COST.md` §1 is the line-by-line.
+JLCPCB, **Economic** assembly, **5 panels**, 4 layer, 1.6 mm, lead-free HASL,
+green, 1 oz, **"Different Design" 2, "Panel by Customer"** - the panel
+carries two different outlines and the fab bills for that.
+Do not buy impedance control — `COST.md` §4 explains why. `COST.md` §1 is the line-by-line.
 
 Then hand-solder, per board: the DB1 2×10 socket and the DB12 2×3 socket and
 the CN1 2×5 socket on the **underside**, the JTAG pass-through 2×5 header on

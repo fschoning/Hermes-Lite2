@@ -44,7 +44,19 @@ generator could get wrong without ERC noticing:
  7. EVERY CONDUCTOR THAT LEAVES THE BOARD IS CLAMPED.  Each of the 32 pair
     conductors and each wired sideband conductor must appear on an ESD array.
 
- 8. NOTHING CALLS ITSELF BOARD A OR BOARD B.  rev D is one design.
+ 8. NOTHING CALLS ITSELF BOARD A OR BOARD B.  One design with two ends on
+    one panel: the radio end (J1) and the Gowin end (J101).
+
+ 9. THE GOWIN END'S PIN MAP.  Every contact of J101 and every position of
+    J102, the 2x18 on Tang dock J14 positions 5-40, against PINMAP.md
+    section 11; both forwarded clocks on dedicated clock balls; every P leg
+    on a Gowin true (A) ball; nothing on J14 positions 1-4.
+
+10. THE CROSSOVER IN ALL THREE COMBINATIONS - radio to Gowin, Gowin to radio
+    and radio to radio - every output walked through the cable to the input
+    at the far end, lanes and sidebands.
+
+11. THE TWO ENDS SHARE NO NET.
 
 The tables below are retyped here from PINMAP.md and from the specifications
 rather than imported from the generator, so the two can disagree and be
@@ -183,6 +195,111 @@ ENABLES = {
 }
 
 SLIMSAS_REF = 'J1'
+
+# --------------------------------------------------------------------------
+# THE GOWIN END, retyped from PINMAP.md section 11.
+# --------------------------------------------------------------------------
+GOWIN_REF = 'J101'
+GOWIN_HDR = 'J102'          # pin k = Tang dock J14 position k + 4
+J14_FIRST = 5
+
+# Tang dock J14, from TANG_MEGA_138K_FACTS.md section 2.5 (the dock
+# schematic's BANK4_<ball>_<IO name> labels).  position -> (ball, IO name,
+# dedicated clock function or '').
+J14_BALLS = {
+    5: ('R17', 'IOB144B', ''), 6: ('P16', 'IOB144A', ''),
+    7: ('T18', 'IOB138B', ''), 8: ('R18', 'IOB138A', ''),
+    9: ('W17', 'IOB106B', ''), 10: ('V17', 'IOB106A', ''),
+    11: (None, '5V', ''), 12: (None, 'GND', ''),
+    13: ('W22', 'IOB124B', ''), 14: ('W21', 'IOB124A', ''),
+    15: ('P17', 'IOB135B', ''), 16: ('N17', 'IOB135A', ''),
+    17: ('N14', 'IOB142B', ''), 18: ('N13', 'IOB142A', ''),
+    19: ('V20', 'IOB120B', 'SGCLKC_5/BPLL2_C_IN0/BPLL3_C_IN0'),
+    20: ('U20', 'IOB120A', 'SGCLKT_5/BPLL2_T_IN0/BPLL3_T_IN0'),
+    21: ('Y22', 'IOB131B', ''), 22: ('Y21', 'IOB131A', ''),
+    23: ('AB22', 'IOB129B', ''), 24: ('AB21', 'IOB129A', ''),
+    25: ('AA21', 'IOB126B', ''), 26: ('AA20', 'IOB126A', ''),
+    27: ('AB20', 'IOB110B', ''), 28: ('AA19', 'IOB110A', ''),
+    29: ('AA18', 'IOB108A', ''), 30: ('AB18', 'IOB108B', ''),
+    31: ('Y19', 'IOB116B', 'MGCLKC_4/BPLL2_C_FB0/BPLL3_C_FB0'),
+    32: ('Y18', 'IOB116A', 'MGCLKT_4/BPLL2_T_FB0/BPLL3_T_FB0'),
+    33: ('T20', 'IOB102B', ''), 34: ('N15', 'IOB146A', ''),
+    35: ('U18', 'IOB112B', ''), 36: ('U17', 'IOB112A', ''),
+    37: ('R16', 'IOB140B', ''), 38: ('P15', 'IOB140A', ''),
+    39: ('R14', 'IOB133B', ''), 40: ('P14', 'IOB133A', ''),
+}
+
+# J14 position -> net, retyped from PINMAP.md section 11.
+GOWIN_J14 = {
+    5: 'G_A_DUPCLK_N', 6: 'G_A_DUPCLK_P',
+    7: 'G_TDO_RD', 8: 'G_TMS_DRV',
+    9: 'G_A_REVCLK_N', 10: 'G_A_REVCLK_P',
+    11: '<open>', 12: 'G_GND',
+    13: 'G_B_ADCD2_N', 14: 'G_B_ADCD2_P',
+    15: 'G_B_ADCD1_N', 16: 'G_B_ADCD1_P',
+    17: 'G_B_ADCD0_N', 18: 'G_B_ADCD0_P',
+    19: 'G_B_FWDCLK_N', 20: 'G_B_FWDCLK_P',
+    21: 'G_A_AUXDAT_N', 22: 'G_A_AUXDAT_P',
+    23: 'G_B_AUXCLK_N', 24: 'G_B_AUXCLK_P',
+    25: 'G_B_AUXDAT_N', 26: 'G_B_AUXDAT_P',
+    27: 'G_A_AUXCLK_N', 28: 'G_A_AUXCLK_P',
+    29: 'G_PRSNT_RD', 30: 'G_PRSNT_DRV',
+    31: 'G_B_DUPCLK_N', 32: 'G_B_DUPCLK_P',
+    33: 'G_TDI_DRV', 34: 'G_TCK_DRV',
+    35: 'G_A_TXD0_N', 36: 'G_A_TXD0_P',
+    37: 'G_A_TXD1_N', 38: 'G_A_TXD1_P',
+    39: 'G_A_TXD2_N', 40: 'G_A_TXD2_P',
+}
+# The clocks that must land on dedicated clock inputs.
+GOWIN_CLOCKS = {'G_B_FWDCLK': 'forwarded clock',
+                'G_B_DUPCLK': 'duplicate forwarded clock'}
+
+# Gowin-end lane map: position -> (driven on A, received on B).
+GLANES = {
+    2:  ('AUXCLK', 'AUXCLK'),
+    5:  ('AUXDAT', 'AUXDAT'),
+    14: ('REVCLK', 'FWDCLK'),
+    17: ('TXD0', 'ADCD0'),
+    20: ('TXD1', 'ADCD1'),
+    23: ('TXD2', 'ADCD2'),
+    32: ('DUPCLK', 'DUPCLK'),
+    35: ('SPARE', 'SPARE'),
+}
+GOWIN_UNWIRED = {'SPARE'}
+GSIDEBANDS = {
+    8:  ('PRSNT', 'PRSNT'),
+    9:  ('TCK', None),
+    11: (None, None),
+    12: (None, None),
+    26: (None, None),
+    27: (None, None),
+    29: ('TMS', None),
+    30: ('TDI', 'TDO'),
+}
+# connector net -> (J14 net, series resistor value)
+GOWIN_SB_SERIES = {
+    'G_SB_PRSNT_OUT': ('G_PRSNT_DRV', '1k'),
+    'G_SB_PRSNT_IN': ('G_PRSNT_RD', '1k'),
+    'G_SB_TCK_OUT': ('G_TCK_DRV', '330R'),
+    'G_SB_TMS_OUT': ('G_TMS_DRV', '330R'),
+    'G_SB_TDI_OUT': ('G_TDI_DRV', '330R'),
+    'G_SB_TDO_IN': ('G_TDO_RD', '330R'),
+}
+
+# What a lane MEANS on the wire, whichever end names it.  A driven lane must
+# arrive at a received lane with the same meaning.
+LANE_MEANING = {'FWDCLK': 'main clock', 'REVCLK': 'main clock',
+                'ADCD0': 'main data 0', 'TXD0': 'main data 0',
+                'ADCD1': 'main data 1', 'TXD1': 'main data 1',
+                'ADCD2': 'main data 2', 'TXD2': 'main data 2',
+                'AUXCLK': 'aux clock', 'AUXDAT': 'aux data',
+                'DUPCLK': 'duplicate main clock', 'SPARE': 'spare'}
+
+# The only sideband meeting allowed where the names differ.
+SB_ALLOWED = {
+    ('TDO', 'TDI'): 'radio to radio: TDO lands on TDI, which does nothing '
+                    'without TCK, and TCK and TMS are undriven',
+}
 
 
 def find_cli():
@@ -395,7 +512,8 @@ def check_enables(pins, vals, bynet, byref):
 def check_esd(pins, vals, bynet):
     print('=== ESD: every conductor that leaves the enclosure ===')
     prob = []
-    esd_refs = {r for r, v in vals.items() if v.startswith('TPD4E')}
+    esd_refs = {r for r, v in vals.items() if v.startswith('TPD4E')
+                and not gowin_part(r)}
     clamped = set()
     for nm, nodes in bynet.items():
         if nm == 'GND':
@@ -425,17 +543,242 @@ def check_esd(pins, vals, bynet):
 
 
 def check_one_design(vals, byref):
-    """The owner is explicit: ONE design.  Nothing may call itself board A or
-    board B, and there must be exactly one SlimSAS receptacle."""
+    """ONE design, with a radio end and a Gowin end on one panel.  Nothing
+    may call itself board A or board B, and there are exactly two SlimSAS
+    receptacles: J1 at the radio end and J101 at the Gowin end."""
     prob = []
     bad = [k for k, v in vals.items() if 'board A' in v or 'board B' in v]
     if bad:
         prob.append('these parts describe themselves as a board A or a board '
-                    'B, and rev D is one design: %s' % ', '.join(bad))
-    conn = [r for r, v in vals.items() if 'SlimSAS' in v]
-    if len(conn) != 1:
-        prob.append('found %d SlimSAS receptacles, expected exactly 1: %s'
-                    % (len(conn), ', '.join(conn)))
+                    'B, and this is one design: %s' % ', '.join(bad))
+    conn = sorted(r for r, v in vals.items() if 'SlimSAS' in v)
+    if conn != ['J1', 'J101']:
+        prob.append('SlimSAS receptacles found: %s; expected J1 at the radio '
+                    'end and J101 at the Gowin end' % ', '.join(conn))
+    return prob
+
+
+def gowin_part(ref):
+    """Gowin-end designators are numbered from 101."""
+    digits = ''.join(c for c in ref if c.isdigit())
+    return (bool(digits) and int(digits) >= 101
+            and not ref.startswith(('#', 'FID')))
+
+
+def gowin_header(pins):
+    print('=== J102 on Tang dock J14 positions 5-40 ===')
+    prob = []
+    for n in sorted(GOWIN_J14):
+        want = GOWIN_J14[n]
+        got = pins.get((GOWIN_HDR, str(n - J14_FIRST + 1)), '<open>')
+        ball, io, clk = J14_BALLS[n]
+        if got != want:
+            prob.append('J14 position %d = %s, PINMAP.md says %s'
+                        % (n, got, want))
+            continue
+        if want.endswith('_P') and not io.endswith('A'):
+            prob.append('J14 position %d carries a P leg on %s, not a Gowin '
+                        'true (A) pin' % (n, io))
+        if want.endswith('_N') and not io.endswith('B'):
+            prob.append('J14 position %d carries an N leg on %s, not a Gowin '
+                        'complement (B) pin' % (n, io))
+        print('  J14-%-2d %-14s %-5s %-8s %s' % (n, got, ball or '-', io, clk))
+    npins = len([1 for (r, _) in pins if r == GOWIN_HDR])
+    if npins != 36:
+        prob.append('J102 has %d pins; it must be a 2x18 covering J14 '
+                    'positions 5-40 and nothing at 1-4' % npins)
+    for net, what in GOWIN_CLOCKS.items():
+        for leg, tc in (('_P', 'T'), ('_N', 'C')):
+            n = [k for k, v in GOWIN_J14.items() if v == net + leg]
+            clk = J14_BALLS[n[0]][2] if n else ''
+            if 'GCLK%s' % tc not in clk:
+                prob.append('the %s %s leg is not on a dedicated clock input'
+                            % (what, leg))
+    print('  forwarded clock on U20/V20 (%s); duplicate on Y18/Y19 (%s); '
+          'J14 positions 1-4 not used' % (J14_BALLS[20][2], J14_BALLS[32][2]))
+    return prob
+
+
+def gowin_connector(pins, vals, bynet):
+    print('=== J101, the Gowin end SlimSAS: all 74 contacts ===')
+    prob = []
+    want = {}
+    for i in SS_GND:
+        want['A%d' % i] = 'G_GND'
+        want['B%d' % i] = 'G_GND'
+    for pos, (onet, inet) in GLANES.items():
+        want['A%d' % pos] = 'G_A_%s_P' % onet
+        want['A%d' % (pos + 1)] = 'G_A_%s_N' % onet
+        want['B%d' % pos] = 'G_B_%s_P' % inet
+        want['B%d' % (pos + 1)] = 'G_B_%s_N' % inet
+    for pos, (onet, inet) in GSIDEBANDS.items():
+        want['A%d' % pos] = (('G_SB_%s_OUT' % onet) if onet
+                             else 'G_SB_NC_A%d' % pos)
+        want['B%d' % pos] = (('G_SB_%s_IN' % inet) if inet
+                             else 'G_SB_NC_B%d' % pos)
+    for pad in sorted(want, key=lambda s_: (s_[0], int(s_[1:]))):
+        got = pins.get((GOWIN_REF, pad), '<open>')
+        if got != want[pad]:
+            prob.append('J101 pad %s = %s, expected %s'
+                        % (pad, got, want[pad]))
+    hdr_nets = set(GOWIN_J14.values())
+    for pos, (onet, inet) in GLANES.items():
+        for row, lane in (('A', onet), ('B', inet)):
+            for leg in ('_P', '_N'):
+                nm = 'G_%s_%s%s' % (row, lane, leg)
+                if lane in GOWIN_UNWIRED and nm in hdr_nets:
+                    prob.append('%s reaches J14 but is declared unwired' % nm)
+                if lane not in GOWIN_UNWIRED and nm not in hdr_nets:
+                    prob.append('%s does not reach J14' % nm)
+    for cnet, (hnet, val) in GOWIN_SB_SERIES.items():
+        rs = [r for (r, _) in bynet.get(cnet, []) if r.startswith('R')
+              and {pins.get((r, '1')), pins.get((r, '2'))} == {cnet, hnet}]
+        if len(rs) != 1 or vals.get(rs[0]) != val:
+            prob.append('%s should reach %s through one %s, found %s'
+                        % (cnet, hnet, val, rs))
+    pd = [r for (r, _) in bynet.get('G_TCK_DRV', []) if r.startswith('R')
+          and {pins.get((r, '1')), pins.get((r, '2'))} == {'G_TCK_DRV',
+                                                            'G_GND'}]
+    if not pd:
+        prob.append('G_TCK_DRV has no pull-down, so an unconfigured Gowin '
+                    'could send TCK edges to the radio')
+    else:
+        print('  TCK held LOW at this end by %s = %s until the gateware drives '
+              'it' % (pd[0], vals.get(pd[0])))
+    for pos in (9, 29):
+        nm = 'G_SB_NC_B%d' % pos
+        others = [r for (r, _) in bynet.get(nm, []) if r != GOWIN_REF
+                  and not (r.startswith('D') or r.startswith('TP'))]
+        if others:
+            prob.append('%s faces an undriven radio output but reaches %s'
+                        % (nm, others))
+    if not prob:
+        print('  26 grounds, 32 pair legs, 16 sidebands. 14 pairs run straight '
+              'to J14, the spare pair to test pads only; six sidebands each '
+              'through one series resistor; B9 and B29 unused')
+    return prob
+
+
+def gowin_esd(vals, bynet):
+    prob = []
+    esd = {r for r, v in vals.items()
+           if v.startswith('TPD4E') and gowin_part(r)}
+    clamped = {nm for nm, nodes in bynet.items()
+               if nm != 'G_GND' and any(r in esd for r, _ in nodes)}
+    need = []
+    for pos, (onet, inet) in GLANES.items():
+        need += ['G_A_%s_P' % onet, 'G_A_%s_N' % onet,
+                 'G_B_%s_P' % inet, 'G_B_%s_N' % inet]
+    for pos, (onet, inet) in GSIDEBANDS.items():
+        need.append(('G_SB_%s_OUT' % onet) if onet else 'G_SB_NC_A%d' % pos)
+        need.append(('G_SB_%s_IN' % inet) if inet else 'G_SB_NC_B%d' % pos)
+    miss = [n for n in need if n not in clamped]
+    if miss:
+        prob.append('Gowin end: %d conductors unclamped: %s'
+                    % (len(miss), ', '.join(miss)))
+    else:
+        print('=== Gowin end ESD: %d arrays clamp all %d conductors ==='
+              % (len(esd), len(need)))
+    return prob
+
+
+def separate(bynet):
+    """No net may touch both ends of the panel."""
+    prob = []
+    for nm, nodes in bynet.items():
+        if nm == '<open>':
+            continue
+        refs = {r for r, _ in nodes if not r.startswith('#')}
+        g = {r for r in refs if gowin_part(r)}
+        if g and g != refs:
+            prob.append('net %s touches both ends: %s' % (nm, sorted(refs)))
+        if g and not nm.startswith('G_') and nm != '<open>':
+            prob.append('Gowin-end net %s lacks the G_ prefix' % nm)
+    if not prob:
+        print('=== the radio end and the Gowin end share no net ===')
+    return prob
+
+
+def read_end(pins, ref, prefix):
+    """-> {pos: (row A net, row B net)} with the end prefix stripped."""
+    out = {}
+    for pos in range(1, SS_NPOS + 1):
+        a = pins.get((ref, 'A%d' % pos), '<open>')
+        b = pins.get((ref, 'B%d' % pos), '<open>')
+        if prefix:
+            a = a[len(prefix):] if a.startswith(prefix) else a
+            b = b[len(prefix):] if b.startswith(prefix) else b
+        out[pos] = (a, b)
+    return out
+
+
+def lane_of(net):
+    if net[:2] in ('A_', 'B_') and net[-2:] in ('_P', '_N'):
+        return net[2:-2], net[-1]
+    return None, None
+
+
+def sb_of(net):
+    """'SB_TCK_OUT' -> 'TCK'; an undriven or unused contact -> None."""
+    if not net.startswith('SB_') or net.startswith('SB_NC'):
+        return None
+    return net[3:].rsplit('_', 1)[0]
+
+
+def walk(pins, near, far):
+    """Walk every row A output at `near` through the A(n) -> B(n) cable to
+    row B at `far`.  near / far = (label, connector ref, net prefix,
+    lanes not wired at that end)."""
+    nl, nref, npre, nunw = near
+    fl, fref, fpre, funw = far
+    print('=== the crossover walked, %s end -> %s end ===' % (nl, fl))
+    prob = []
+    N = read_end(pins, nref, npre)
+    F = read_end(pins, fref, fpre)
+    for pos in SS_PAIR_POS:
+        for k in (0, 1):
+            dl, dp = lane_of(N[pos + k][0])
+            rl, rp = lane_of(F[pos + k][1])
+            if dl is None or rl is None:
+                prob.append('%s -> %s contact %d: %s meets %s'
+                            % (nl, fl, pos + k, N[pos + k][0], F[pos + k][1]))
+            elif dp != rp:
+                prob.append('%s -> %s contact %d: %s leg meets %s leg'
+                            % (nl, fl, pos + k, dp, rp))
+            elif LANE_MEANING[dl] != LANE_MEANING[rl]:
+                prob.append('%s -> %s contact %d: %s (%s) arrives at %s (%s)'
+                            % (nl, fl, pos + k, dl, LANE_MEANING[dl], rl,
+                               LANE_MEANING[rl]))
+        dl, _ = lane_of(N[pos][0])
+        rl, _ = lane_of(F[pos][1])
+        if dl and rl:
+            state = 'live'
+            if dl in nunw:
+                state = 'not wired at the %s end' % nl
+            elif rl in funw:
+                state = 'not wired at the %s end' % fl
+            print('  pair %-2d %-7s -> %-7s %-21s %s'
+                  % (pos, dl, rl, LANE_MEANING[dl], state))
+    for pos in SS_SIDEBAND:
+        d = sb_of(N[pos][0])
+        r = sb_of(F[pos][1])
+        if d and r and d != r:
+            if ((d, r) in SB_ALLOWED and sb_of(N[9][0]) is None
+                    and sb_of(N[29][0]) is None):
+                note = SB_ALLOWED[(d, r)]
+            else:
+                prob.append('%s -> %s sideband %d: %s arrives at %s'
+                            % (nl, fl, pos, d, r))
+                continue
+        elif d and r:
+            note = 'live'
+        elif d:
+            note = 'the far end does not listen here'
+        elif r:
+            note = 'nothing drives it; the far input idles at its pull'
+        else:
+            note = 'unused at both ends'
+        print('  sb   %-2d %-7s -> %-7s %s' % (pos, d or '-', r or '-', note))
     return prob
 
 
@@ -468,10 +811,25 @@ def main():
     prob += check_one_design(vals, byref)
 
     print()
+    print('################ the Gowin end ################')
+    prob += gowin_header(pins)
+    prob += gowin_connector(pins, vals, bynet)
+    prob += gowin_esd(vals, bynet)
+    prob += separate(bynet)
+    radio = ('radio', SLIMSAS_REF, '', set())
+    gowin = ('Gowin', GOWIN_REF, 'G_', GOWIN_UNWIRED)
+    prob += walk(pins, radio, gowin)
+    prob += walk(pins, gowin, radio)
+    prob += walk(pins, radio, radio)
+
+    print()
     for p in prob:
         print('  !! ' + p)
-    print('  %s' % ('OK - the three header pin maps match PINMAP.md rev D '
-                    'including the DB12 5/6 order, all 74 connector contacts '
+    print('  %s' % ('OK - the three radio-end header maps and the Gowin-end '
+                    'J14 map match PINMAP.md, including the DB12 5/6 order '
+                    'and both Gowin clock balls; the crossover walks clean '
+                    'radio to Gowin, Gowin to radio and radio to radio; '
+                    'all 74 connector contacts at the radio end '
                     'agree with the SFF-9402 tables and the lane map, the '
                     'crossover lands every output on the input that wants it, '
                     'no radio can reach another radio JTAG, both enables are '
