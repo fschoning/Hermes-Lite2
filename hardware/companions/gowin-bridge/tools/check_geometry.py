@@ -21,13 +21,22 @@ Reads the board back and checks, independently of KiCad:
     mated plug's fit inside the extrusion is restated with the numbers;
  6. the M3 anchor and the locating peg line up with HL2 MH2 and MH6;
  7. exactly the mechanically fixed parts are locked, each at its documented
-    position (J1-J5, J101, J102, FID1-FID3, the MH6 hole, the U-notch, the
-    jumper window);
- 8. once parts are placed: the placement rules Quilter cannot read or can
+    position (J1-J5, J101, J102, FID1-FID3, the MH6 hole, the mouse-bite
+    holes, the U-notch);
+ 8. the three cut-outs over the radio's FPGA U2, AD9866 U7 and transformer
+    T2: each package outline is read here from hardware/hl/hermeslite.kicad_pcb,
+    grown by the stated margin, and every point of that rounded rectangle
+    must be off the board; nothing - pad, courtyard, track or via - within
+    1 mm of a hole, and no pair track within 2 mm; the DB6 jumper header,
+    also read from the HL2 file, wholly inside its window with margin;
+ 9. the two ends joined only by the three mouse-bite tabs, no part within
+    5 mm of any break line, and the milling path under JLCPCB's routing-fee
+    threshold;
+10. once parts are placed: the placement rules Quilter cannot read or can
     only be asked for - ESD arrays and terminations within 5 mm, decoupling
-    capacitors at their pins, HL2 header nets under 25 mm, one side only, no
-    part within 5 mm of the score - and, once routed, pairs on the top layer
-    only and the length-matched groups within 2.5 mm.
+    capacitors at their pins, HL2 header nets under 25 mm, one side only,
+    every SMD capacitor parallel to the break lines - and, once routed, pairs
+    on the top layer only and the length-matched groups within 2.5 mm.
 
 This exists because the placement is generated, not drawn, so it needs a test.
 KiCad's own DRC is still the authority on manufacturability; this catches the
@@ -64,20 +73,41 @@ HL2_ORIGIN = (70.00, 73.30)
 # ---------------------------------------------------------------- the panel
 # Retyped from the generator's panel block, so that a change there has to be
 # made here too.  Panel (0,0) is page (40, 40).  Both ends unrotated, both
-# connectors on the panel's left edge.
+# connectors on the panel's left edge: the radio end on top, a 2 mm slot
+# bridged by three mouse-bite tabs, the Gowin end below.
 RADIO_W, RADIO_H = 64.50, 64.95        # local frame: HL2 y 73.30..138.25
 RADIO_TRIM = 0.07                       # outline starts at local y 0.07
 GOWIN_W, GOWIN_H = 64.50, 25.12
-RAIL = 0.00                              # no assembly rails any more
+RAIL = 0.00                              # no assembly rails
 PANEL_W = RADIO_W                        # 64.50
-RADIO_Y0 = RAIL + GOWIN_H - RADIO_TRIM   # 25.05, radio local (0,0)
-PANEL_H = RADIO_Y0 + RADIO_H + RAIL      # 90.00
+RADIO_Y0 = RAIL - RADIO_TRIM             # -0.07, radio local (0,0)
+RADIO_BOTTOM = RADIO_Y0 + RADIO_H        # 64.88
+SLOT_W = 2.00
+GOWIN_Y0 = RADIO_BOTTOM + SLOT_W         # 66.88, Gowin local (0,0)
+PANEL_H = GOWIN_Y0 + GOWIN_H + RAIL      # 92.00
 PANEL_MAX = 100.00                       # JLCPCB promotional size band
-GOWIN_BOX = (0.0, RAIL, GOWIN_W, RAIL + GOWIN_H)
-RADIO_BOX = (0.0, RADIO_Y0 + RADIO_TRIM, RADIO_W, RADIO_Y0 + RADIO_H)
+GOWIN_BOX = (0.0, GOWIN_Y0, GOWIN_W, GOWIN_Y0 + GOWIN_H)
+RADIO_BOX = (0.0, 0.0, RADIO_W, RADIO_BOTTOM)
 RADIO_FRAME = (0.0, RADIO_Y0, RADIO_W, RADIO_Y0 + RADIO_H)
-VSCORES_Y = (RAIL + GOWIN_H,)            # 25.12, where the two ends meet
-SCORE_PART_CLEAR = 5.0                   # no unlocked part within 5 mm
+# The tabs: centres, width in the slot, slot corner radius, the mouse bites.
+TAB_X = (29.60, 40.60, 51.60)
+TAB_W, TAB_R = 5.00, 1.00
+BITE_D, BITE_N, BITE_SPAN = 0.50, 8, 3.00
+BITE_INSET = BITE_D / 2.0
+BREAK_HALF = TAB_W / 2.0 + TAB_R         # the tab is 7 mm wide at the edge
+BREAK_LINES = [(c - BREAK_HALF, c + BREAK_HALF, y) for c in TAB_X
+               for y in (RADIO_BOTTOM - BITE_INSET, GOWIN_Y0 + BITE_INSET)]
+BREAK_PART_CLEAR = 5.0                   # no part within 5 mm of a break line
+ROUTING_FEE_LIMIT = 120.0                # m of >1 mm milling per m2 of board
+
+# The cut-outs over the radio, DESIGN_NOTES.md section 13.1.  The package
+# outlines are NOT retyped: hl2_package() reads them out of the HL2 board.
+HOLE_MARGIN = 1.5        # each side, beyond the package outline incl. leads
+HOLE_R = 1.0             # corner radius
+HOLE_KEEP = 1.0          # nothing within this of a hole edge
+PAIR_HOLE_KEEP = 2.0     # no pair track within this of a hole edge
+HOLES = (('FPGA', 'U2'), ('ADC', 'U7'), ('T2', 'T2'))
+WINDOW_REACH = 2.5       # DB6 clear of the window edge by this all round
 
 # The parts whose position is set by the radio, the dock, the case or the
 # board itself, and nothing else.  Panel coordinates of the footprint origin.
@@ -89,21 +119,26 @@ LOCKED = {
     'J3': (13.50, RADIO_Y0 + 14.16),           # DB12 pin 1, HL2 (83.50, 87.46)
     'J4': (58.23, RADIO_Y0 + 8.92),            # CN1 pin 1, HL2 (128.23, 82.22)
     'J5': (56.00, RADIO_Y0 + 24.50),           # ROUTING.md section 5
-    'J101': (89.43 + 10.40 - 89.43, 53.73 - 41.17),   # face dock x 89.73
-    'J102': (103.70 + 2 * 2.54 - 89.43, 63.84 - 41.17),  # J14 position 5
+    'J101': (89.43 + 10.40 - 89.43, GOWIN_Y0 + 53.73 - 41.17),  # dock x 89.73
+    'J102': (103.70 + 2 * 2.54 - 89.43, GOWIN_Y0 + 63.84 - 41.17),  # J14 pos 5
     'MB1': (4.04, RADIO_Y0 + 2.12),            # HL2 MH6 (74.04, 75.42)
-    'FID1': (56.50, 14.00),
+    'FID1': (56.50, GOWIN_Y0 + 14.00),
     'FID2': (62.50, RADIO_Y0 + 62.50),
     'FID3': (8.50, RADIO_Y0 + 62.50),
 }
+# The mouse-bite holes, MB2 onward (MB1 is the MH6 locating hole), in the
+# order the generator emits them: tab by tab, radio row then Gowin row.
+_k = 2
+for _c in TAB_X:
+    for _y in (RADIO_BOTTOM - BITE_INSET, GOWIN_Y0 + BITE_INSET):
+        for _i in range(BITE_N):
+            LOCKED['MB%d' % _k] = (
+                round(_c - BITE_SPAN + _i * 2 * BITE_SPAN / (BITE_N - 1), 3),
+                round(_y, 3))
+            _k += 1
 # Board-edge features, panel coordinates: the M3 U-notch round HL2 MH2
-# (73.00, 137.00) and the DB6/DB3 jumper window.
-NOTCH = (3.00 - 1.70, PANEL_H - 3.00, 3.00 + 1.70)       # x0, y top, x1
-WINDOW = (44.50, RADIO_Y0 + 39.50, 57.00, RADIO_Y0 + 50.00)
-# HL2 DB6 and DB3, the configuration jumpers the window keeps reachable
-# (HL2_MECHANICAL_ENVELOPE.md section 4.2), in panel coordinates.
-DB6_HL2 = (115.80, 117.80, 120.70, 123.80)
-DB3_HL2 = (123.33, 114.39, 125.87, 122.01)
+# (73.00, 137.00), open into the slot.
+NOTCH = (3.00 - 1.70, RADIO_BOTTOM - 3.00, 3.00 + 1.70)  # x0, y top, x1
 
 
 # The Tang Mega 138K dock, from Sipeed's interactive BOM for dock 31004
@@ -119,7 +154,7 @@ BODY_FRONT = 10.10                # datum line to mating face, generator value
 
 
 def dock_to_panel(dx, dy):
-    return (dx - DOCK_ORIGIN[0], dy - DOCK_ORIGIN[1] + RAIL)
+    return (dx - DOCK_ORIGIN[0], dy - DOCK_ORIGIN[1] + GOWIN_Y0)
 
 
 def j14_grid():
@@ -272,6 +307,7 @@ def load(path):
     fps = []
     edges = []
     tracks = []
+    vias = []
     codes = {}
     for node in root[1:]:
         if not isinstance(node, list):
@@ -298,13 +334,25 @@ def load(path):
             tracks.append((net, lay, ln,
                            (float(s0[0]), float(s0[1])),
                            (float(e0[0]), float(e0[1]))))
-        elif h == 'gr_line':
+        elif h == 'via':
+            a = K.atoms(K.kid(node, 'at'))
+            sz = K.atoms(K.kid(node, 'size'))
+            nn = K.kid(node, 'net')
+            vias.append((K.atoms(nn)[-1] if nn is not None else '',
+                         float(a[0]), float(a[1]), float(sz[0]) / 2.0))
+        elif h in ('gr_line', 'gr_arc'):
             lay = K.kid(node, 'layer')
             if lay is not None and K.atoms(lay)[0] == 'Edge.Cuts':
                 s = K.atoms(K.kid(node, 'start'))
                 e = K.atoms(K.kid(node, 'end'))
-                edges.append(((float(s[0]), float(s[1])),
-                              (float(e[0]), float(e[1]))))
+                a0 = (float(s[0]), float(s[1]))
+                a1 = (float(e[0]), float(e[1]))
+                if h == 'gr_line':
+                    edges.append([a0, a1])
+                else:
+                    m = K.atoms(K.kid(node, 'mid'))
+                    edges.append(arc_points(a0, (float(m[0]), float(m[1])),
+                                            a1))
         elif h == 'footprint':
             f = FP()
             a = K.atoms(K.kid(node, 'at'))
@@ -361,7 +409,52 @@ def load(path):
     load.edges = edges
     load.tracks = [(codes.get(n, n), l_, ln, a, b) for (n, l_, ln, a, b)
                    in tracks]
+    load.vias = [(codes.get(n, n), x, y, r) for (n, x, y, r) in vias]
+    load.loops = edge_loops(edges)
     return fps, box
+
+
+def arc_points(a, m, b, n=12):
+    """A three-point arc -> a polyline of n segments from a to b."""
+    ax, ay = a
+    bx, by = b
+    mx, my = m
+    d = 2 * (ax * (my - by) + mx * (by - ay) + bx * (ay - my))
+    ux = ((ax * ax + ay * ay) * (my - by) + (mx * mx + my * my) * (by - ay)
+          + (bx * bx + by * by) * (ay - my)) / d
+    uy = ((ax * ax + ay * ay) * (bx - mx) + (mx * mx + my * my) * (ax - bx)
+          + (bx * bx + by * by) * (mx - ax)) / d
+    r = math.hypot(ax - ux, ay - uy)
+    t0 = math.atan2(ay - uy, ax - ux)
+    tm = math.atan2(my - uy, mx - ux)
+    t1 = math.atan2(by - uy, bx - ux)
+    # sweep from t0 through tm to t1
+    sweep = (t1 - t0) % (2 * math.pi)
+    if (tm - t0) % (2 * math.pi) > sweep:
+        sweep -= 2 * math.pi
+    pts = [(ux + r * math.cos(t0 + sweep * i / n),
+            uy + r * math.sin(t0 + sweep * i / n)) for i in range(n + 1)]
+    pts[0], pts[-1] = a, b
+    return pts
+
+
+def on_board(x, y):
+    """Even-odd rule over every Edge.Cuts loop: True if (x, y), in page
+    coordinates, is board material."""
+    inside = False
+    for lp in load.loops or []:
+        n = len(lp)
+        for i in range(n):
+            x1, y1 = lp[i - 1]
+            x2, y2 = lp[i]
+            if (y1 > y) != (y2 > y) and                     x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+                inside = not inside
+    return inside
+
+
+def loop_length(lp):
+    return sum(math.hypot(lp[i][0] - lp[i - 1][0], lp[i][1] - lp[i - 1][1])
+               for i in range(len(lp)))
 
 
 def in_board(ref):
@@ -536,34 +629,32 @@ def edge_loops(edges):
     """Chain Edge.Cuts segments into closed loops.  -> list of point lists,
     or None if any segment does not close."""
     key = lambda pt: (round(pt[0], 3), round(pt[1], 3))
-    segs = [(key(a), key(b)) for a, b in edges]
+    segs = [[key(p_) for p_ in e] for e in edges]
     loops = []
     while segs:
-        a, b = segs.pop(0)
-        pts = [a, b]
+        pts = segs.pop(0)
         while pts[-1] != pts[0]:
             nxt = None
-            for i, (c, d) in enumerate(segs):
-                if c == pts[-1]:
-                    nxt = (i, d)
+            for i, e in enumerate(segs):
+                if e[0] == pts[-1]:
+                    nxt = (i, e[1:])
                     break
-                if d == pts[-1]:
-                    nxt = (i, c)
+                if e[-1] == pts[-1]:
+                    nxt = (i, e[::-1][1:])
                     break
             if nxt is None:
                 return None
             segs.pop(nxt[0])
-            pts.append(nxt[1])
+            pts += nxt[1]
         loops.append(pts[:-1])
     return loops
 
 
 def check_one_outline():
-    """ONE board: exactly one closed outer Edge.Cuts loop, enclosing both
-    ends, and every other loop an internal cut-out strictly inside it.  Two
-    side-by-side outlines would fail here."""
+    """ONE board: exactly one closed outer Edge.Cuts loop spanning the whole
+    board, and every other loop an internal cut-out strictly inside it."""
     prob = []
-    loops = edge_loops(load.edges)
+    loops = load.loops
     if loops is None:
         return ['Edge.Cuts does not close into loops']
     boxes = [(min(p[0] for p in lp), min(p[1] for p in lp),
@@ -578,60 +669,281 @@ def check_one_outline():
     for i, bx in enumerate(boxes):
         if i == outer[0]:
             continue
-        # a cut-out may touch a rail but must lie inside the outer loop and
-        # must not itself separate an end from the rest
         if not (bx[0] > full[0] + 0.01 and bx[2] < full[2] - 0.01
                 and bx[1] > full[1] + 0.01 and bx[3] < full[3] - 0.01):
             prob.append('Edge.Cuts loop %d at %s is not inside the outer '
                         'outline, so the file holds more than one board'
                         % (i, bx))
-        if bx[2] - bx[0] > PANEL_W - 1.0:
-            prob.append('internal cut %d spans the full width, so it would '
-                        'split the board into separate outlines' % i)
-    for vy in VSCORES_Y:
-        ay = PAGE[1] + vy
-        for (a, b) in load.edges:
-            if abs(a[1] - ay) < 0.01 and abs(b[1] - ay) < 0.01 and \
-                    abs(a[0] - b[0]) > PANEL_W - 1.0:
-                prob.append('an Edge.Cuts line runs along the y = %.2f score '
-                            'edge to edge, which would split the board in two' % vy)
     if not prob:
         print('   ONE board: a single continuous outline %.2f x %.2f mm '
-              'round both ends, no rails, plus %d internal cut-out; the '
-              'ends are joined only across the V-score'
-              % (PANEL_W, PANEL_H, len(loops) - 1))
+              'round both ends, no rails, plus %d internal cut-outs (the '
+              'slot between the tabs, and the one over the radio AD9866, T2 '
+              'and jumper DB6)' % (PANEL_W, PANEL_H, len(loops) - 1))
     return prob
 
 
+def seg_rect_gap(x0, x1, y, r):
+    """Distance from the horizontal segment x0..x1 at y to rectangle r."""
+    dx = max(0.0, r[0] - x1, x0 - r[2])
+    dy = max(0.0, r[1] - y, y - r[3])
+    return math.hypot(dx, dy)
+
+
+def part_extent(f):
+    """Courtyard where there is one, and the pads either way."""
+    xs = [p[1] - p[3] for p in f.pads] + [p[1] + p[3] for p in f.pads]
+    ys = [p[2] - p[4] for p in f.pads] + [p[2] + p[4] for p in f.pads]
+    boxes = []
+    if xs:
+        boxes.append((min(xs), min(ys), max(xs), max(ys)))
+    if f.crt is not None:
+        boxes.append(f.crt)
+    return boxes
+
+
 def check_panel(fps):
-    """The score runs edge to edge; no copper within the edge margin of it,
-    and no unlocked part within 5 mm of it."""
+    """The two ends are joined only through the tabs; no part within 5 mm of
+    any break line; the milling path is under the routing-fee threshold."""
     prob = check_one_outline()
-    for f in check.placed:
-        if f.crt is None:
-            continue
-        for vy in VSCORES_Y:
-            ay = PAGE[1] + vy
-            gap = max(f.crt[1] - ay, ay - f.crt[3])
-            if gap < SCORE_PART_CLEAR:
-                prob.append('%s is %.2f mm from the y = %.2f score; unlocked '
-                            'parts must stay %.1f mm away'
-                            % (f.ref, max(gap, 0.0), vy, SCORE_PART_CLEAR))
+    if load.loops is None:
+        return prob
+    # 1. across the middle of the slot, board material only inside the tabs
+    ym = PAGE[1] + RADIO_BOTTOM + SLOT_W / 2.0
+    bad = []
+    x = 0.05
+    while x < PANEL_W:
+        mat = on_board(PAGE[0] + x, ym)
+        want = any(abs(x - c) < TAB_W / 2.0 for c in TAB_X)
+        edge = any(abs(abs(x - c) - TAB_W / 2.0) <= 0.06 for c in TAB_X)
+        if mat != want and not edge:
+            bad.append(x)
+        x += 0.1
+    if bad:
+        prob.append('across the slot at y %.2f the board is not solid exactly '
+                    'at the tabs (first disagreement at x %.2f)'
+                    % (ym - PAGE[1], bad[0]))
+    # the two ends' facing edges are free edges away from the tabs
+    for yy, nm in ((RADIO_BOTTOM + 0.3, 'below the radio end'),
+                   (GOWIN_Y0 - 0.3, 'above the Gowin end')):
+        for xx in (10.0, 35.1, 46.1, 60.0):
+            if on_board(PAGE[0] + xx, PAGE[1] + yy):
+                prob.append('board material %s at x %.1f, outside a tab'
+                            % (nm, xx))
+    print('   the ends joined only by %d tabs, %.1f mm wide, at x %s, across '
+          'a %.2f mm slot; %d mouse bites of %.2f mm per edge, %.2f mm '
+          'inside it'
+          % (len(TAB_X), TAB_W, ', '.join('%.2f' % c for c in TAB_X), SLOT_W,
+             BITE_N, BITE_D, BITE_INSET))
+    # 2. no part within BREAK_PART_CLEAR of a break line
+    worst = (1e9, '')
     for f in fps:
-        if f in check.staged:
+        if f.ref.startswith('MB') or f in check.staged:
             continue
-        for (num, px, py, hx, hy, net) in f.pads:
-            y = py - PAGE[1]
-            for vy in VSCORES_Y:
-                if abs(y - vy) < hy + EDGE_MARGIN:
-                    prob.append('%s.%s is within %.2f mm of the y = %.2f '
-                                'V-score' % (f.ref, num, EDGE_MARGIN, vy))
-    print('   V-scores at y = %s, each from x 0 to %.2f; panel %.2f x %.2f mm'
-          % (', '.join('%.2f' % v for v in VSCORES_Y), PANEL_W, PANEL_W,
-             PANEL_H))
+        for bx in part_extent(f):
+            r = (bx[0] - PAGE[0], bx[1] - PAGE[1], bx[2] - PAGE[0],
+                 bx[3] - PAGE[1])
+            for (x0, x1, y) in BREAK_LINES:
+                g = seg_rect_gap(x0, x1, y, r)
+                if g < worst[0]:
+                    worst = (g, f.ref)
+                if g < BREAK_PART_CLEAR - 1e-6:
+                    prob.append('%s is %.2f mm from the break line at x '
+                                '%.2f..%.2f, y %.2f; the limit is %.1f mm'
+                                % (f.ref, g, x0, x1, y, BREAK_PART_CLEAR))
+    print('   nearest part to a break line: %s at %.2f mm (limit %.1f)'
+          % (worst[1], worst[0], BREAK_PART_CLEAR))
+    # 3. milling path
+    path = sum(loop_length(lp) for lp in load.loops) / 1000.0
+    area = PANEL_W * PANEL_H / 1e6
+    print('   milling path %.3f m on a %.4f m2 board = %.0f m per m2 (JLCPCB '
+          'routing fee from %.0f m per m2)'
+          % (path, area, path / area, ROUTING_FEE_LIMIT))
+    if path / area >= ROUTING_FEE_LIMIT:
+        prob.append('milling path %.0f m per m2 reaches the routing fee'
+                    % (path / area))
     if PANEL_W > PANEL_MAX + 1e-6 or PANEL_H > PANEL_MAX + 1e-6:
         prob.append('the board is %.2f x %.2f mm, outside the 100 x 100 mm '
                     'promotional size band' % (PANEL_W, PANEL_H))
+    return prob
+
+
+# ------------------------------------------------------------ the cut-outs
+HL2_PCB = os.path.normpath(os.path.join(ROOT, '..', '..', 'hl',
+                                        'hermeslite.kicad_pcb'))
+
+
+def hl2_package(ref):
+    """(x0, y0, x1, y1) HL2 coordinates of a part's outline: the union of its
+    pads and its silkscreen and fab graphics, read from the HL2 board file.
+    KiCad 5: pad positions turn with the module, pad angles are absolute."""
+    if not hasattr(hl2_package, 'mods'):
+        root = K.parse(open(HL2_PCB, encoding='utf-8').read())[0]
+        hl2_package.mods = {}
+        for m in K.kids(root, 'module'):
+            for t in K.kids(m, 'fp_text'):
+                a = K.atoms(t)
+                if a and a[0] == 'reference':
+                    hl2_package.mods[a[1]] = m
+    m = hl2_package.mods[ref]
+    at = K.atoms(K.kid(m, 'at'))
+    mx, my = float(at[0]), float(at[1])
+    mr = float(at[2]) if len(at) > 2 else 0.0
+    xs, ys = [], []
+    for pd in K.kids(m, 'pad'):
+        pa = K.atoms(K.kid(pd, 'at'))
+        sz = K.atoms(K.kid(pd, 'size'))
+        px, py = float(pa[0]), float(pa[1])
+        pr = float(pa[2]) if len(pa) > 2 else 0.0
+        hx, hy = float(sz[0]) / 2, float(sz[1]) / 2
+        ax, ay = rot(px, py, mr)
+        for cx, cy in ((-hx, -hy), (hx, -hy), (hx, hy), (-hx, hy)):
+            ox, oy = rot(cx, cy, pr)
+            xs.append(mx + ax + ox)
+            ys.append(my + ay + oy)
+    for g in K.kids(m, 'fp_line'):
+        lay = K.atoms(K.kid(g, 'layer'))[0]
+        if lay not in ('F.SilkS', 'F.Fab'):
+            continue
+        for key in ('start', 'end'):
+            a = K.atoms(K.kid(g, key))
+            ax, ay = rot(float(a[0]), float(a[1]), mr)
+            xs.append(mx + ax)
+            ys.append(my + ay)
+    return (min(xs), min(ys), max(xs), max(ys))
+
+
+def hl2_to_panel(x, y):
+    return (x - HL2_ORIGIN[0], y - HL2_ORIGIN[1] + RADIO_Y0)
+
+
+def hl2_rect(ref):
+    x0, y0, x1, y1 = hl2_package(ref)
+    a = hl2_to_panel(x0, y0)
+    b = hl2_to_panel(x1, y1)
+    return (a[0], a[1], b[0], b[1])
+
+
+def in_rounded(x, y, r, rad):
+    """Is (x, y) inside rectangle r with corner radius rad?"""
+    if not (r[0] <= x <= r[2] and r[1] <= y <= r[3]):
+        return False
+    cx = min(max(x, r[0] + rad), r[2] - rad)
+    cy = min(max(y, r[1] + rad), r[3] - rad)
+    return math.hypot(x - cx, y - cy) <= rad + 1e-9
+
+
+EPS = 0.02      # boundary tolerance: points on an edge, arcs as chords
+
+
+def shrink(r, d=EPS):
+    return (r[0] + d, r[1] + d, r[2] - d, r[3] - d)
+
+
+def sample_rect(r, step=0.2):
+    n = max(1, int(round((r[2] - r[0]) / step)))
+    m = max(1, int(round((r[3] - r[1]) / step)))
+    for i in range(n + 1):
+        for j in range(m + 1):
+            yield (r[0] + (r[2] - r[0]) * i / n, r[1] + (r[3] - r[1]) * j / m)
+
+
+def check_holes(fps):
+    prob = []
+    if load.loops is None:
+        return prob
+    rects = []
+    for nm, ref in HOLES:
+        pk = hl2_rect(ref)
+        rects.append((nm, ref, pk, (pk[0] - HOLE_MARGIN, pk[1] - HOLE_MARGIN,
+                                    pk[2] + HOLE_MARGIN, pk[3] + HOLE_MARGIN)))
+    db6 = hl2_rect('DB6')
+    win = (db6[0] - WINDOW_REACH, db6[1] - WINDOW_REACH,
+           db6[2] + WINDOW_REACH, db6[3] + WINDOW_REACH)
+    # 1. each hole at its position, at least its stated size
+    for nm, ref, pk, cl in rects:
+        hits = [pt for pt in sample_rect(shrink(cl), 0.1)
+                if in_rounded(pt[0], pt[1], shrink(cl), HOLE_R)
+                and on_board(PAGE[0] + pt[0], PAGE[1] + pt[1])]
+        print('   hole over HL2 %s (%s): package outline %.2f x %.2f mm read '
+              'from the HL2 board, clear %.2f x %.2f mm at panel x '
+              '%.2f..%.2f, y %.2f..%.2f, corners R%.1f: %s'
+              % (ref, nm, pk[2] - pk[0], pk[3] - pk[1], cl[2] - cl[0],
+                 cl[3] - cl[1], cl[0], cl[2], cl[1], cl[3], HOLE_R,
+                 'clear' if not hits else '%d points are board' % len(hits)))
+        if hits:
+            prob.append('the hole over HL2 %s is not clear: board material at '
+                        'panel (%.2f, %.2f)' % (ref, hits[0][0], hits[0][1]))
+    # 2. DB6 inside its window with margin
+    hits = [pt for pt in sample_rect(shrink(win), 0.1)
+            if on_board(PAGE[0] + pt[0], PAGE[1] + pt[1])]
+    print('   DB6 outline x %.2f..%.2f, y %.2f..%.2f: %s'
+          % (db6[0], db6[2], db6[1], db6[3],
+             'inside the window with %.1f mm clear all round' % WINDOW_REACH
+             if not hits else 'NOT inside the window'))
+    if hits:
+        prob.append('DB6 plus %.1f mm is not wholly inside the window (board '
+                    'at panel (%.2f, %.2f))' % (WINDOW_REACH, hits[0][0],
+                                                hits[0][1]))
+    db3 = hl2_rect('DB3')
+    pts = list(sample_rect(db3))
+    cov = sum(1 for pt in pts if on_board(PAGE[0] + pt[0], PAGE[1] + pt[1]))
+    print('      DB3 (reported, not checked) x %.2f..%.2f, y %.2f..%.2f: '
+          '%.0f %% of it under the board; that end is under locked J5'
+          % (db3[0], db3[2], db3[1], db3[3], 100.0 * cov / len(pts)))
+    # 3. nothing within HOLE_KEEP of a hole.  "In a hole" = off the board and
+    # inside the extent of a cut-out, so the outer edges do not count.
+    ext = [(r[3][0] - 3, r[3][1] - 3, r[3][2] + 3, r[3][3] + 3)
+           for r in rects] + [(win[0] - 3, win[1] - 3, win[2] + 3, win[3] + 3)]
+
+    def in_hole(x, y):
+        if not any(e[0] <= x <= e[2] and e[1] <= y <= e[3] for e in ext):
+            return False
+        return not on_board(PAGE[0] + x, PAGE[1] + y)
+
+    def breach(bx, keep):
+        g = (bx[0] - keep, bx[1] - keep, bx[2] + keep, bx[3] + keep)
+        if not any(g[0] <= e[2] and g[2] >= e[0] and g[1] <= e[3]
+                   and g[3] >= e[1] for e in ext):
+            return None
+        for pt in sample_rect(shrink(g), 0.25):
+            if in_hole(*pt):
+                return pt
+        return None
+    n_items = 0
+    for f in fps:
+        if f in check.staged or f.ref.startswith('MB'):
+            continue
+        n_items += 1
+        for bx in part_extent(f):
+            r = (bx[0] - PAGE[0], bx[1] - PAGE[1], bx[2] - PAGE[0],
+                 bx[3] - PAGE[1])
+            pt = breach(r, HOLE_KEEP)
+            if pt:
+                prob.append('%s is within %.1f mm of a cut-out (at panel '
+                            '(%.2f, %.2f))' % (f.ref, HOLE_KEEP, pt[0], pt[1]))
+                break
+    for (n, lay, ln, a_, b_) in load.tracks:
+        pair = n.endswith(('_P', '_N')) and n.startswith(('A_', 'B_', 'G_A_',
+                                                         'G_B_'))
+        keep = PAIR_HOLE_KEEP if pair else HOLE_KEEP
+        steps = max(1, int(ln / 0.5))
+        n_items += 1
+        for i in range(steps + 1):
+            x = a_[0] + (b_[0] - a_[0]) * i / steps - PAGE[0]
+            y = a_[1] + (b_[1] - a_[1]) * i / steps - PAGE[1]
+            if breach((x, y, x, y), keep):
+                prob.append('track on %s (%s) within %.1f mm of a cut-out at '
+                            'panel (%.2f, %.2f)' % (n, lay, keep, x, y))
+                break
+    for (n, x, y, r) in load.vias:
+        x, y = x - PAGE[0], y - PAGE[1]
+        n_items += 1
+        if breach((x - r, y - r, x + r, y + r), HOLE_KEEP):
+            prob.append('via on %s within %.1f mm of a cut-out at panel '
+                        '(%.2f, %.2f)' % (n, HOLE_KEEP, x, y))
+    print('   nothing within %.1f mm of a cut-out and no pair track within '
+          '%.1f mm: %d parts, tracks and vias on the board checked'
+          % (HOLE_KEEP, PAIR_HOLE_KEEP, n_items))
     return prob
 
 
@@ -704,38 +1016,29 @@ def check_locked(fps):
     if extra:
         prob.append('locked but not mechanically fixed, so Quilter would '
                     'never move them: %s' % ', '.join(extra))
-    # the U-notch and the window, from the Edge.Cuts segments
-    segs = [((round(a[0] - PAGE[0], 3), round(a[1] - PAGE[1], 3)),
-             (round(b[0] - PAGE[0], 3), round(b[1] - PAGE[1], 3)))
-            for a, b in load.edges]
+    # the U-notch, from the Edge.Cuts segments; it opens into the slot
+    segs = [((round(e[0][0] - PAGE[0], 3), round(e[0][1] - PAGE[1], 3)),
+             (round(e[-1][0] - PAGE[0], 3), round(e[-1][1] - PAGE[1], 3)))
+            for e in load.edges if len(e) == 2]
 
     def has(x0, y0, x1, y1):
-        return any({a, b} == {(x0, y0), (x1, y1)} for a, b in segs)
+        k = lambda v: round(v, 3)
+        return any({a, b} == {(k(x0), k(y0)), (k(x1), k(y1))}
+                   for a, b in segs)
 
     nx0, ny, nx1 = NOTCH
-    if not (has(nx0, ny, nx1, ny) and has(nx0, ny, nx0, PANEL_H)
-            and has(nx1, ny, nx1, PANEL_H)):
+    rb = round(RADIO_BOTTOM, 3)
+    if not (has(nx0, ny, nx1, ny) and has(nx0, ny, nx0, rb)
+            and has(nx1, ny, nx1, rb)):
         prob.append('the M3 U-notch is not at x %.2f..%.2f from y %.2f to the '
-                    'edge' % (nx0, nx1, ny))
-    wx0, wy0, wx1, wy1 = WINDOW
-    if not (has(wx0, wy0, wx1, wy0) and has(wx1, wy0, wx1, wy1)
-            and has(wx1, wy1, wx0, wy1) and has(wx0, wy1, wx0, wy0)):
-        prob.append('the jumper window is not at x %.2f..%.2f, y %.2f..%.2f'
-                    % WINDOW)
+                    'radio end edge' % (nx0, nx1, ny))
     if not prob:
-        print('   locked, and each at its documented position: %s'
-              % ', '.join(sorted(LOCKED)))
-        print('   U-notch and jumper window in place; nothing else locked')
-    # the window against the jumpers it is for, reported, not failed
-    for nm, (hx0, hy0, hx1, hy1) in (('DB6', DB6_HL2), ('DB3', DB3_HL2)):
-        x0, y0 = hx0 - HL2_ORIGIN[0], hy0 - HL2_ORIGIN[1] + RADIO_Y0
-        x1, y1 = hx1 - HL2_ORIGIN[0], hy1 - HL2_ORIGIN[1] + RADIO_Y0
-        over = max(0.0, wx0 - x0) + max(0.0, x1 - wx1) + \
-            max(0.0, wy0 - y0) + max(0.0, y1 - wy1)
-        print('      %s body x %.2f..%.2f, y %.2f..%.2f: %s'
-              % (nm, x0, x1, y0, y1,
-                 'inside the window' if over == 0 else
-                 'extends %.2f mm past the window edge' % over))
+        print('   locked, and each at its documented position: %s, and the '
+              '%d mouse-bite holes MB2-MB%d'
+              % (', '.join(sorted(r for r in LOCKED
+                                  if not (r.startswith('MB') and r != 'MB1'))),
+                 len(LOCKED) - 11, len(LOCKED) - 10))
+        print('   U-notch in place; nothing else locked')
     return prob
 
 
@@ -789,6 +1092,16 @@ def check_rules(fps):
     for f in check.placed:
         if f.layer != 'F.Cu':
             prob.append('%s was placed on the bottom side' % f.ref)
+    # every SMD capacitor with its long axis parallel to the break lines,
+    # which run along x: the 0402 and 0805 footprints have their pads along
+    # x at 0 degrees, so 0 or 180
+    caps = [f for f in check.placed if f.ref.startswith('C') and not f.tht]
+    for f in caps:
+        if round(f.r) % 180 != 0:
+            prob.append('capacitor %s is at %g degrees; turn it to 0 or 180 so '
+                        'it lies parallel to the break lines' % (f.ref, f.r))
+    print('   SMD capacitors parallel to the break lines: %d of %d'
+          % (sum(1 for f in caps if round(f.r) % 180 == 0), len(caps)))
     # ESD arrays within 5 mm of the contacts they clamp
     worst = 0.0
     for f in check.placed:
@@ -926,8 +1239,10 @@ def main():
     prob += check_mech(rbox)
     print('-- the Gowin end --')
     prob += check_gowin(fps)
-    print('-- the panel --')
+    print('-- the panel: the tabs and break lines --')
     prob += check_panel(fps)
+    print('-- the cut-outs over the radio --')
+    prob += check_holes(fps)
     print('-- the locked parts --')
     prob += check_locked(fps)
     print('-- the placement and routing rules --')
@@ -939,7 +1254,10 @@ def main():
                      'than the clearance floor, the radio end sockets on the '
                      'HL2 grids, the Gowin end socket on the dock J14 grid, '
                      'both SlimSAS land patterns match SFF-8654 Table A-1, the '
-                     'V-score is clean, exactly the fixed parts are locked at '
+                     'ends are joined only by the tabs with no part within 5 mm '
+                     'of a break line, the three holes over the radio are '
+                     'clear with nothing inside their margin, DB6 is inside '
+                     'its window, exactly the fixed parts are locked at '
                      'their documented positions, and every placement and '
                      'routing rule that applies at this stage holds'
                      if not prob else '%d PROBLEMS' % len(prob)))

@@ -40,6 +40,7 @@ the BOM.  PINMAP.md must agree with it, and tools/check_netlist.py asserts it.
 import os
 import sys
 import csv
+import math
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kisexp as K
@@ -566,7 +567,7 @@ class Board:
         # independent boards on one outline and must not pour one net across
         # both.  Empty means "the four standard pours over self.outline".
         self.zones_full = None
-        # extra graphics the panel needs: V-score lines, mouse-bite drills
+        # plain holes: the MH6 locating hole and the mouse-bite drills
         self.npth = []                  # (x, y, drill) plain holes
         # Rule areas.  keepouts: (name, layers, disallowed set, polygon).
         # regions: (name, polygon, [refs]) - F.Cu rule areas with nothing
@@ -574,6 +575,8 @@ class Board:
         self.keepouts = []
         self.regions = []
         self.edge_extra = []            # [(x0,y0,x1,y1)] more Edge.Cuts
+        self.cut_polys = []             # internal cut-outs, point lists
+        self.edge_segs = None           # panel: filleted Edge.Cuts segments
 
     def calibration_rule(self, x, y, length=50.0):
         """A dimension line on Dwgs.User so the user can confirm that a
@@ -859,13 +862,128 @@ MH6_AT = _loc(74.04, 75.42)          # (4.04,  2.12)
 # with 6 mm of margin at the top and 33 mm at the bottom.
 SLIMSAS_AT = (SLIMSAS_SETBACK, 46.00)
 
-# A window in the board that keeps two of the radio's own configuration
-# headers reachable: DB6 (HL2 x 115.80-120.70, y 117.80-123.80) and DB3
-# (x 123.33-125.87, y 114.39-122.01) both carry 2.54 mm shunts about 8.5 mm
-# tall.  They clear an 11.04 mm underside by 2.5 mm, so this is about access,
-# not collision: without the window you would have to lift the whole board off
-# to move a jumper.  131 mm2, 3 % of the board.
-CUTOUT = (44.50, 39.50, 57.00, 50.00)
+# THE CUT-OUTS OVER THE RADIO (13 Sep 2026, approved).  The radio end covers
+# three parts of the HL2 that must not be covered: the FPGA U2, whose
+# heatsink (8.25 mm tall on the owner's radio) would sit about 3 mm under this
+# board with no air; the AD9866 U7, the other heatsinked part; and the
+# transformer T2, 11.17 mm tall on the owner's radio, i.e. taller than this
+# board's 10.92-11.04 mm underside.  A hole goes through the board over each.
+#
+# Each hole is sized from the PACKAGE, not from any one owner's heatsink:
+# the package outline including leads is the part's footprint extent (pads,
+# and silkscreen where that is larger) in hardware/hl/hermeslite.kicad_pcb,
+# checked against the datasheet (DESIGN_NOTES.md section 13.1).  A heatsink no
+# larger than the package then passes up through the hole at any height.
+#
+#   HOLE_MARGIN 1.5 mm each side = 0.8 mm worst-case misalignment of this
+#   board against the HL2 at that distance from DB1 (HL2_MECHANICAL_ENVELOPE
+#   section 12.2), + 0.2 mm JLCPCB routed-edge tolerance, + 0.5 mm so that a
+#   package-sized heatsink does not touch the hole wall and air still moves.
+#   HOLE_R 1.0 mm on every corner: JLCPCB does not make sharp internal
+#   corners, and a radius is not a crack starter.  With the margin (1.5) at
+#   least the radius (1.0), the package's own corners still clear the arcs.
+#   HOLE_KEEP 1.0 mm: nothing - track, via, pad, pour or part - within 1 mm of
+#   a hole edge (JLCPCB 0.2 mm routed-edge copper minimum + 0.3 mm assembly
+#   minimum + 0.5 mm so the plane under any pair runs on past it).
+HOLE_MARGIN = 1.5
+HOLE_R = 1.0
+HOLE_KEEP = 1.0
+HL2_PACKAGES = (
+    # name, HL2 ref, what it is, package outline incl. leads (HL2 x0 y0 x1 y1)
+    ('FPGA', 'U2', 'EP4CE22E22C8N, 144-pin EQFP, 22 x 22 mm over the leads; '
+                   'footprint land 23.20 x 23.20',
+     (95.50, 73.70, 118.70, 96.90)),
+    ('ADC', 'U7', 'AD9866BCPZ, 64-lead LFCSP, 9 x 9 mm body; footprint land '
+                  '10.00 x 10.00',
+     (106.50, 104.80, 116.50, 114.80)),
+    ('T2', 'T2', 'TRANSFSMT footprint, 7.62 x 8.25 mm over pads and body '
+                 'outline (larger than the listed 3.81 mm SM-22 part, and the '
+                 "owner's T2 is 11.17 mm tall, so the footprint is the outline)",
+     (105.59, 119.54, 113.21, 127.79)),
+)
+
+
+def hole_rect(name):
+    """-> the clear rectangle over one HL2 package, radio local coords."""
+    for nm, _r, _d, (x0, y0, x1, y1) in HL2_PACKAGES:
+        if nm == name:
+            a, b_ = _loc(x0, y0), _loc(x1, y1)
+            return (round(a[0] - HOLE_MARGIN, 3), round(a[1] - HOLE_MARGIN, 3),
+                    round(b_[0] + HOLE_MARGIN, 3), round(b_[1] + HOLE_MARGIN, 3))
+    raise KeyError(name)
+
+
+# The window over the radio's configuration jumper header DB6 (HL2 x
+# 115.80-120.70, y 117.80-123.80 over its outline).  rev D as first built
+# stopped 0.50 mm short of it; now it clears DB6 by WINDOW_REACH on every
+# side for fingers or tweezers, and keeps its old extent toward DB3.  DB3
+# (x 123.33-125.87, y 109.31-119.47) cannot be fully uncovered: its upper end
+# lies under J5's courtyard, and J5 is locked.
+DB6_HL2 = (115.80, 117.80, 120.70, 123.80)
+DB3_HL2 = (123.33, 109.31, 125.87, 119.47)
+WINDOW_REACH = 2.5
+_d6a, _d6b = _loc(DB6_HL2[0], DB6_HL2[1]), _loc(DB6_HL2[2], DB6_HL2[3])
+WINDOW = (round(min(44.50, _d6a[0] - WINDOW_REACH), 3), 39.50,
+          57.00, round(max(50.00, _d6b[1] + WINDOW_REACH), 3))
+CUT_FPGA = hole_rect('FPGA')
+CUT_ADC = hole_rect('ADC')
+CUT_T2 = hole_rect('T2')
+
+
+def cut_main():
+    """The AD9866 hole, the T2 hole and the jumper window lie within 2 mm of
+    one another, which leaves webs too thin to carry anything, so they are ONE
+    cut-out: an orthogonal polygon that contains all three rectangles."""
+    a, t, w = CUT_ADC, CUT_T2, WINDOW
+    assert a[2] < w[2] and w[1] < a[3] and t[2] > w[0] and t[1] < w[3] < t[3]
+    x0 = min(a[0], t[0])
+    return [(x0, a[1]), (a[2], a[1]), (a[2], w[1]), (w[2], w[1]),
+            (w[2], w[3]), (t[2], w[3]), (t[2], t[3]), (x0, t[3])]
+
+
+def cut_rows():
+    """cut_main() as the three rectangles it is made of (for keepouts)."""
+    a, t, w = CUT_ADC, CUT_T2, WINDOW
+    x0 = min(a[0], t[0])
+    return (('ADC', (x0, a[1], a[2], w[1])),
+            ('MID', (x0, w[1], w[2], w[3])),
+            ('T2', (x0, w[3], t[2], t[3])))
+
+
+def fillet(pts, radius_at, closed=True):
+    """Polygon of right-angled corners -> Edge.Cuts segments with a radius
+    at the vertices radius_at(i) says (0 = sharp).  -> [('line', a, b) |
+    ('arc', a, mid, b)].  Zero-length lines are dropped."""
+    n = len(pts)
+    corners = []
+    for i in range(n):
+        p, v, q_ = pts[i - 1], pts[i], pts[(i + 1) % n]
+        r_ = radius_at(i)
+        if r_ <= 0:
+            corners.append((v, None, v))
+            continue
+        u1 = ((p[0] - v[0]), (p[1] - v[1]))
+        l1 = math.hypot(*u1)
+        u1 = (u1[0] / l1, u1[1] / l1)
+        u2 = ((q_[0] - v[0]), (q_[1] - v[1]))
+        l2 = math.hypot(*u2)
+        u2 = (u2[0] / l2, u2[1] / l2)
+        t1 = (v[0] + u1[0] * r_, v[1] + u1[1] * r_)
+        t2 = (v[0] + u2[0] * r_, v[1] + u2[1] * r_)
+        c_ = (v[0] + (u1[0] + u2[0]) * r_, v[1] + (u1[1] + u2[1]) * r_)
+        s = math.hypot(u1[0] + u2[0], u1[1] + u2[1])
+        m_ = (c_[0] - (u1[0] + u2[0]) / s * r_, c_[1] - (u1[1] + u2[1]) / s * r_)
+        corners.append((t1, m_, t2))
+    rnd = lambda pt: (round(pt[0], 4), round(pt[1], 4))
+    segs = []
+    for i in range(n):
+        t1, m_, t2 = corners[i]
+        if m_ is not None:
+            segs.append(('arc', rnd(t1), rnd(m_), rnd(t2)))
+        nxt = corners[(i + 1) % n][0]
+        if math.hypot(nxt[0] - t2[0], nxt[1] - t2[1]) > 1e-6:
+            segs.append(('line', rnd(t2), rnd(nxt)))
+    return segs
 
 
 # --------------------------------------------------------------------------
@@ -979,7 +1097,11 @@ def bridge():
     # clamp the board down onto the 11.04 mm standoff, and with the connector
     # lying flat there is almost no tipping moment for it to resist anyway.
     NX0, NX1, NY = 3.00 - 1.70, 3.00 + 1.70, BOARD_H - 3.00
-    OUT = [(0, RADIO_TRIM), (BOARD_W, RADIO_TRIM), (BOARD_W, BOARD_H),
+    # The FPGA hole reaches past this edge (U2's leads come to local y 0.40),
+    # so over U2 the hole is a notch open to the edge.
+    fx0, fy1, fx1 = CUT_FPGA[0], CUT_FPGA[3], CUT_FPGA[2]
+    OUT = [(0, RADIO_TRIM), (fx0, RADIO_TRIM), (fx0, fy1), (fx1, fy1),
+           (fx1, RADIO_TRIM), (BOARD_W, RADIO_TRIM), (BOARD_W, BOARD_H),
            (NX1, BOARD_H), (NX1, NY), (NX0, NY), (NX0, BOARD_H),
            (0, BOARD_H)]
     b = Board('bridge',
@@ -988,9 +1110,8 @@ def bridge():
               OUT, (BOARD_W, BOARD_H),
               origin_note='local (0,0) = HL2 main board (70.00, 73.30)')
     ref = RefGen(reserved=('R1', 'R2'))
-    cx0, cy0, cx1, cy1 = CUTOUT
-    b.edge_extra += [(cx0, cy0, cx1, cy0), (cx1, cy0, cx1, cy1),
-                     (cx1, cy1, cx0, cy1), (cx0, cy1, cx0, cy0)]
+    # The AD9866 hole, the T2 hole and the DB6 jumper window: one cut-out.
+    b.cut_polys = [cut_main()]
 
     # ==================================================== the HL2 headers
     b.add(Part('J2', 'SKT2x10', 'DB1 2x10 socket', {
@@ -1817,7 +1938,7 @@ def bridge():
 #  THE GOWIN END.  The same design's far end, on the Tang Mega 138K dock.
 # ==========================================================================
 #
-# One schematic, one PCB, one panel: the radio end above and this end are
+# One schematic, one PCB, one panel: the radio end above and this end below are
 # fabricated together and snapped apart.  This end plugs onto J14 of the
 # Sipeed Tang Mega 138K dock (bare plated holes as shipped) and carries the
 # same SlimSAS receptacle, LCSC C5432262, and the same ESD array, LCSC
@@ -1854,7 +1975,7 @@ def bridge():
 # gx = 0 is the connector edge, 0.30 mm ahead of the mating face; gy runs
 # from the PMOD side toward J14.  The board is 64.50 x 25.12 mm, the narrowest that keeps the connector's
 # shell-tail pads 0.30 mm inside both long edges, and 64.50 long, 64.50 so
-# that it shares a straight V-score with the radio end on the panel, with a
+# that it matches the radio end's width on the panel, with a
 # notch at the far PMOD-side corner (dock x >= 148.50, y <= 57.50) so a cable
 # can stay plugged into the dock's HDMI socket J29.
 #
@@ -2128,9 +2249,9 @@ def gowin_end():
     # Name, revision and the hot-plug warning, top silkscreen, in the strip
     # along this end's top edge that no placement region covers.
     b.texts = [
-        ('F.SilkS', 40.0, 1.4, 0, 1.0, 'HL2 SlimSAS BRIDGE  rev %s  GOWIN END'
+        ('F.SilkS', 40.0, 2.1, 0, 1.0, 'HL2 SlimSAS BRIDGE  rev %s  GOWIN END'
          % REV),
-        ('F.SilkS', 40.0, 3.1, 0, 1.0, 'DO NOT PLUG OR UNPLUG POWERED'),
+        ('F.SilkS', 40.0, 3.8, 0, 1.0, 'DO NOT PLUG OR UNPLUG POWERED'),
     ]
     return b
 
@@ -2139,38 +2260,72 @@ def gowin_end():
 #  THE BOARD.  Both ends on one outline, snapped apart after manufacture.
 # ==========================================================================
 #
-#   y  0.00 .. 25.12   the Gowin end, unrotated
-#                      V-score y = 25.12, the one break-off
-#   y 25.12 .. 90.00   the radio end, unrotated (its local (0,0) at y 25.05)
-#   ONE continuous Edge.Cuts outline round both; 64.50 x 90.00 mm.
+#   y  0.00 .. 64.88   the radio end, unrotated (its local (0,0) at y -0.07)
+#   y 64.88 .. 66.88   a 2.00 mm routed slot, bridged by three 5 mm tabs with
+#                      mouse bites: the only joints between the two ends
+#   y 66.88 .. 92.00   the Gowin end, unrotated (its local (0,0) at y 66.88)
+#   ONE continuous Edge.Cuts outline round both; 64.50 x 92.00 mm.
 #
-# NO ASSEMBLY RAILS.  rev D as first built carried JLCPCB's recommended 5 mm
-# rails top and bottom.  JLCPCB's assembly capability table lists edge rails
-# as "Not necessary" for Economic PCBA (Standard PCBA needs them), and its
-# assembly FAQ asks only that traces and components stay more than 0.3 mm
-# from the board edge, with about 0.2 mm of routing tolerance on top.  Every
-# placement region stops 0.8 mm inside the edge, and the locked connectors'
-# copper was already 0.3 mm or more inside, so the rails bought nothing and
-# they are gone, with the two V-scores that joined them.  The fiducials that
-# sat on the rails moved onto the board.
+# WHY TABS AND NOT A V-SCORE (13 Sep 2026).  rev D as first prepared joined
+# the ends edge to edge at one V-score, with J101's shell-tail pads 0.31 mm
+# and J102's pads 1.60 mm from it: snapping would have cracked joints or
+# lifted pads.  Two V-scores with a breakaway strip were weighed against tabs
+# with mouse bites, on JLCPCB's published rules (DESIGN_NOTES.md section 13.2):
+#   * "V-cut is not supported in Economic Assembly" (jlcpcb.com/help/article/
+#     pcb-panelization); the assembly capability table lists "Single PCB,
+#     Panel with mouse bites" for Economic and adds "Panel with V-cut" only
+#     for Standard, which needs rails and a 70 x 70 mm minimum.
+#   * A V-score must cross the whole panel in a straight line, so every part
+#     along the whole width needs 5 mm from it: the Gowin end would have to
+#     grow 4.7 mm and the radio end's fiducials could not be cleared.  A tab
+#     is local: the break lines are 7 mm long, and they can sit where nothing
+#     is within 5 mm of them without moving or growing anything.
+# JLCPCB's tab rules: panel board spacing 1.6 or 2 mm, "minimum width is 5mm"
+# for a breakaway tab with mouse bites, mouse-bite diameter 0.5-0.8 mm
+# (jlcpcb.com/capabilities/pcb-capabilities).
+#
+# ORDER.  The tabs join the radio end's bottom edge (HL2 y 138.25) to the
+# Gowin end's top edge (dock y 41.17).  The Gowin end's other long edge is
+# where J101's contacts and J102 crowd the edge, and the radio end's top edge
+# is where DB1's socket and U2's notch are, so those two edges face outward.
+# No end grows: the Gowin end's top edge is already 3.8 mm off the dock.
+#
+# The mouse-bite holes sit 0.25 mm inside each end's edge, tangent to it, so
+# the snapped edge leaves no nub standing proud.  That matters at the radio
+# end: its bottom edge is exactly the extrusion's internal clear width.
+#
+# NO ASSEMBLY RAILS.  JLCPCB's assembly capability table lists edge rails as
+# "Not necessary" for Economic PCBA, and its assembly FAQ asks only that
+# traces and components stay more than 0.3 mm from the board edge.  Every
+# placement region stops 0.8 mm inside the edge.
 #
 # Both connectors face the board's left edge, x = 0.  The Gowin end's HDMI
-# notch (x >= 59.07) and the radio end's M3 U-notch (x 1.30..4.70) are now
-# notches in the outer outline itself.
+# notch, the radio end's M3 U-notch and U2's notch are notches in the outer
+# outline itself.
 
 PANEL_W = BOARD_W                    # 64.50
 RAIL = 0.0
-GOWIN_Y0 = RAIL
-RADIO_Y0 = RAIL + GOWIN_H - RADIO_TRIM   # 25.05: radio local (0,0)
-PANEL_H = RADIO_Y0 + BOARD_H + RAIL      # 90.00
-# The score is where the two ends meet: the Gowin end's bottom edge, which is
-# also the radio end's trimmed top edge (local y 0.07).  rev D as first built
-# drew its middle score line 0.07 mm off that boundary, at the radio end's
-# untrimmed local y 0.
-VSCORE_Y = (GOWIN_Y0 + GOWIN_H,)         # 25.12
-VSCORE_PART_CLEAR = 5.0              # no component within 5 mm of a score
-VSCORE_COPPER_CLEAR = 0.5            # no track, via or pour within 0.5 mm
+RADIO_Y0 = RAIL - RADIO_TRIM             # -0.07: radio local (0,0)
+RADIO_BOTTOM = RADIO_Y0 + BOARD_H        # 64.88
+SLOT_W = 2.00                            # JLCPCB panel board spacing
+GOWIN_Y0 = RADIO_BOTTOM + SLOT_W         # 66.88: Gowin local (0,0)
+PANEL_H = GOWIN_Y0 + GOWIN_H + RAIL      # 92.00
+TAB_X = (29.60, 40.60, 51.60)            # tab centres
+TAB_W = 5.00                             # JLCPCB minimum with mouse bites
+TAB_R = 1.00                             # slot corner radius = half the slot
+BITE_D = 0.50                            # mouse-bite drill
+BITE_N = 8                               # holes per row
+BITE_SPAN = 3.00                         # outer hole centres at +/- this
+BITE_INSET = BITE_D / 2.0                # hole centres this far inside the edge
+BREAK_HALF = TAB_W / 2.0 + TAB_R         # 3.50: tab width at the edge line / 2
+BREAK_PART_CLEAR = 5.0               # no component within 5 mm of a break line
+BREAK_COPPER_CLEAR = 1.0             # no track, via, pad or pour within 1 mm
 EDGE_REGION_MARGIN = 0.8             # placement regions stop this far inside
+# The break lines: along each row of mouse-bite holes, the tab's full width
+# at the edge line.  (x0, x1, y) in panel coordinates.
+BREAK_LINES = tuple(
+    (round(c - BREAK_HALF, 3), round(c + BREAK_HALF, 3), round(y, 3))
+    for c in TAB_X for y in (RADIO_BOTTOM - BITE_INSET, GOWIN_Y0 + BITE_INSET))
 
 
 def xf_radio(x, y):
@@ -2186,7 +2341,7 @@ def rect(x0, y0, x1, y1):
 
 
 # Fiducials, locked, in panel coordinates.  Three corners of a large
-# triangle, each clear of every locked part and of the 5 mm score band.
+# triangle, each clear of every locked part and 5 mm or more from every break line.
 FIDUCIALS = (xf_gowin(56.5, 14.0), xf_radio(62.5, 62.5), xf_radio(8.5, 62.5))
 
 # SlimSAS contact field, from the SLIMSAS table: rows A and B at datum + 2.70
@@ -2201,16 +2356,27 @@ def radio_rules(b):
     """What the placer is told about the radio end, in radio local
     coordinates.  Regions are F.Cu only: JLCPCB Economic assembly places one
     side, and the radio end's underside sits over the KEY jack and the clock
-    SMAs.  Each region stops 5 mm short of the score (local y 0.07)."""
-    top = RADIO_TRIM + VSCORE_PART_CLEAR + 0.1             # 5.17
+    SMAs.  The top edge (local y 0.07) is an outer edge now; the bottom edge
+    carries the three tabs, and no region comes within 5 mm of their break
+    lines.  No region enters a cut-out or its 1 mm keep-back."""
     m = EDGE_REGION_MARGIN
+    top = RADIO_TRIM + m                                    # 0.87
     ss_x = SLIMSAS_AT[0]
-    # every radio-end part without a tighter region; the notch in its bottom
-    # edge leaves the name and warning lines clear
+    k = HOLE_KEEP
+    fx0, fx1, fy1 = CUT_FPGA[0] - k, CUT_FPGA[2] + k, CUT_FPGA[3] + k
+    # the tab band: from 5 mm left of the first break line to the right edge,
+    # stopping 5 mm above the break lines; it also leaves the name and warning
+    # lines clear
+    brk_y = BOARD_H - BITE_INSET                            # 64.70
+    band_y = round(brk_y - BREAK_PART_CLEAR - 0.05, 2)      # 59.65
+    band_x = round(min(20.5, TAB_X[0] - BREAK_HALF - BREAK_PART_CLEAR
+                       - 0.05), 2)
+    assert max(TAB_X) + BREAK_HALF + BREAK_PART_CLEAR < BOARD_W - m + 5.0
+    # every radio-end part without a tighter region, round U2's notch
     b.regions.append(('REGION_RADIO', [
-        (m, top), (BOARD_W - m, top), (BOARD_W - m, BOARD_H - m),
-        (47.5, BOARD_H - m), (47.5, 59.9), (20.5, 59.9), (20.5, BOARD_H - m),
-        (m, BOARD_H - m)], 'radio'))
+        (m, top), (fx0, top), (fx0, fy1), (fx1, fy1), (fx1, top),
+        (BOARD_W - m, top), (BOARD_W - m, band_y), (band_x, band_y),
+        (band_x, BOARD_H - m), (m, BOARD_H - m)], 'radio'))
     # the twelve ESD arrays: a strip beside the contact field, from the
     # connector courtyard to 4.9 mm past the contact copper
     x0 = round(ss_x + SS_CRTYD_END + 0.1, 2)                # 16.95
@@ -2219,10 +2385,26 @@ def radio_rules(b):
     b.regions.append(('REGION_RADIO_ESD',
                       rect(x0, cy - 12.0, x1, cy + 12.0), 'radio_esd'))
     # the silicon and series parts on the HL2 header nets, beside DB1/DB12:
-    # from DB1's socket courtyard (local x 8.35) to x 36, and from the score
-    # band to y 33, short of the connector courtyard at y 33.5
-    b.regions.append(('REGION_RADIO_HDR', rect(8.45, top, 36.0, 33.0),
-                      'radio_hdr'))
+    # from DB1's socket courtyard (local x 8.35) to 0.1 mm short of U2's
+    # keep-back, from the top edge margin to y 33, short of the connector
+    # courtyard at y 33.5; below U2's keep-back it widens to 0.1 mm short of
+    # the main cut-out's keep-back.  (rev D as first prepared: x 8.45-36.0,
+    # y 5.17-33.0, before the holes and with a score along the top edge.)
+    mx0 = min(CUT_ADC[0], CUT_T2[0]) - k
+    b.regions.append(('REGION_RADIO_HDR', [
+        (8.45, top), (round(fx0 - 0.1, 2), top), (round(fx0 - 0.1, 2),
+                                                  round(fy1 + 0.1, 2)),
+        (round(mx0 - 0.1, 2), round(fy1 + 0.1, 2)), (round(mx0 - 0.1, 2), 33.0),
+        (8.45, 33.0)], 'radio_hdr'))
+
+    # ---- the cut-outs: nothing within HOLE_KEEP of a hole edge, any layer
+    all_cu = ('F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu')
+    everything = ('tracks', 'vias', 'pads', 'copperpour', 'footprints')
+    b.keepouts.append(('KEEPOUT_CUT_FPGA', all_cu, everything,
+                       rect(fx0, RADIO_TRIM, fx1, fy1)))
+    for nm, (x0_, y0_, x1_, y1_) in cut_rows():
+        b.keepouts.append(('KEEPOUT_CUT_%s' % nm, all_cu, everything,
+                           rect(x0_ - k, y0_ - k, x1_ + k, y1_ + k)))
 
     # ---- keepouts
     # 1. A USB Blaster's 10-way IDC socket on J5 needs about 20 x 12 mm clear
@@ -2231,7 +2413,7 @@ def radio_rules(b):
     jx0, jy0, jx1, jy1 = 56.0 - 1.77, 24.5 - 1.77, 56.0 + 4.32, 24.5 + 11.93
     cx, cy2 = 56.0 + 1.27, 24.5 + 5.08
     ix0, ix1 = cx - 6.0, min(cx + 6.0, BOARD_W - m)
-    iy0, iy1 = 21.0, min(cy2 + 10.0, CUTOUT[1] - 0.1)
+    iy0, iy1 = 21.0, min(cy2 + 10.0, WINDOW[1] - 0.1)
     for nm, poly in (('L', rect(ix0, iy0, jx0 - 0.1, iy1)),
                      ('R', rect(jx1 + 0.1, iy0, ix1, iy1)),
                      ('T', rect(jx0 - 0.1, iy0, jx1 + 0.1, jy0 - 0.1)),
@@ -2240,8 +2422,8 @@ def radio_rules(b):
                            ('footprints',), poly))
     # 2. The underside over the clock SMAs (HL2 x 74.04-78.24, y
     #    103.36-123.60) and the KEY jack (x 70.20-82.10, y 124.00-136.00),
-    #    whose heights are still unmeasured (DESIGN_NOTES.md section 10): no
-    #    bottom-side footprint.
+    #    measured on the owner's radio at 4.24 and 5.12 mm (DESIGN_NOTES.md
+    #    section 13.4): no bottom-side footprint.
     for nm, (hx0, hy0, hx1, hy1) in (
             ('SMA', (74.04, 103.36, 78.24, 123.60)),
             ('KEYJACK', (70.20, 124.00, 82.10, 136.00))):
@@ -2255,17 +2437,22 @@ def radio_rules(b):
 
 def gowin_rules(b):
     """What the placer is told about the Gowin end, in Gowin local
-    coordinates.  The score is this end's bottom edge, gy 25.12."""
+    coordinates.  The tabs are on this end's top edge, gy 0; no region comes
+    within 5 mm of their break lines at gy 0.25."""
     m = EDGE_REGION_MARGIN
-    # 5 mm short of the score would be gy 20.02, but J102's pins stand up
-    # through the top from gy 19.28 (and in scheme 1 an upside-down header's
-    # pins stand 4.4 mm proud there), so the regions stop at its courtyard.
+    # J102's pins stand up through the top from gy 19.28 (and in scheme 1 an
+    # upside-down header's pins stand 4.4 mm proud there), so the regions stop
+    # at its courtyard.
     bot = 18.2
     nx, ny = _gloc(*GOWIN_NOTCH)
     ss_x = GOWIN_SS_AT[0]
     x0 = round(ss_x + SS_CRTYD_END + 0.1, 2)                # 16.95
     x1 = round(ss_x + SS_PAD_END + ESD_REACH - 0.1, 2)      # 21.00
-    text_strip = 4.2      # the name and warning lines sit above this
+    # the name and warning lines, and the tabs' 5 mm band, sit above this
+    text_strip = round(BITE_INSET + BREAK_PART_CLEAR + 0.05, 2)   # 5.30
+    # the ESD strip must stay beside the contacts, so the first tab was
+    # placed to clear it by 5 mm rather than the strip moved
+    assert TAB_X[0] - BREAK_HALF - x1 >= BREAK_PART_CLEAR - 1e-6
     b.regions.append(('REGION_GOWIN', [
         (x0, text_strip), (nx - m, text_strip), (nx - m, ny + m),
         (GOWIN_W - m, ny + m), (GOWIN_W - m, bot), (x0, bot)], 'gowin'))
@@ -2275,7 +2462,7 @@ def gowin_rules(b):
     # footprint.  Positions 1-4 are dock x 103.70/106.24, y 61.30/63.84; the
     # box runs 1.3 mm out from the pin centres, except 0.7 mm toward J102,
     # whose courtyard starts 0.73 mm past position 3/4, and stops short of
-    # the score.
+    # this end's bottom edge.
     p0 = _gloc(103.70 - 1.3, 61.30 - 1.3)
     p1 = _gloc(106.24 + 0.7, 63.84 + 1.3)
     box = rect(p0[0], p0[1], p1[0], min(p1[1], GOWIN_H - 0.6))
@@ -2352,6 +2539,41 @@ def stage(parts, x0, y0, width):
     return y + shelf
 
 
+def panel_outline():
+    """-> (sharp outer polygon, its filleted Edge.Cuts segments, the
+    filleted internal slot loops), panel coordinates.
+
+    Clockwise from the top-left corner: the radio end's top edge with U2's
+    notch, its right edge, the slot's right-hand inlet round the last tab to
+    the Gowin end's top edge and HDMI notch, the Gowin end's right, bottom and
+    left edges, the slot's left-hand inlet round the first tab, and the radio
+    end's bottom edge with the M3 U-notch.  Between the tabs the slot is two
+    closed internal loops."""
+    W, rb, gt = PANEL_W, RADIO_BOTTOM, GOWIN_Y0
+    fx0, fy1, fx1 = CUT_FPGA[0], CUT_FPGA[3] + RADIO_Y0, CUT_FPGA[2]
+    top = RADIO_Y0 + RADIO_TRIM                                   # 0.00
+    gnx, gny = xf_gowin(*_gloc(*GOWIN_NOTCH))
+    n0, n1, ny = 3.00 - 1.70, 3.00 + 1.70, rb - 3.00
+    t1l = TAB_X[0] - TAB_W / 2.0
+    t3r = TAB_X[-1] + TAB_W / 2.0
+    pts = [(0, top), (fx0, top), (fx0, fy1), (fx1, fy1), (fx1, top),
+           (W, top), (W, rb), (t3r, rb), (t3r, gt), (gnx, gt), (gnx, gny),
+           (W, gny), (W, PANEL_H), (0, PANEL_H), (0, gt), (t1l, gt),
+           (t1l, rb), (n1, rb), (n1, ny), (n0, ny), (n0, rb), (0, rb)]
+    pts = [(round(x, 3), round(y, 3)) for x, y in pts]
+    # radii: U2's notch (all four corners) and the four tab/slot corners;
+    # the older U-notch and HDMI notch corners and the board corners stay
+    # as they were
+    rounded = {1, 2, 3, 4, 7, 8, 15, 16}
+    segs = fillet(pts, lambda i: HOLE_R if i in rounded else 0.0)
+    loops = []
+    for a_, b_ in zip(TAB_X[:-1], TAB_X[1:]):
+        sx0, sx1 = a_ + TAB_W / 2.0, b_ - TAB_W / 2.0
+        loops.append(fillet(rect(round(sx0, 3), rb, round(sx1, 3), gt),
+                            lambda i: TAB_R))
+    return pts, segs, loops
+
+
 REGION_ORDER = (('gowin_esd', 'REGION_GOWIN_ESD'), ('gowin', 'REGION_GOWIN'),
                 ('radio_esd', 'REGION_RADIO_ESD'),
                 ('radio_hdr', 'REGION_RADIO_HDR'), ('radio', 'REGION_RADIO'))
@@ -2363,19 +2585,16 @@ def panel():
     gowin_rules(gow)
     groups = assign_regions(radio, gow)
 
-    gnx, gny = xf_gowin(*_gloc(*GOWIN_NOTCH))
-    n0, n1 = 3.00 - 1.70, 3.00 + 1.70
-    ny = PANEL_H - 3.00
-    out = [(0, 0), (gnx, 0), (gnx, gny), (PANEL_W, gny), (PANEL_W, PANEL_H),
-           (n1, PANEL_H), (n1, ny), (n0, ny), (n0, PANEL_H), (0, PANEL_H)]
+    out, segs, loops = panel_outline()
     p = Board('bridge',
               'Hermes Lite 2 SlimSAS bridge rev %s - radio end and Gowin end, '
               'one board, one outline' % REV,
               out, (PANEL_W, PANEL_H),
-              origin_note='board (0,0) = top-left; Gowin end local (0,0) at '
-                          '(0, 0); radio end local (0,0) at (0, %.2f)'
-                          % RADIO_Y0)
+              origin_note='board (0,0) = top-left; radio end local (0,0) at '
+                          '(0, %.2f); Gowin end local (0,0) at (0, %.2f)'
+                          % (RADIO_Y0, GOWIN_Y0))
     p.groups = groups
+    p.edge_segs = segs + [sg for lp in loops for sg in lp]
 
     def merge(board, xform):
         for q_ in board.parts:
@@ -2402,6 +2621,8 @@ def panel():
         for (zlayer, znet, zprio, zpoly, zname) in board.zones_extra:
             p.zones_extra.append((zlayer, znet, zprio,
                                   [xform(x, y) for (x, y) in zpoly], zname))
+        for poly in board.cut_polys:
+            p.cut_polys.append([xform(x, y) for (x, y) in poly])
         for (nm, lays, dis, poly) in board.keepouts:
             p.keepouts.append((nm, lays, dis,
                                [xform(x, y) for (x, y) in poly]))
@@ -2430,19 +2651,40 @@ def panel():
                    exclude_bom=True, locked=True,
                    desc='Fiducial, 1 mm copper, 2 mm mask opening'))
 
-    # The score: no track, via or pour may cross it (a rule area on every
-    # copper layer, 0.5 mm either side), and the placement regions already
-    # stop 5 mm short of it.  The score line itself is drawn on User.Eco1 for
-    # the fab, with its label outside the outline.
-    for vy in VSCORE_Y:
-        p.keepouts.append(('KEEPOUT_VSCORE_COPPER',
-                           ('F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu'),
-                           ('tracks', 'vias', 'copperpour'),
-                           rect(0.0, vy - VSCORE_COPPER_CLEAR, PANEL_W,
-                                vy + VSCORE_COPPER_CLEAR)))
-        p.lines.append(('Eco1.User', -3.0, vy, PANEL_W + 3.0, vy, 0.2))
-        p.texts.append(('Eco1.User', -12.0, vy - 1.0, 0, 0.8,
-                        'V-SCORE y = %.2f' % vy))
+    # The internal cut-outs, filleted, in with the outline.
+    for poly in p.cut_polys:
+        p.edge_segs += fillet(poly, lambda i: HOLE_R)
+
+    # The tabs.  Each has a row of mouse-bite holes along both ends' edges,
+    # 0.25 mm inside, and two rule areas: no track, via, pad or pour within
+    # 1 mm of the holes on any layer (pads are kept away by the footprint
+    # rule, and the mouse-bite holes are themselves pads), and no footprint
+    # within 5 mm of either
+    # break line on either side.  The regions already stop short of that.
+    all_cu = ('F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu')
+    ytop, ybot = RADIO_BOTTOM - BITE_INSET, GOWIN_Y0 + BITE_INSET
+    for i, c in enumerate(TAB_X, start=1):
+        for yy in (ytop, ybot):
+            for kk in range(BITE_N):
+                hx = c - BITE_SPAN + kk * 2.0 * BITE_SPAN / (BITE_N - 1)
+                p.npth.append((round(hx, 3), round(yy, 3), BITE_D))
+            p.lines.append(('Eco1.User', c - BREAK_HALF, yy, c + BREAK_HALF,
+                            yy, 0.1))
+        p.keepouts.append((
+            'KEEPOUT_TAB%d_COPPER' % i, all_cu,
+            ('tracks', 'vias', 'copperpour'),
+            rect(round(c - BREAK_HALF - BREAK_COPPER_CLEAR, 3),
+                 round(ytop - BITE_D / 2 - BREAK_COPPER_CLEAR, 3),
+                 round(c + BREAK_HALF + BREAK_COPPER_CLEAR, 3),
+                 round(ybot + BITE_D / 2 + BREAK_COPPER_CLEAR, 3))))
+        p.keepouts.append((
+            'KEEPOUT_TAB%d_PARTS' % i, ('F.Cu', 'B.Cu'), ('footprints',),
+            rect(round(c - BREAK_HALF - BREAK_PART_CLEAR, 3),
+                 round(ytop - BREAK_PART_CLEAR, 3),
+                 round(c + BREAK_HALF + BREAK_PART_CLEAR, 3),
+                 round(ybot + BREAK_PART_CLEAR, 3))))
+    p.texts.append(('Eco1.User', -14.0, (RADIO_BOTTOM + GOWIN_Y0) / 2.0, 0,
+                    0.8, 'BREAK-OFF TABS'))
 
     # Stage every unlocked part OFF the board, grouped by the region it
     # belongs to, so Quilter places it.
@@ -2457,9 +2699,9 @@ def panel():
     # Notes that stay with the file, all OUTSIDE the outline.
     p.texts.append(
         ('Dwgs.User', PANEL_W / 2.0, PANEL_H + 3.0, 0, 1.2,
-         'BOARD %.2f x %.2f mm, ONE design, 4 layer, 1.6 mm. V-SCORE y = '
-         '%s, edge to edge. No rails.'
-         % (PANEL_W, PANEL_H, ', '.join('%.2f' % v for v in VSCORE_Y))))
+         'BOARD %.2f x %.2f mm, ONE design, 4 layer, 1.6 mm. Ends joined by '
+         '%d mouse-bite tabs across a %.2f mm slot. No V-score. No rails.'
+         % (PANEL_W, PANEL_H, len(TAB_X), SLOT_W)))
     p.calibration_rule(0.0, PANEL_H + 8.0, 50.0)
     return p
 
@@ -2897,7 +3139,21 @@ def write_pcb(outdir, board, fps):
         w.close_inline()
 
     pts = board.outline
-    for i in range(len(pts)):
+    for i, sg in enumerate(board.edge_segs or []):
+        if sg[0] == 'arc':
+            w.open('gr_arc')
+            w.line('start', fmt(ox + sg[1][0]), fmt(oy + sg[1][1]))
+            w.line('mid', fmt(ox + sg[2][0]), fmt(oy + sg[2][1]))
+            w.line('end', fmt(ox + sg[3][0]), fmt(oy + sg[3][1]))
+        else:
+            w.open('gr_line')
+            w.line('start', fmt(ox + sg[1][0]), fmt(oy + sg[1][1]))
+            w.line('end', fmt(ox + sg[2][0]), fmt(oy + sg[2][1]))
+        w.line('stroke', '(width 0.1)', '(type default)')
+        w.line('layer', q('Edge.Cuts'))
+        w.line('uuid', q(uuid_for(board.name, 'edgeseg', i)))
+        w.close_inline()
+    for i in range(len(pts) if board.edge_segs is None else 0):
         a = pts[i]
         c = pts[(i + 1) % len(pts)]
         w.open('gr_line')

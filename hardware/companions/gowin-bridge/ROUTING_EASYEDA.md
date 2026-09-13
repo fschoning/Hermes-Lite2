@@ -6,7 +6,7 @@
 > `QUILTER.md`. Use this guide only on a board that has already been
 > placed — for example one Quilter sent back — for the routing rules, the
 > stack, the pair list and the JLCPCB order. Board facts below are
-> updated: **64.50 × 90.00 mm, no rails, one V-score at board y 25.12**,
+> updated: **64.50 × 92.00 mm, no rails, the two ends joined by three mouse-bite tabs across a 2 mm slot, holes over the radio's FPGA, AD9866 and T2** (`DESIGN_NOTES.md` §13),
 > the pair net class is now called `differentialpair`, and every
 > clearance in the file is already 0.15 mm.
 
@@ -37,9 +37,9 @@ commit `d390bca` (plus `c72c498` for the panel).
 | **Differential-pair via** | 0.25 mm drill / **0.45 mm pad minimum** (below 0.45 mm JLCPCB's cheap tier ends) |
 | **General clearance** | **0.15 mm everywhere**, JLCPCB's manufacturing floor. The KiCad file now says 0.15 mm on every class and board-wide (it said 0.13 mm before 13 Sep 2026). Set EasyEDA's rules to the same |
 | **Length-match groups** | Forward group, reverse group: **±2.5 mm**, each group of 4 pairs matched to itself. Aux clock/data: **±2.5 mm** (derived, same lane rate). Duplicate clock, spare: no requirement. Full table in §4 |
-| **V-score copper setback** | **0.4 mm minimum from the score centreline, 1.0 mm recommended** |
+| **Tab and cut-out copper setback** | **1.0 mm** from every tab and every cut-out edge; pair tracks **2.0 mm** from a cut-out |
 | **M3 U-notch keepout** | 0.3 mm copper clearance |
-| **Board** | 64.50 × 90.00 mm, one continuous outline, one V-score at y 25.12 (Gowin end above it, radio end below), no rails |
+| **Board** | 64.50 × 92.00 mm, one continuous outline: radio end above, Gowin end below, joined by three 5 mm mouse-bite tabs across a 2 mm slot; no V-score, no rails |
 | **Order** | 4 layer, 1.6 mm, lead-free HASL, 1 oz outer / 0.5 oz inner, no impedance control, 5 pcs, **one design**, Single PCB |
 
 ---
@@ -70,24 +70,23 @@ check carefully" — their words, not a guess.
 
 8. Open the imported PCB. Zoom to fit (View menu or scroll-wheel).
 9. **Board outline.** Confirm you see **one continuous outline**, 64.50 mm
-   wide × 90.00 mm tall, with no gaps or duplicate edges. `STATUS.md` and
+   wide × 92.00 mm tall, with no gaps or duplicate edges. `STATUS.md` and
    `DESIGN_NOTES.md` §11.6 both state this is one design with one outline —
    if the import shows two separate boards or a broken loop, the import did
    not preserve the outline and must be redone from a fresh archive.
-10. **The V-score.** Confirm one straight horizontal score line running
-    the full 64.50 mm width, 25.12 mm from the Gowin end's top edge (the
-    edge beside the HDMI notch). There are no rails. If the import did not
-    carry the V-cut layer across, you will need to redraw this line on the
-    layer EasyEDA uses for V-CUT (see its board-outline documentation) before
-    ordering — do this only after routing is complete, since it is a fab
-    instruction, not a mechanical outline change.
+10. **The tabs.** Confirm a 2 mm slot across the board between the radio end
+    (above) and the Gowin end (below), crossed by three 5 mm tabs, each with a
+    row of eight 0.5 mm unplated holes along both ends' edges. There is no
+    V-score and there are no rails. If the holes came through as plated, or
+    vanished, redo the import.
 11. **The two internal holes.** Confirm the 1.1 mm unplated locating-peg hole
     (radio end) and the M3 spacer hole under the Gowin-end connector housing
     (`DESIGN_NOTES.md` §11.3, ~3.2 mm minimum) both came through as
     non-plated holes, not vanished or turned into plated vias.
-12. **The M3 U-notch** (radio end) and **the jumper-access window** (local x
-    44.50–57.00, y 39.50–50.00) — confirm both are still open (not filled
-    with copper or silkscreen) by zooming in.
+12. **The M3 U-notch** (radio end), **the notch over the radio's FPGA** (local
+    x 24.00–50.20 from the top edge to y 25.10) and **the cut-out over the
+    AD9866, T2 and the jumper window** (local x 34.09–57.00, y 30.00–56.25) —
+    confirm all are still open (not filled with copper or silkscreen).
 13. **Footprints.** Right-click a handful of parts you know are unusual —
     the SlimSAS connector (J1 or J101), the 2×18 header footprint, the U-notch
     mounting area — and confirm the pads look correct against the KiCad 1:1
@@ -508,7 +507,7 @@ pair still needs its ESD array and its length match.
    are two electrically separate pours, joined only through the single
    `G_GND` conductor on J14 pin 12 and the cable, not through the PCB
    copper (`DESIGN_NOTES.md` §11.6: "ground pours are per end"). Draw a
-   dividing broken line across L2 at the V-score between the two ends (see
+   dividing broken line across L2 along the slot between the two ends (see
    §6.3 for the technique) so the plane rebuild keeps them separate.
 4. **Stitch the connector's ground contacts.** Both SlimSAS connectors give
    you a ground pin between every differential pair — positions 1, 4, 7, 13,
@@ -582,25 +581,21 @@ generated from the HL2's own geometry and re-checked by
 | The three HL2 sockets (J2/DB1, J3/DB12, J4/CN1) | Bottom side, fixed hole positions. Do not move |
 | SlimSAS connector J1 | Local (10.40, 46.00) at the radio end — load-bearing, do not move toward the middle of the edge |
 | **M3 U-notch** | Local x 1.30–4.70, y 61.95 to the top edge. **Keep copper 0.3 mm clear of it** |
-| **Jumper-access window** | Local x 44.50–57.00, y 39.50–50.00. Route around it, not through it — this keeps HL2's DB6/DB3 configuration jumpers reachable with the board fitted |
+| **Cut-outs over the radio** | The FPGA notch, local x 24.00–50.20 from the top edge to y 25.10, and the cut-out over the AD9866, T2 and jumper DB6, local x 34.09–57.00, y 30.00–56.25. **Nothing within 1 mm of either; pair tracks 2 mm off** |
 | **J5, the JTAG pass-through** | Top side, local (56.00, 24.50). Keep ~20 × 12 mm clear above it and 15 mm of height for a USB Blaster's 10-way IDC socket |
 | **1.1 mm locating peg** | Local (4.04, 2.12) — optional, into HL2 MH6 |
 | **Gowin-end M3 spacer hole** | Under the connector housing, ~3.2 mm — do not route copper through it; it is a mechanical clearance hole, not electrical |
 
-**The break-off line (V-score).** Nothing may cross a V-score except the
-outline tabs themselves. JLCPCB's own published standard
-(jlcpcb.com/blog/v-cut-panelization-standards, read 13 Sep 2026): **copper
-— traces, pads, fill — must stay at least 0.4 mm from the score centreline,
-1.0 mm recommended**, to avoid exposed copper or trace damage during
-scoring. Apply this at the one score (board y 25.12). The KiCad file
-already carries a rule area there that forbids tracks, vias and pours within
-0.5 mm of it.
+**The break-off tabs.** Nothing crosses the slot or a tab: the two ends share
+no net. The KiCad file carries rule areas that keep tracks, vias and pours
+1 mm clear of each tab and every part 5 mm clear of each row of mouse-bite
+holes (`DESIGN_NOTES.md` §13.2).
 
-1. After routing, zoom to the V-score line at high magnification.
-2. Confirm no track, pad or copper-pour edge sits inside 0.4 mm of the
-   score centreline (1.0 mm if you have the room to give it).
-3. Confirm the ground and power pours on L2/L3 also respect this setback —
-   plane fills are copper too.
+1. After routing, zoom to each tab.
+2. Confirm no track, pad or copper-pour edge within 1 mm of the tab or its
+   holes, and no part within 5 mm of a row of holes.
+3. Confirm the pours on L2/L3 respect this too — plane fills are copper.
+4. Confirm every SMD capacitor lies parallel to the slot (0 or 180 degrees).
 
 ---
 
@@ -675,11 +670,11 @@ already carries a rule area there that forbids tracks, vias and pours within
    reaches the same order form).
 2. **Base Material**: FR-4.
 3. **Layers**: 4.
-4. **Dimensions**: 64.50 × 90.00 mm.
+4. **Dimensions**: 64.50 × 92.00 mm.
 5. **PCB Qty**: 5.
-6. **Different Design**: **1**. Do not use the words "Different Design"
-   with any value other than 1 — this is one design, not a multi-design
-   panel.
+6. **Different Design**: enter what JLCPCB said in answer to the question in
+   `DESIGN_NOTES.md` §13.2. The two ends carry different copper and snap
+   apart, which JLCPCB's own rule may count as two designs; ask first.
 7. **Delivery Format**: **Single PCB**. Do **not** select "Panel by
    Customer" — the owner has decided this ships as one board, snapped apart
    by hand after assembly, not panelized by the fab.

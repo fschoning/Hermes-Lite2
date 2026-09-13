@@ -427,8 +427,8 @@ Why not something cheaper or bigger:
 | Outline | **local x 0…64.50, y 0.07…64.95 = HL2 x 70.00…134.50, y 73.37…138.25** |
 | Size | **64.50 × 64.88 mm**, 4 layers, 1.6 mm, HASL. The 0.07 mm off the HL2 y 73.30 edge was taken when the board had rails and had to fit 100.00 mm (§11.6); local coordinates are unchanged |
 | Local origin | HL2 main-board (70.00, 73.30), so local x = HL2 x − 70.00 |
-| Underside | **11.04 mm** above the HL2's top surface; top surface at 12.64 mm |
-| Window in the board | **local x 44.50…57.00, y 39.50…50.00** (131 mm², 3 % of the board) to keep HL2 config headers DB6 and DB3 reachable. They clear an 11.04 mm underside by 2.5 mm, so this is about access, not collision — without it you would lift the whole board off to move a jumper |
+| Underside | **11.04 mm** above the HL2's top surface with the specified socket, top surface at 12.64 mm. **Measured 10.92 mm** with the socket on the owner's radio (§13.4) |
+| Window in the board | **local x 43.30…57.00, y 39.50…53.00**, widened 13 Sep 2026 so HL2 jumper header DB6 is uncovered with 2.5 mm clear on every side (§13.3). It is part of one cut-out with the holes over the AD9866 and T2 (§13.1) |
 | M3 anchor | a **3.4 mm U-notch open to the top edge**, centred on local x 3.00 |
 | Locating peg | **1.1 mm unplated hole at local (4.04, 2.12)** = HL2 MH6 (74.04, 75.42) |
 
@@ -490,11 +490,10 @@ clock-SMA and KEY-jack holes rather than beside them.
 | Plug thickness, 9.90 mm (Table 5-1, A13) | 12.64…22.54 mm above the main board |
 | **Panel window** | **26.5 × 10.5 mm**, centred on HL2 y 119.30, from **19.6 to 30.2 mm above the enclosure's outer bottom face** (the PCB top surface is 7.30 mm up) |
 
-What is underneath at that y, and it is the one thing still to measure: the two
-clock SMAs (CL1/CL2, HL2 x 74.04…78.24, y 103.36…123.60, expected 3–8 mm,
-**measurement M3**) and the 3.5 mm KEY jack (CN4, x 70.20…82.10, y
-124.00…136.00, expected 6–10 mm, **measurement M2**). An 11.04 mm underside
-clears both if they measure as expected.
+What is underneath at that y: the two clock SMAs (CL1/CL2, HL2 x
+74.04…78.24, y 103.36…123.60) and the 3.5 mm KEY jack (CN4, x 70.20…82.10, y
+124.00…136.00). **Measured on the owner's radio at 4.24 mm and 5.12 mm**
+(§13.4), so the 10.92 mm underside clears them by 6.68 and 5.80 mm.
 
 **The floor plan this produces is better than rev C's, not worse.** The
 translators and LVDS chips sit in local x 9…53, y 12…34, right beside DB1 and
@@ -678,8 +677,6 @@ The ones that could stop the build are first.
 |---|---|---|
 | **The cable's pin wiring** | The whole one-design argument rests on the A(n)↔B(n) crossover, and 10Gtek publish no wiring diagram for this part — not the product page, not the catalogue, not the datasheet. It is inferred from SFF-9402 plus two third-party drawings | **Ohmmeter the first cable.** Five minutes. Confirm a row A contact reaches the other row, same number, at the far end |
 | **The connector's front-face setback** | The one land-pattern dimension in no readable document. 10.40 mm is derived, ±0.5 mm | Open Amphenol's drawing for U10A474240T, or measure a part. Then cut the panel window |
-| **M2: the 3.5 mm KEY jack's height** | It sits under the board at HL2 x 70.20–82.10, y 124.00–136.00, i.e. under the connector's y span. Expected 6–10 mm against an 11.04 mm underside | Callipers, with and without a plug fitted |
-| **M3: the clock SMAs' height** | Under the board at x 74.04–78.24, y 103.36–123.60. Expected 3–8 mm | Callipers. First just look: are there two coaxial connectors on that face? |
 | **HL2 R17** | 100 Ω between the DB12 pin 5 and pin 6 nets; if fitted it shorts the auxiliary clock input to the reverse clock input. Not populated on the owner's radio | Look at the radio before plugging this in |
 | **The +3V3 spare current** | The 450 mA existing load is a bottom-up estimate whose four largest terms are guesses. The conclusion (350 mA is a third of the spare) is robust even at the pessimistic end, but the number is not measured | Measure the radio's 3.3 V rail current with and without the board |
 | **The 2.5 V spare current** | Every component of the 75 mA existing estimate is a guess, which is precisely why the board makes its own 2.5 V rather than relying on it | Measure Vlvds under load before ever fitting SL_VLVDS |
@@ -699,7 +696,7 @@ The ones that could stop the build are first.
 
 The far end of the same design, on the Sipeed Tang Mega 138K dock. It is on the
 same schematic, the same PCB and the same panel as the radio end, and is
-snapped off it. `PINMAP.md` §11 is its pin contract; this is the reasoning.
+snapped off it at three mouse-bite tabs. `PINMAP.md` §11 is its pin contract; this is the reasoning.
 
 ### 11.1 The question that set the cost: can Bank 4 do LVDS at 3.3 V?
 
@@ -759,7 +756,7 @@ board-file coordinates:
 |---|---|---|
 | SlimSAS mating face | **x 89.73**, facing the dock's short (Ethernet) edge | flush with the dock RJ45 face; both leave through the front panel |
 | SlimSAS centreline | **y 53.73** | 10.11 mm from J14 pin 1 toward the PMOD edge |
-| Board | x 89.43–153.93, y 41.17–66.29 = **64.50 × 25.12 mm** | 64.50 long so it shares a straight V-score with the radio end; 25.12 wide is the minimum that keeps both rows of shell-tail pads 0.30 mm inside the edges; y ≤ 66.5 keeps clear of the USB3 bridge and the core module |
+| Board | x 89.43–153.93, y 41.17–66.29 = **64.50 × 25.12 mm** | 64.50 long, the radio end's width (it shared a straight V-score with the radio end until 13 Sep 2026, §13.2); 25.12 wide is the minimum that keeps both rows of shell-tail pads 0.30 mm inside the edges; y ≤ 66.5 keeps clear of the USB3 bridge and the core module |
 | HDMI notch | x ≥ 148.50, y ≤ 57.50 removed | a cable can stay in the dock's HDMI socket J29 |
 | M3 spacer hole | (97.67, 62.66), over dock corner hole H7_LU1 | the connector takes 55.5 N on insertion |
 | J14 | positions 5–40 only | positions 1 and 2 are under the contact field, 3 and 4 under the housing |
@@ -829,11 +826,11 @@ reading as absent is harmless.
 
 | | |
 |---|---|
-| Board | **64.50 × 90.00 mm**, 4 layer, 1.6 mm, **one continuous Edge.Cuts outline** round both ends, **no rails** (§12.3); `check_geometry.py` asserts there is exactly one outer loop |
-| Top to bottom | Gowin end 25.12 mm, V-score at y 25.12, radio end 64.88 mm |
+| Board | **64.50 × 92.00 mm**, 4 layer, 1.6 mm, **one continuous Edge.Cuts outline** round both ends, **no rails** (§12.3); `check_geometry.py` asserts there is exactly one outer loop |
+| Top to bottom | radio end 64.88 mm, a 2.00 mm slot bridged by three mouse-bite tabs, Gowin end 25.12 mm (§13.2). Until 13 Sep 2026 the Gowin end was on top, joined edge to edge at one V-score |
 | The 0.07 mm | the radio end's edge facing the Gowin end is 0.07 mm in from its local y 0 (HL2 y 73.37), kept from when the rails had to fit in 100 mm |
-| Connectors | both on the board's left edge, which is a routed outer edge, so no score runs under a connector housing |
-| Notches | the HDMI notch and the M3 U-notch are notches in the outer outline; the score crosses neither |
+| Connectors | both on the board's left edge, which is a routed outer edge, far from the tabs |
+| Notches | the HDMI notch, the M3 U-notch and the notch over the radio's FPGA are notches in the outer outline; the first two open into the slot, away from the tabs |
 | Electrical separation | every Gowin-end net is prefixed `G_`; `check_netlist.py` asserts that no net touches both ends; ground pours are per end |
 | Designators | radio end as before; Gowin end numbered from 101 (J101, J102, D101–D112, R101–R117, TP101) |
 
@@ -867,7 +864,7 @@ All read 13 Sep 2026.
 | Stackup, rules | Read from the file if chosen, or a JLCPCB preset | docs.quilter.ai/design-parameters/stackups, docs.quilter.ai/using-quilter/fabricator-constraints |
 | Pours | Deleted and regenerated unless named and listed as Preserved Pours | docs.quilter.ai/design-parameters/preserved-pours |
 | Bypass caps | Detected; assigned by schematic wire, else by voltage-type pin name | docs.quilter.ai/physics-constraints/bypass-capacitors |
-| V-scores, rails, panels | **Not documented.** Only "one closed board outline". Expressed as a copper keepout on the score and regions that stop 5 mm short of it | docs.quilter.ai/using-quilter/prepare-your-input-board-file |
+| V-scores, rails, panels | **Not documented.** Only "one closed board outline". The tabs are inside that one outline; expressed as keepouts round each tab and regions that stop 5 mm short of the break lines (§13.2) | docs.quilter.ai/using-quilter/prepare-your-input-board-file |
 | Free tier limits | No board size, layer, part or pin limit published; eligibility is by company size | quilter.ai/pricing |
 | Common upload failures | zip or folders; not exactly one closed outline; netlist not matching the schematic | docs.quilter.ai/about-quilter/faq |
 
@@ -895,13 +892,11 @@ for Standard (jlcpcb.com/capabilities/pcb-assembly-capabilities), and asks
 for traces and components more than 0.3 mm from the edge
 (jlcpcb.com/help/article/pcb-assembly-faqs-part-2). Every placement region
 stops 0.8 mm inside the edge and the locked parts' copper was already at
-least 0.3 mm in. The board is 64.50 x 90.00 mm with one score, at y 25.12.
+least 0.3 mm in.
 
-**Open question for the order:** the same capability table lists "Panel with
-V-cut" as a delivery format for Standard PCBA only; Economic lists single PCB
-and mouse-bite panels. This board is one design with its own score, ordered
-as a single PCB. Ask JLCPCB at order time. If they insist on Standard PCBA,
-Standard needs rails and a 70 mm minimum, and the rails come back.
+The V-score question this section used to leave open is settled in §13.2:
+JLCPCB does not V-score Economic assembly at all, so the ends are now joined
+by mouse-bite tabs, which Economic accepts, and the rails stay off.
 
 Found while doing it: the generator drew the middle score line 0.07 mm off
 the real boundary between the two ends (at the radio end's untrimmed y 0).
@@ -916,7 +911,7 @@ It is now on the boundary.
 | J5 JTAG pass-through | local (56.00, 24.50) | `ROUTING.md` section 5; not set by the radio, locked so the placer cannot bury it | yes |
 | M3 U-notch | x 1.30-4.70 round HL2 MH2 (73.00, 137.00) | `HL2_MECHANICAL_ENVELOPE.md` | yes |
 | MH6 locating hole | HL2 (74.04, 75.42) | same | yes |
-| Jumper window | local x 44.50-57.00, y 39.50-50.00 | section 6.1 | **DB6 runs 0.50 mm past the window's far edge** (DB6 HL2 y 117.80-123.80, window to 123.30). Access only, not a collision; not changed |
+| Jumper window | local x 43.30-57.00, y 39.50-53.00 | section 13.3 | yes: DB6 read from the HL2 board is inside with 2.5 mm all round. It was 0.50 mm short until 13 Sep 2026 |
 | J101 SlimSAS | face dock x 89.73 = 13.97 mm from J14 pin 1, centreline dock y 53.73 | `TANG_IN_40MM_CASE.md` | yes |
 | J102 | J14 positions 5-40 | Sipeed iBOM, dock rev 31004 | yes |
 | Gowin M3 hole | dock (97.67, 62.66) | `TANG_IN_40MM_CASE.md` | yes (inside J101's footprint) |
@@ -931,11 +926,221 @@ It is now on the boundary.
 | HL2 header nets under 25 mm | `REGION_RADIO_HDR`: every non-capacitor part on a DB1/DB12 net, plus R2, U3, U6, U8, U9 | not expressible | `check_geometry.py`, routed length |
 | Decoupling at the pin | - | bypass capacitor comprehension | `check_geometry.py`, 3 mm |
 | Each part on its own end | five regions, each inside one end | regions | `check_geometry.py` |
-| 5 mm from the score | regions stop short of it | regions | `check_geometry.py` |
-| No copper across the score | `KEEPOUT_VSCORE_COPPER`: tracks, vias and pours, 0.5 mm each side, all layers | keepout | DRC |
+| 5 mm from a break line | `KEEPOUT_TAB1..3_PARTS`: no footprint within 5 mm of either row of mouse bites; regions stop short of it | keepout, regions | `check_geometry.py`, DRC |
+| No copper near the tabs | `KEEPOUT_TAB1..3_COPPER`: tracks, vias and pours, 1 mm round the tab, all layers | keepout | DRC |
+| Capacitors parallel to the break lines | - | **not expressible** | `check_geometry.py`: every SMD capacitor at 0 or 180 degrees |
+| Nothing in or near the cut-outs | `KEEPOUT_CUT_FPGA`, `_ADC`, `_MID`, `_T2`: tracks, vias, pads, pours and footprints, 1 mm past each hole edge, all layers | keepout | `check_geometry.py`, DRC |
 | J14 positions 1-4 | `KEEPOUT_J14_POS1_4_VIAS`, `KEEPOUT_J14_POS1_4_BOTTOM` | keepout | DRC |
 | Height under the board | `KEEPOUT_UNDER_SMA`, `KEEPOUT_UNDER_KEYJACK`, `KEEPOUT_UNDER_DOCK_J9`: no bottom footprint; and every region is top-only | keepout, regions | DRC |
+| Pairs clear of the cut-outs | the cut-out keepouts hold every track 1 mm off | pair tracks 2 mm off: not expressible | `check_geometry.py` |
 | USB Blaster access to J5 | `KEEPOUT_J5_IDC_L/R/T/B`: no footprint in a 12 x 20 mm ring | keepout | DRC |
 | Pairs top layer only | - | **not expressible** | `check_geometry.py` |
 | Length groups within 2.5 mm | - | **not available** | `check_geometry.py` |
 | Stack, classes, clearance | JLC04161H-7628 stack, In1 `GND`, In2 `PWR`, class `differentialpair` 0.25/0.20 mm, 0.15 mm clearance everywhere | read from the file | DRC |
+
+---
+
+## 13. Holes over the radio, tabs, the jumper window (13 Sep 2026)
+
+Three approved changes to the board outline. No net, no pin, no schematic
+symbol and no locked part moved. The radio end's SlimSAS connector J1 is where
+it was.
+
+### 13.1 Holes over the radio's FPGA, AD9866 and T2
+
+**Why.** The radio end covered three parts of the HL2. The FPGA U2 carries a
+heatsink 8.25 mm tall on the owner's radio, about 3 mm under this board, with
+no air. The AD9866 U7 is the radio's other heatsinked part. The transformer T2
+is 11.17 mm tall on the owner's radio, and this board's underside is at
+10.92 mm on his socket: they collide.
+
+**How each hole is sized.** From the part's package, not from anyone's
+heatsink, so a heatsink no larger than the package passes up through the hole
+at any height and warm air rises freely. The package outline, including leads,
+is the footprint's extent in `hardware/hl/hermeslite.kicad_pcb`: pads, and the
+silkscreen outline where that is larger. `check_geometry.py` reads it from that
+file itself.
+
+| HL2 part | Package, from the datasheet | Footprint outline | Hole | Hole, radio local |
+|---|---|---|---|---|
+| U2, EP4CE22E22C8N | 144-pin EQFP, **22 × 22 mm** over the leads, 0.5 mm pitch (Cyclone IV Device Handbook vol. 1, Table 1-3, E144) | pads 23.20 × 23.20 | **26.20 × 26.20 mm** | x 24.00–50.20, y −1.10–25.10: the FPGA's leads come to 0.33 mm from the board edge, so this hole is **a notch open to the radio end's top edge** |
+| U7, AD9866BCPZ | 64-lead LFCSP, **9 × 9 mm** body, no leads beyond it (ADI CP-64 outline; DigiKey "64-LFCSP-VQ (9x9)") | pads 10.00 × 10.00 | **13.00 × 13.00 mm** | x 35.00–48.00, y 30.00–43.00 |
+| T2, "8:1 Z" | the HL2 part list names MACOM MABA-010143-FLUX18 or Coilcraft WBC8-1L, SM-22 case 3.81 × 2.79 mm. The owner's T2 is 11.17 mm tall, so it is not that case: the footprint is the only safe outline | TRANSFSMT, pads and outline 7.62 × 8.25 | **10.62 × 11.25 mm** | x 34.09–44.71, y 45.00–56.25 |
+
+The HL2 part list calls U2's package "144-LQFP EP"; Intel's name is EQFP. Same
+22 mm body-plus-leads either way.
+
+**The margin: 1.5 mm on every side of the package.**
+
+| | |
+|---|---|
+| 0.8 mm | worst-case misalignment of this board on the HL2 at that distance from DB1 (`HL2_MECHANICAL_ENVELOPE.md` §12.2) |
+| 0.2 mm | JLCPCB routed-edge tolerance, "±0.2 mm (regular precision)" |
+| 0.5 mm | so a package-sized heatsink does not touch the wall and air still moves |
+
+**Corners: radius 1.0 mm** everywhere on the new edges. JLCPCB: "Rectangular
+holes and slots without rounded corners are not supported", and its minimum
+non-plated slot is 1.0 mm, i.e. a 0.5 mm cutter radius. With a margin (1.5)
+larger than the radius, the package's own corners still clear the arcs.
+
+**One cut-out, not three.** The AD9866 hole, the T2 hole and the jumper window
+lie within 2 mm of each other. The webs between them would carry nothing, so
+they are one orthogonal cut-out containing all three rectangles: local x
+34.09–57.00, y 30.00–56.25.
+
+**Keep-back: 1 mm.** No track, via, pad, pour or part within 1.0 mm of a hole
+edge on any layer: JLCPCB's 0.2 mm routed-edge copper minimum ("≧0.2 mm"),
+plus the 0.3 mm its assembly FAQ asks for, plus 0.5 mm. In the file as
+`KEEPOUT_CUT_FPGA`, `KEEPOUT_CUT_ADC`, `KEEPOUT_CUT_MID` and `KEEPOUT_CUT_T2`.
+**Pair tracks keep 2 mm off** (`check_geometry.py`), so each pair has at least
+1 mm of the In1 ground plane beyond it toward the hole, about five times the
+0.21 mm dielectric. The In1 ground plane is one solid pour round the whole
+radio end; it goes round the holes, and no pair can cross a hole because no
+track can.
+
+**Cost.** JLCPCB publishes no charge per cut-out. Its only milling charge is
+the Routing Fee: "If the width of the slot exceeds 1.0mm and the slot path
+reaches 120m per square meter, the Routing Fee will be charged"
+(jlcpcb.com/help/article/in-what-cases-will-there-be-charged-extra, updated
+9 Sep 2026). The whole milling path of this board, outline, slot and cut-outs
+together, is **0.564 m on 0.00593 m², 95 m per m²**. `check_geometry.py`
+recomputes it and fails at 120. Before these changes it was 0.361 m, 62 per m².
+
+**Placement regions after the holes.**
+
+| Region | Before | Now | Parts' courtyards |
+|---|---|---|---|
+| `REGION_RADIO_HDR`, the chips on HL2 header nets | x 8.45–36.0, y 5.17–33.0, **767 mm²** | an L round the FPGA notch: x 8.45–22.9 from the top edge margin (y 0.87) to y 26.2, then x 8.45–33.0 to y 33.0, **533 mm²** | 298 mm² (31 parts), so 1.8 × |
+| `REGION_RADIO` | the whole radio end | round the FPGA notch, and 5 mm short of the tabs | 3074 mm² for 483 mm² |
+| `REGION_RADIO_ESD`, `REGION_GOWIN_ESD` | unchanged | unchanged | the cut-outs are 12 mm away |
+
+The header region lost the FPGA notch but gained the 4.3 mm strip along the top
+edge, which is no longer a break line. **The 25 mm rule still holds room:**
+for every HL2 header pin, at least **306 mm²** of the region lies within
+21.5 mm of it (25 mm less an allowance for the far part's pad). The worst is
+DB1 pin 1, whose net goes to the board's own translator U2 and R18: a 48 mm² TSSOP and a
+resistor. If Quilter reports the header region full, extend it down to y 38
+between x 21.1 and 33.0.
+
+### 13.2 The ends: mouse-bite tabs, not a V-score
+
+**The defect.** The ends met edge to edge at one V-score. J101's shell-tail
+pads were 0.31 mm from it and J102's pads 1.60 mm. Snapping would crack joints
+or lift pads.
+
+**JLCPCB's rules, read 13 Sep 2026.**
+
+| | V-score with a breakaway strip | Tabs with mouse bites |
+|---|---|---|
+| Economic assembly | "**V-cut is not supported in Economic Assembly**" (jlcpcb.com/help/article/pcb-panelization). The assembly table lists "Panel with V-cut" for Standard only | "Single PCB, Panel with mouse bites" listed for Economic (jlcpcb.com/capabilities/pcb-assembly-capabilities) |
+| Geometry | "The V-cut line must cross the whole panel", straight; two scores at least 2 mm apart (3 mm recommended); panel at least 70 × 70 mm | "Panel board spacing: 1.6 or 2 mm"; "For breakaway with mouse-bites, minimum width is 5mm"; "Recommended diameter of mouse bite is 0.5mm-0.8mm" (jlcpcb.com/capabilities/pcb-capabilities) |
+| 5 mm from every part | the score runs the full width, so every part along it needs 5 mm: the Gowin end would grow 4.7 mm and the radio end's fiducials still could not clear | the break lines are 7 mm long and sit where nothing is near |
+| Edge left behind | clean | small nubs, kept inside the outline (below) |
+
+**Chosen: three tabs with mouse bites.** The V-score is not available on the
+assembly service this board is ordered with. That alone decides it.
+
+**The layout.**
+
+| | |
+|---|---|
+| Order, top to bottom | radio end (64.88 mm), slot (2.00 mm), Gowin end (25.12 mm) |
+| Board | **64.50 × 92.00 mm** (was 64.50 × 90.00) |
+| Tabs | 5.00 mm wide at x **29.60, 40.60, 51.60**; slot corners R 1.0, so each tab is 7.00 mm wide where it meets an end |
+| Mouse bites | 8 holes of 0.50 mm per row, centres 3.00 mm either side of the tab centre, one row along each end's edge, **centres 0.25 mm inside the edge** so the snapped edge leaves no nub standing proud |
+| Joined edges | the radio end's bottom edge (HL2 y 138.25) to the Gowin end's top edge (dock y 41.17) |
+
+**Why those two edges.** The Gowin end's other long edge is where J101's
+contacts and J102 crowd the edge, and no tab position there is 5 mm from
+both. Its top edge has only J101 at one end: from x 26 to 59 nothing is near.
+The radio end's top edge is where DB1's socket and the FPGA notch are, and the
+magjack beside it is 11.18 mm tall, so that end cannot grow there. Its bottom
+edge has J1's shell tails 6.6 mm in and the fiducials, and tabs in the middle
+clear both.
+
+**Did the Gowin end need to grow?** No. Growing past J101 and J102 toward the
+dock's core module was checked and ruled out: the case study keeps the adapter
+at dock y 66.5 or less there, over the USB3 bridge and the core module, whose
+parts stand 8.27 mm tall against a 7.0–7.5 mm scheme 1 underside. Growing the
+other way, toward the dock's PMOD edge, would land on nothing: that edge is
+already 3.8 mm past the dock, and the 6.4 mm PMOD socket and 15.6 mm USB
+sockets lie under or beyond the existing outline. With tabs, neither was
+needed.
+
+**Distances achieved.**
+
+| | Distance to the nearest break line |
+|---|---|
+| Nearest locked part: fiducial FID2 | **6.22 mm** |
+| J101, J102, J1 | over 9 mm |
+| Anything Quilter places | **5.0 mm or more**: `KEEPOUT_TAB1..3_PARTS` and every region stop 5 mm short (the Gowin ESD strip 5.10 mm, the radio region 5.05 mm) |
+
+**Target met everywhere: no part within 5.0 mm of a break line.** Every SMD
+capacitor must lie parallel to the break lines, i.e. at 0 or 180 degrees.
+Quilter cannot be told a rotation; `check_geometry.py` fails the returned board
+on any capacitor at 90 or 270.
+
+**Copper:** `KEEPOUT_TAB1..3_COPPER` holds tracks, vias and pours 1 mm clear of
+each tab on every layer. No net crosses a tab; each end's pours stop at its own
+edge.
+
+**The rails.** JLCPCB's assembly capability table, Economic column: edge rails
+"**Not necessary**"; delivery format "Single PCB, Panel with mouse bites";
+board size from 10 × 10 mm. The Standard column needs rails, a 70 × 70 mm
+minimum, and is the only one that V-scores. So **Economic, no rails, tabs**.
+What the published pages do not settle is how JLCPCB classes one outline that
+holds two different circuits joined by tabs: its "different designs" rule
+says pieces whose copper differs and which "can be separated" count as
+different designs, and a panelled board "will turn into its original cost of
+Engineering fee+board fee" (jlcpcb.com/help/article/different-design-in-your-pcb-files;
+.../in-what-cases-will-there-be-charged-extra). That was equally true of the
+V-score version and is not yet in `COST.md`.
+
+**Ask JLCPCB, before ordering:**
+
+> My Gerber is one 64.50 × 92.00 mm, 4-layer, 1.6 mm board. It holds two
+> different circuits joined by three 5 mm breakaway tabs with 0.5 mm mouse
+> bites across a 2 mm routed slot. There are no V-cuts and no edge rails. All
+> SMT parts are on the top side, at least 0.8 mm from any edge and 5 mm from
+> any tab, and there are three fiducials. (1) Can you assemble this as
+> Economic PCBA, as a single PCB, without adding edge rails? (2) Will you charge
+> it as one design or two, and does it lose the promotional board price?
+> (3) Please ship it with the tabs unbroken; will you?
+
+### 13.3 The jumper window
+
+rev D as first prepared stopped the window 0.50 mm short of DB6. It now runs
+**local x 43.30–57.00, y 39.50–53.00** (was x 44.50–57.00, y 39.50–50.00),
+which leaves DB6's outline (HL2 x 115.80–120.70, y 117.80–123.80) with 2.5 mm
+clear on the left and bottom, 5.0 mm on top and 6.3 mm on the right, for a
+finger or tweezers. It is part of the cut-out in §13.1, so it clears the same
+1 mm keep-back; J5's courtyard ends 3.1 mm above it, and DRC passes.
+
+**Found on the way: DB3's position was wrong in the notes and the checker.**
+DB3 is at HL2 x 123.33–125.87, **y 109.31–119.47**, not y 114.39–122.01; the
+old figure rotated its footprint the wrong way. So DB3 was never "inside the
+window". About a third of it (its end toward J5) is under the board, and it
+cannot be fully uncovered without moving J5, which is locked. The other two
+thirds are in the window, as before. `check_geometry.py` now reports DB3
+from the HL2 file and does not fail on it.
+
+### 13.4 Measured on the owner's radio
+
+**Measured by the owner on his own HL2, build 9, on 13 September 2026.**
+These replace the assumptions used until then.
+
+| Part | Measured | Was assumed | What it means here |
+|---|---|---|---|
+| Ethernet jack CN3, height above the HL2 board | **11.18 mm** | 13.5 | beside the radio end's top edge, not under it. It is taller than the 10.92 mm underside, so the radio end cannot grow toward it |
+| CN3 width | **17.7 mm** | 20.0 | centred on the footprint, its body ends about 1.7 mm short of the radio end's edge; worth a look at the first fit |
+| CN3 release clip | **on top** | — | |
+| DC power jack CN2 | slightly lower than CN3 | — | outside the board's outline |
+| Morse-key jack CN4, height | **5.12 mm** | 6–10 | under the board; 5.80 mm clear |
+| Key plug grip thickness | **6.15 mm** | — | outside the case |
+| Clock SMAs CL1 and CL2, height | **4.24 mm** | 3–8 | under the board; 6.68 mm clear. **Both are fitted and in use, with straight SMA plugs** |
+| Transformer T2, height | **11.17 mm** | — | taller than the underside: now under a hole (§13.1) |
+| Header stack, pin socket pushed onto DB1 | **10.92 mm** | 11.04 | the underside on his radio. His socket may not be the specified part |
+| FPGA U2 heatsink, height above the HL2 board | **8.25 mm** | — | 2.67 mm under the board; now under a hole (§13.1) |
+
+**The internal case measurements are superseded:** use the existing 55 mm
+front panel design (`panel-endcap/`).

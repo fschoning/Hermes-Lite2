@@ -14,8 +14,8 @@ pairs and 16 sideband conductors.
 
 | | |
 |---|---|
-| Board | radio end **64.50 × 64.88 mm**, 4 layer, 1.6 mm, HASL. HL2 x 70.00→134.50, y 73.37→138.25. The whole board, both ends, is **64.50 × 90.00 mm**, no rails |
-| Underside | 11.04 mm above the HL2's top surface, on 2.54 mm sockets and one M3 screw |
+| Board | radio end **64.50 × 64.88 mm**, 4 layer, 1.6 mm, HASL. HL2 x 70.00→134.50, y 73.37→138.25. The whole board, both ends, is **64.50 × 92.00 mm**, no rails, the ends joined by three mouse-bite tabs |
+| Underside | 11.04 mm above the HL2's top surface (10.92 mm measured on the owner's radio), on 2.54 mm sockets and one M3 screw; holes over the radio's FPGA, AD9866 and T2 |
 | Connector | Amphenol ICC **U10A474240T**, LCSC **C5432262** |
 | Cable | 10Gtek **CAB-8654/8654-8i-P**, 8i to 8i, 0.5 m, **$15** |
 | Lane rate | DDR at 153.6 MHz = **307.2 Mbit/s**, three lanes each way |
@@ -116,9 +116,10 @@ receives true LVDS at its 3.3 V supply. Placed at the 40 mm case position.
 ## To order
 
 JLCPCB, **Economic** assembly, **5 boards**, 4 layer, 1.6 mm, lead-free HASL,
-green, 1 oz, **one design**, delivered as a single PCB. It is one ordinary
-64.50 × 90.00 mm board with one outline and no rails; the one V-score line
-is on the Eco1.User layer. Do not buy impedance control — `COST.md` §4 explains why.
+green, 1 oz, delivered as a single PCB with the tabs unbroken. It is one
+64.50 × 92.00 mm board with one outline and no rails; the two ends are joined
+by three mouse-bite tabs. Ask JLCPCB first whether that counts as one design
+(`DESIGN_NOTES.md` §13.2). Do not buy impedance control — `COST.md` §4 explains why.
 `COST.md` §1 is the line-by-line.
 
 Then hand-solder, per board: the DB1 2×10 socket and the DB12 2×3 socket and

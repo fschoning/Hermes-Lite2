@@ -15,7 +15,7 @@ upright-fin transitions and panel V-scores do not exist any more.
 
 | | |
 |---|---|
-| Board | radio end **64.50 × 64.88 mm** (outline from local y 0.07), local (0,0) = HL2 main board (70.00, 73.30); whole board with the Gowin end 64.50 × 90.00 mm, no rails |
+| Board | radio end **64.50 × 64.88 mm** (outline from local y 0.07), local (0,0) = HL2 main board (70.00, 73.30); whole board with the Gowin end 64.50 × 92.00 mm, no rails, ends joined by three mouse-bite tabs |
 | Stack | **4 layer**, 1.6 mm. F.Cu signal / **In1.Cu solid GND** / In2.Cu power / B.Cu signal |
 | Unrouted nets at handover | 328 items, DRC otherwise **0 violations** |
 | Impedance | target **100 Ω differential**, **not** guaranteed — JLCPCB Economic gives no impedance control and `COST.md` §5.1 explains why buying it would waste $33.88 |
@@ -91,7 +91,7 @@ upright-fin transitions and panel V-scores do not exist any more.
 | **The three sockets are on the BOTTOM** (J2 on DB1, J3 on DB12, J4 on CN1) and their hole positions are fixed by the radio. Do not move them by so much as 0.01 mm — `check_geometry.py` recomputes all 36 holes from `hermeslite.kicad_pcb` and fails if they move |
 | **The connector is at local (10.40, 46.00)** and its position is load-bearing: `DESIGN_NOTES.md` §6.2 shows it cannot go anywhere else. Do not "tidy" it toward the middle of the front edge |
 | **The M3 anchor is a U-notch** at local x 1.30…4.70, from y 61.95 to the top edge. Keep copper 0.3 mm clear of it |
-| **The window at local x 44.50…57.00, y 39.50…50.00** exists so the radio's DB6 and DB3 configuration jumpers stay reachable. Route around it, not through it |
+| **The cut-outs**: a notch over the radio's FPGA (local x 24.00…50.20, top edge to y 25.10) and one cut-out over the AD9866, T2 and jumper DB6 (local x 34.09…57.00, y 30.00…56.25). Nothing within 1 mm; pairs 2 mm off. `DESIGN_NOTES.md` §13 |
 | **J5, the JTAG pass-through, must stay reachable with the board fitted** — it is on the top at local (56.00, 24.50) and a USB Blaster's 10-way IDC socket needs about 20 × 12 mm of clear space above it and 15 mm of height |
 | **The 1.1 mm unplated hole at local (4.04, 2.12)** is the optional locating peg into HL2 MH6 |
 

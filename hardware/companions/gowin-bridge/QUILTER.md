@@ -14,11 +14,11 @@ any change.
 1. Open quilter.ai and start a new layout job.
 2. Upload the three files above in one go. Do not zip them. Do not upload a folder.
 3. On the preview page, confirm the parser reports no errors.
-4. Confirm one board outline, 64.50 × 90.00 mm, with a notch at the top right, a small U-notch at the bottom left and one rectangular window.
-5. Confirm these parts sit inside the board: J1, J2, J3, J4, J5, J101, J102, FID1, FID2, FID3 and the hole MB1. Quilter keeps them where they are.
+4. Confirm one board outline, 64.50 × 92.00 mm: the radio end on top with a deep notch in its top edge (over the radio's FPGA) and one large L-shaped cut-out (over the radio's AD9866 and T2, and the jumper window); a 2 mm slot across the board crossed by three short tabs; the Gowin end below with a notch at its top right. If the preview shows the two ends as separate boards, stop.
+5. Confirm these parts sit inside the board: J1, J2, J3, J4, J5, J101, J102, FID1, FID2, FID3, the hole MB1 and the 48 mouse-bite holes MB2–MB49. Quilter keeps them where they are.
 6. Confirm the other 142 parts sit off the board to the right. Quilter places those.
 7. Confirm five dotted placement regions: `REGION_RADIO`, `REGION_RADIO_HDR`, `REGION_RADIO_ESD`, `REGION_GOWIN`, `REGION_GOWIN_ESD`.
-8. Confirm ten keepouts: `KEEPOUT_VSCORE_COPPER`, `KEEPOUT_J5_IDC_L`, `_R`, `_T`, `_B`, `KEEPOUT_UNDER_SMA`, `KEEPOUT_UNDER_KEYJACK`, `KEEPOUT_J14_POS1_4_VIAS`, `KEEPOUT_J14_POS1_4_BOTTOM`, `KEEPOUT_UNDER_DOCK_J9`.
+8. Confirm nineteen keepouts: `KEEPOUT_CUT_FPGA`, `KEEPOUT_CUT_ADC`, `KEEPOUT_CUT_MID`, `KEEPOUT_CUT_T2`, `KEEPOUT_TAB1_COPPER`, `KEEPOUT_TAB1_PARTS`, `KEEPOUT_TAB2_COPPER`, `KEEPOUT_TAB2_PARTS`, `KEEPOUT_TAB3_COPPER`, `KEEPOUT_TAB3_PARTS`, `KEEPOUT_J5_IDC_L`, `_R`, `_T`, `_B`, `KEEPOUT_UNDER_SMA`, `KEEPOUT_UNDER_KEYJACK`, `KEEPOUT_J14_POS1_4_VIAS`, `KEEPOUT_J14_POS1_4_BOTTOM`, `KEEPOUT_UNDER_DOCK_J9`.
 9. If step 3, 4, 7 or 8 fails, stop and write down what the preview shows.
 
 ## B. Placement regions (Quilter needs the parts typed in)
@@ -84,13 +84,15 @@ any change.
 48. Confirm: decoupling, worst gap 3 mm or less.
 49. Confirm: HL2 header nets, longest 25 mm or less.
 50. Confirm: no pair net has track off the top layer, and nothing is routed on In1.
+50a. Confirm: holes over the radio clear, nothing within 1 mm of a cut-out, no pair track within 2 mm.
+50b. Confirm: nearest part to a break line 5.00 mm or more, and every SMD capacitor parallel to the break lines. Rotate any capacitor it names to 0 or 180 degrees by hand.
 51. Confirm each length group spreads 2.5 mm or less: radio forward, radio reverse, radio aux out, radio aux in, and the four Gowin groups.
 52. Run `python tools/check_netlist.py`. It must end in `OK`.
 53. Run KiCad DRC on the returned board with schematic parity: `kicad-cli pcb drc --severity-error --schematic-parity --refill-zones bridge-quilter/bridge.kicad_pcb`.
 54. Confirm 0 violations, 0 unconnected items, 0 parity issues.
 55. Open the board in KiCad. Look at In2: confirm a `+2V5` area reaches U1 pin 1, U2 pin 1, U3 pin 16 and U12 pin 5.
 56. Look at In1: confirm each end's ground plane is unbroken under the pairs.
-57. Look at the score line: confirm no track, via or pour crosses it and no part is within 5 mm of it.
+57. Look at the three tabs: confirm no track, via or pour crosses the slot or a tab, and no part is within 5 mm of a row of mouse-bite holes. Look at the cut-outs: confirm In1 runs round each one with no gap across the board.
 58. If step 17 was needed, confirm the downloaded board's stackup still reads 0.2104 / 1.065 / 0.2104 mm before ordering.
 59. Anything that fails: write it down, loosen or fix the constraint, and resubmit with **Replace Files**.
 
@@ -103,5 +105,8 @@ any change.
 | ESD and terminations within 5 mm | only as in-app proximity constraints (steps 36–40), not from the file |
 | HL2 header nets under 25 mm | no length limit for single-ended nets; the header region only makes it likely |
 | Decoupling at the pin | detected from pin names; the schematic joins pins by labels, not wires |
-| No copper across the score | a keepout in the file; Quilter documents keepouts but not score lines |
-| No part within 5 mm of the score | the placement regions stop short of it; Quilter documents no score handling |
+| No copper across the slot or tabs | keepouts in the file (`KEEPOUT_TAB*_COPPER`); Quilter documents keepouts but not panels or tabs |
+| No part within 5 mm of a break line | keepouts (`KEEPOUT_TAB*_PARTS`) and regions that stop short; Quilter documents no tab handling |
+| SMD capacitors parallel to the break lines | Quilter cannot be given a rotation |
+| Nothing inside a cut-out or its 1 mm margin | keepouts in the file (`KEEPOUT_CUT_*`) |
+| Pair tracks 2 mm from a cut-out | the keepouts only hold 1 mm |

@@ -1,7 +1,7 @@
 # gowin-bridge cost, rev D — one board, both ends
 
 **One design, one board, one order.** Each board carries one radio end and one
-Gowin end inside a single outline, joined across V-scores and snapped apart
+Gowin end inside a single outline, joined by three mouse-bite tabs and snapped apart
 after assembly. The order is five boards, so five of each and five complete
 links. Every figure below comes out of `tools/cost_model.py`, which counts
 parts and solder joints from the generated BOM and PCB.
@@ -25,7 +25,7 @@ the Gowin end.
 
 | | |
 |---|---|
-| Bare PCB: the 64.50 × 90.00 mm board costs the same $12.10 as the radio end alone | $0.00 |
+| Bare PCB: the 64.50 × 92.00 mm board costs the same $12.10 as the radio end alone | $0.00 |
 | Gowin-end components, 5 × $4.04 | $20.20 |
 | Gowin-end solder joints, 5 × 214 × $0.0016 | $1.71 |
 | The radio end re-counted: the AUXIO fail-safe (5 × one AO3400A and one 10 kΩ, plus their joints) and today's prices | $0.50 |
@@ -35,9 +35,11 @@ connector and its ESD arrays are the radio end's own part numbers, and its
 resistors are Basic. The AUXIO fail-safe on the radio end adds one Basic
 MOSFET, so no fee either.
 
-**The board is 64.50 × 90.00 mm** since the rails came off on 13 Sep 2026
-(it was quoted at 64.50 × 100.00 mm), inside the 100 × 100 mm size band for the
-promotional board price, so the quote is unchanged. The live quote gives $7.00 for five boards plus $5.10
+**The board is 64.50 × 92.00 mm** since the rails came off and the V-score
+became three mouse-bite tabs on 13 Sep 2026 (it was quoted at 64.50 × 100.00
+mm), inside the 100 × 100 mm size band for the promotional board price, so the
+quote is unchanged — unless JLCPCB counts the two tabbed ends as two designs
+(`DESIGN_NOTES.md` §13.2). The live quote gives $7.00 for five boards plus $5.10
 for lead-free HASL.
 
 ---
@@ -51,7 +53,7 @@ green, 1 oz outer, **one design, single PCB**, no impedance control.
 
 | Charge | Cost |
 |---|---|
-| Bare PCB: board, 5 pieces, 64.50 × 90.00 mm (quoted at 64.50 × 100.00, same promotional band) | $7.00 |
+| Bare PCB: board, 5 pieces, 64.50 × 92.00 mm (quoted at 64.50 × 100.00, same promotional band) | $7.00 |
 | Bare PCB: lead-free HASL | $5.10 |
 | **Bare PCB subtotal** (live quote, 13 Sep 2026) | **$12.10** |
 | Assembly setup | $8.18 |
@@ -151,7 +153,7 @@ for a 307.2 Mbit/s link whose connector is itself 85 Ω ±10. `DESIGN_NOTES.md`
 |---|---|---|
 | **Shipping** | a few dollars | $21.55 is rev D's Germany quote with assembly, kept unchanged. The bare-PCB quote page on 13 Sep 2026 estimated DHL at $27.63 for 0.23 kg; the real figure comes after the files are uploaded |
 | **Whether JLCPCB will solder the SlimSAS shell tails** | $4.24 | 8 tails per board × 5 × $0.0164 + the $3.58 hand-soldering fee, if they do. The costing assumes the owner does |
-| **Whether JLCPCB accepts V-scores that cross the two 3.4 mm notches** | nothing, or a re-cut | ask at order time |
+| **Whether JLCPCB counts the two tabbed ends as two designs, and drops the promotional board price** | a different-design fee and the board at full price; not quoted | ask before ordering, `DESIGN_NOTES.md` §13.2 |
 | **Stock of C55160396**, the 5.0 mm socket for scheme 1 | $0.45 a link | 10 in stock on 13 Sep 2026 |
 
 ---
