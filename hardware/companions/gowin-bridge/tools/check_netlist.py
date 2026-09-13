@@ -58,6 +58,15 @@ generator could get wrong without ERC noticing:
 
 11. THE TWO ENDS SHARE NO NET.
 
+12. AN ABSENT FAR END CANNOT KEY THE TRANSMITTER.  With the far end's
+    connector pins treated as unconnected, every one of the four AUXIO lines
+    - CW/PTT ring and tip (active LOW, keyed when low) and the I2C SCL/SDA
+    bus to the radio's clock generator (idle HIGH) - is biased on the radio
+    end itself to its safe HIGH level, can only pass that level through the
+    drive buffer, and the drive buffer is tri-stated unless a powered far end
+    asserts presence.  Walked for radio-to-Gowin, Gowin-to-radio and
+    radio-to-radio.
+
 The tables below are retyped here from PINMAP.md and from the specifications
 rather than imported from the generator, so the two can disagree and be
 caught.
@@ -192,7 +201,31 @@ ENABLES = {
     'JTAG_EN_N': '+3V3',
     'HL2_AUXIO_EN': '+2V5',
     'AUXIO_EN_N': '+3V3',
+    'AUXIO_OE_N': '+3V3',
 }
+
+# The four AUXIO lines, retyped from the HL2 schematic (hardware/hl,
+# InputOutput sheet and hermeslite.net) and the HL2 gateware.
+#   sideband position -> (HL2 net at DB1, DB1 pin, FPGA pin, function,
+#                         what is ACTIVE, the SAFE level)
+# CW/PTT: R75/R76 2.2 k to +3V3, R77/R78 100 R to KEY jack CN4, C71/C72 1 uF,
+# D8 SM05; sheet note "Ground to key"; gateware debounces ~io_phone_tip and
+# ~io_phone_ring.  I2C1: R43/R44 4.7 k to +3V3, U6 = 5P49V5923 at 0x6A.
+AUXIO_LINES = {
+    11: ('HL2_CWR', 10, 90, 'CW/PTT ring (PTT or dash)', 'LOW = keyed',
+         'HIGH'),
+    12: ('HL2_CWT', 12, 91, 'CW/PTT tip (CW key or dot)', 'LOW = keyed',
+         'HIGH'),
+    26: ('HL2_SCL1', 16, 103, 'I2C1 SCL to U6, the master clock generator',
+         'idle HIGH, clocks LOW', 'HIGH'),
+    27: ('HL2_SDA1', 18, 104, 'I2C1 SDA to U6, the master clock generator',
+         'idle HIGH, START = falls while SCL HIGH', 'HIGH'),
+}
+AUXIO_DRIVE_BUF = 'U9'
+# SN74AVC4T245 A-side pin -> B-side pin, retyped from TI SCES576.
+X4_A_TO_B = {'4': '13', '5': '12', '6': '11', '7': '10'}
+X4_OE = ('14', '15')
+X4_DIR = ('2', '3')
 
 SLIMSAS_REF = 'J1'
 
@@ -782,6 +815,136 @@ def walk(pins, near, far):
     return prob
 
 
+def passive(ref):
+    return ref.startswith(('D', 'TP', '#'))
+
+
+def pulls(net, pins, vals, bynet, byref):
+    """-> (pull-up refs to +3V3, pull-down refs to GND) on a net."""
+    ups, downs = [], []
+    for (r, pad) in bynet.get(net, []):
+        if not r.startswith('R'):
+            continue
+        for p_ in byref.get(r, []):
+            if p_ == pad:
+                continue
+            dest = pins.get((r, p_))
+            if dest == '+3V3':
+                ups.append('%s=%s' % (r, vals.get(r, '')))
+            elif dest == 'GND':
+                downs.append('%s=%s' % (r, vals.get(r, '')))
+    return ups, downs
+
+
+def auxio_failsafe(pins, vals, bynet, byref, near, far):
+    """With the far end's connector pins UNCONNECTED - cable unplugged, far
+    end unpowered, unwired or tri-stated - every AUXIO line at `near` must sit
+    at its safe level, decided on `near` alone.  near / far = (label,
+    connector ref, net prefix)."""
+    nl, nref, npre = near
+    fl, fref, fpre = far
+    print('=== AUXIO fail-safe, %s end with the %s end absent or undriven ==='
+          % (nl, fl))
+    prob = []
+    for pos in sorted(AUXIO_LINES):
+        hnet, db1, fpga, what, active, safe = AUXIO_LINES[pos]
+        n_in = pins.get((nref, 'B%d' % pos), '<open>')
+        f_out = pins.get((fref, 'A%d' % pos), '<open>')
+        f_drv = sorted({r for (r, _) in bynet.get(f_out, [])
+                        if r != fref and not passive(r)
+                        and not r.startswith('R')})
+        far_state = ('driven by %s' % ', '.join(f_drv) if f_drv
+                     else 'not driven at all')
+        others = sorted({r for (r, _) in bynet.get(n_in, [])
+                         if r != nref and not passive(r)})
+        if npre:                       # the Gowin end has no AUXIO path
+            if others:
+                prob.append('%s end: AUXIO contact B%d reaches %s; the Gowin '
+                            'end implements no AUXIO input'
+                            % (nl, pos, ', '.join(others)))
+            else:
+                print('  B%-2d %-8s reaches nothing at this end: no key or bus '
+                      'input to disturb (far end %s)' % (pos, hnet[4:], far_state))
+            continue
+        ups, downs = pulls(n_in, pins, vals, bynet, byref)
+        if downs or not ups:
+            prob.append('%s -> %s: %s (%s, FPGA %d, %s) is not biased to its '
+                        'safe %s level on the radio end: pull-ups %s, '
+                        'pull-downs %s. A far end that is %s would leave it '
+                        '%s' % (fl, nl, n_in, what, fpga, active, safe, ups
+                                or 'none', downs or 'none', far_state,
+                                'LOW = KEYED' if downs else 'FLOATING'))
+            continue
+        level = 'HIGH'
+        # through the drive buffer: the only active part on the net
+        bufpins = [pd for (r, pd) in bynet.get(n_in, [])
+                   if r == AUXIO_DRIVE_BUF]
+        stray = [r for r in others if r not in (AUXIO_DRIVE_BUF,)
+                 and not r.startswith('R')]
+        if stray or len(bufpins) != 1 or bufpins[0] not in X4_A_TO_B:
+            prob.append('%s must reach only the A side of %s, found %s / %s'
+                        % (n_in, AUXIO_DRIVE_BUF, others, bufpins))
+            continue
+        tnet = pins.get((AUXIO_DRIVE_BUF, X4_A_TO_B[bufpins[0]]))
+        hl2 = [pins.get((r, '2' if pd == '1' else '1'))
+               for (r, pd) in bynet.get(tnet, []) if r.startswith('R')
+               and vals.get(r) == '330R']
+        if hl2 != [hnet]:
+            prob.append('%s drive output %s does not reach %s through one '
+                        '330 R (found %s)' % (n_in, tnet, hnet, hl2))
+            continue
+        if level != safe:
+            prob.append('%s would pass %s to %s, whose safe level is %s'
+                        % (n_in, level, hnet, safe))
+            continue
+        print('  B%-2d %-16s 10 k UP (%s) -> %s -> 330 R -> %-8s FPGA %-3d '
+              '%s: %s passed = %s. Far end %s'
+              % (pos, n_in, ', '.join(ups), AUXIO_DRIVE_BUF, hnet, fpga,
+                 active, level, 'NOT KEYED' if pos in (11, 12) else 'bus idle',
+                 far_state))
+    if npre:
+        return prob
+    # The drive buffer's enable, with the far end absent.
+    for pd in X4_DIR:
+        if pins.get((AUXIO_DRIVE_BUF, pd)) != '+3V3':
+            prob.append('%s DIR pin %s is not +3V3, so the drive path does '
+                        'not run cable -> radio' % (AUXIO_DRIVE_BUF, pd))
+    oe = {pins.get((AUXIO_DRIVE_BUF, pd)) for pd in X4_OE}
+    if oe != {'AUXIO_OE_N'}:
+        prob.append('%s OE* is %s, not the presence-interlocked AUXIO_OE_N'
+                    % (AUXIO_DRIVE_BUF, sorted(oe)))
+        return prob
+    ups, downs = pulls('AUXIO_OE_N', pins, vals, bynet, byref)
+    q = [r for (r, pd) in bynet.get('AUXIO_OE_N', [])
+         if r.startswith('Q') and pd == '3']
+    other = [r for (r, _) in bynet.get('AUXIO_OE_N', [])
+             if r not in q and r != AUXIO_DRIVE_BUF and not passive(r)
+             and not r.startswith('R')]
+    if downs or not ups or len(q) != 1 or other:
+        prob.append('AUXIO_OE_N must be pulled up and pulled down ONLY through '
+                    'one MOSFET drain: pull-ups %s, pull-downs %s, drains %s, '
+                    'other %s' % (ups, downs, q, other))
+        return prob
+    gate = pins.get((q[0], '1'))
+    src = pins.get((q[0], '2'))
+    gu, gd = pulls(gate, pins, vals, bynet, byref)
+    if gate != 'SB_PRSNT_IN' or src != 'AUXIO_EN_N' or gu or not gd:
+        prob.append('the interlock %s must have gate SB_PRSNT_IN (pulled '
+                    'DOWN, so LOW with the far end absent) and source '
+                    'AUXIO_EN_N: gate %s (up %s, down %s), source %s'
+                    % (q[0], gate, gu, gd, src))
+        return prob
+    f_prs = pins.get((fref, 'A8'), '<open>')
+    print('  drive enable: %s OE* = AUXIO_OE_N, pulled UP by %s; pulled low '
+          'only through %s, gate %s held LOW by %s with the %s end absent, '
+          'so the drive path is TRI-STATED whatever the gateware does'
+          % (AUXIO_DRIVE_BUF, ', '.join(ups), q[0], gate, ', '.join(gd), fl))
+    if f_prs == '<open>':
+        prob.append('the %s end has nothing on A8, so it can never assert '
+                    'presence' % fl)
+    return prob
+
+
 def main():
     pins, vals, bynet, byref = load(export())
     prob = []
@@ -823,6 +986,15 @@ def main():
     prob += walk(pins, radio, radio)
 
     print()
+    print('################ AUXIO fail-safe: no far end can key the radio '
+          '################')
+    r3 = ('radio', SLIMSAS_REF, '')
+    g3 = ('Gowin', GOWIN_REF, 'G_')
+    prob += auxio_failsafe(pins, vals, bynet, byref, r3, g3)   # radio-to-Gowin
+    prob += auxio_failsafe(pins, vals, bynet, byref, g3, r3)   # Gowin-to-radio
+    prob += auxio_failsafe(pins, vals, bynet, byref, r3, r3)   # radio-to-radio
+
+    print()
     for p in prob:
         print('  !! ' + p)
     print('  %s' % ('OK - the three radio-end header maps and the Gowin-end '
@@ -833,7 +1005,9 @@ def main():
                     'agree with the SFF-9402 tables and the lane map, the '
                     'crossover lands every output on the input that wants it, '
                     'no radio can reach another radio JTAG, both enables are '
-                    'pulled to their disabled state at both ends, every '
+                    'pulled to their disabled state at both ends, no absent '
+                    'or undriven far end can key CW/PTT or disturb the clock '
+                    'chip bus in any of the three pairings, every '
                     'conductor leaving the board is clamped, and there is one '
                     'design'
                     if not prob else '%d PROBLEMS' % len(prob)))

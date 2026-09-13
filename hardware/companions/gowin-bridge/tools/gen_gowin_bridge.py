@@ -266,6 +266,9 @@ TYPES = {
                  'USON-10_2.5x1.0mm_P0.5mm'),
     'LDO25':    ('Regulator_Linear', 'ME6211C25M5', 'Package_TO_SOT_SMD',
                  'SOT-23-5'),
+    # The AUXIO presence interlock.  AO3400A is a JLCPCB BASIC part, so it
+    # adds no $3.07 fee.  Pin 1 gate, pin 2 source, pin 3 drain.
+    'NMOS':     ('Transistor_FET', 'AO3400A', 'Package_TO_SOT_SMD', 'SOT-23'),
     'SLIMSAS':  (None, 'SLIMSAS_8I', None, SLIMSAS_FP),
     # The Gowin end's copy: identical contacts, plus the M3 spacer hole that
     # the case position puts under the housing.
@@ -664,8 +667,9 @@ LC_RCV = 'C87137'         # DS90LV048ATMTCX/NOPB, quad LVDS receiver, TSSOP-16
 # SN74AVC8T245PWR was C465742.  No longer used: two SN74AVC4T245
 # do the same job for $0.31 less and one fewer unique part number.
 LC_X4 = 'C81461'          # SN74AVC4T245PWR
-LC_INV = 'C20917'        # AO3400A N-MOSFET, SOT-23, BASIC (replaces
-                          # C7827, SN74LVC1G04DBVR, which is Extended)
+LC_NMOS = 'C20917'        # AO3400A N-MOSFET, SOT-23, JLCPCB BASIC, 461,420
+                          # in stock on LCSC, checked live 13 Sep 2026.
+                          # The AUXIO drive path's presence interlock
 LC_LDO25 = 'C194395'      # ME6211C25M5G-N
 LC_LDO33 = 'C6186'         # AMS1117-3.3, Basic
 # Pin headers need DISCRETE part numbers, not a strip: C2337 is a 1x40
@@ -763,7 +767,7 @@ def courtyard(ptype, rot=0):
 
 
 PLACE_GAP = 0.40             # clearance left between neighbouring courtyards
-PLACE_TYPES = ('R', 'R0805', 'C', 'C0805', 'TP', 'TPBIG', 'ESD4')
+PLACE_TYPES = ('R', 'R0805', 'C', 'C0805', 'TP', 'TPBIG', 'ESD4', 'NMOS')
 
 
 def autoplace(board, regions):
@@ -887,6 +891,12 @@ def autoplace(board, regions):
 
 BOARD_W = 64.50          # local x 0 .. 64.50  = HL2 x 70.00 .. 134.50
 BOARD_H = 64.95          # local y 0 .. 64.95  = HL2 y 73.30 .. 138.25
+# The outline starts 0.07 mm in from local y 0, at HL2 y 73.37, so the one
+# panel fits 100.00 mm and keeps JLCPCB's 5 mm rails.  Local coordinates, and
+# so every part, hole and socket position, are unchanged; only that one edge,
+# which has nothing within 1.6 mm of it and faces open space on the radio,
+# moved.  The radio end is therefore 64.50 x 64.88 mm.
+RADIO_TRIM = 0.07
 HL2_ORIGIN = (70.00, 73.30)
 
 
@@ -1044,8 +1054,9 @@ def bridge():
     # clamp the board down onto the 11.04 mm standoff, and with the connector
     # lying flat there is almost no tipping moment for it to resist anyway.
     NX0, NX1, NY = 3.00 - 1.70, 3.00 + 1.70, BOARD_H - 3.00
-    OUT = [(0, 0), (BOARD_W, 0), (BOARD_W, BOARD_H), (NX1, BOARD_H),
-           (NX1, NY), (NX0, NY), (NX0, BOARD_H), (0, BOARD_H)]
+    OUT = [(0, RADIO_TRIM), (BOARD_W, RADIO_TRIM), (BOARD_W, BOARD_H),
+           (NX1, BOARD_H), (NX1, NY), (NX0, NY), (NX0, BOARD_H),
+           (0, BOARD_H)]
     b = Board('bridge',
               'Hermes Lite 2 SlimSAS bridge - one design, both ends, rev %s'
               % REV,
@@ -1338,9 +1349,29 @@ def bridge():
     #               physically cannot drive an HL2 pin.  This is the default
     #               and the zero-risk state.
     #   DRIVE path  sideband in -> buffer OUTPUT -> 330 R -> HL2 pin.  Gated
-    #               by AUXIO_EN_N, which is pulled UP at both ends and so is
-    #               DISABLED with no gateware, no far end, an unprogrammed
-    #               FPGA, an open HL2 jumper J25 or a missing translator.
+    #               by AUXIO_OE_N, which is LOW only when BOTH the local
+    #               gateware asserts AUXIO_EN_N AND a powered far end is
+    #               present on SB_PRSNT_IN (the Q1 interlock below).
+    #
+    # FAIL-SAFE: AN ABSENT FAR END MUST NEVER KEY THE TRANSMITTER.  Lines 0
+    # and 1 are the radio's CW key / PTT inputs, and they are ACTIVE LOW:
+    # HL2 InputOutput sheet, "Two input only CW/PTT or CW keyer, Ground to
+    # key"; R75/R76 2.2 k pull-ups to +3V3, and the gateware debounces
+    # ~io_phone_tip / ~io_phone_ring (control.v).  Both LOW together at boot
+    # also selects the factory image (hermeslite_core.v remote_update).
+    # Lines 2 and 3 are the I2C bus to U6, the 5P49V5923 clock generator,
+    # whose idle is HIGH (R43/R44 4.7 k pull-ups).  So the SAFE level on all
+    # four is HIGH, and the board enforces it twice, on this end alone:
+    #   1. every SB_AUXIOn_IN has a 10 k pull-UP to +3V3, so a floating,
+    #      unplugged, unpowered or tri-stated far end presents HIGH to the
+    #      drive buffer, which can only pass HIGH on.  (rev D as first built
+    #      pulled these DOWN, so enabling the drive with a Gowin end, which
+    #      does not wire them, would have keyed CW and PTT.)
+    #   2. the buffer is tri-stated unless the far end is present and
+    #      powered, whatever the gateware does.
+    # HIGH also agrees with the DS90LV048A's own open-input fail-safe
+    # (TI SNLS045C section 8.3.1: output HIGH for open, shorted or terminated
+    # inputs), should any of these lines ever move onto an LVDS lane.
     #
     # There is no direction net and no inverter, so there is no "both halves
     # disagree" state to analyse - which is the safety property rev C bought
@@ -1386,20 +1417,48 @@ def bridge():
                     'gateware.'))
     b.add(Part('U9', 'XLAT4', 'SN74AVC4T245PW',
                x4([a for a, _ in auxio_wr], [c for _, c in auxio_wr],
-                  '+3V3', '+3V3', '+3V3', '+3V3', 'AUXIO_EN_N', 'AUXIO_EN_N'),
+                  '+3V3', '+3V3', '+3V3', '+3V3', 'AUXIO_OE_N', 'AUXIO_OE_N'),
                lcsc=LC_X4, mfr='SN74AVC4T245PWR',
                desc='AUXIO DRIVE path, all four lines. Both rails 3.3 V, both '
                     'DIR HIGH so the direction is A->B: the cable drives the '
-                    'HL2 pins. Both ports gated by AUXIO_EN_N, which is '
-                    'pulled up and therefore DISABLED at power-up',
+                    'HL2 pins. Both ports gated by AUXIO_OE_N, which is LOW '
+                    'only while the gateware enables AND a powered far end '
+                    'is present. Its inputs are pulled UP, so an absent far '
+                    'end can only ever pass the not-keyed HIGH level',
                at=None,
-               note='DIR = +3V3 both ports, OE* = AUXIO_EN_N both ports. The '
+               note='DIR = +3V3 both ports, OE* = AUXIO_OE_N both ports. The '
                     'gateware must tri-state FPGA pins 90, 91, 103 and 104 '
                     'BEFORE asserting the enable - that is a software '
                     'interlock, and the 330 R series resistors are what make '
                     'getting it wrong survivable rather than fatal. Be aware '
                     'that lines 2 and 3 are the I2C bus to the VersaClock '
                     'that generates the radio master clock.'))
+    # THE PRESENCE INTERLOCK.  OE* = AUXIO_OE_N, pulled UP to +3V3 (disabled)
+    # and pulled down only through Q1, an N-MOSFET whose source is the
+    # gateware enable AUXIO_EN_N and whose gate is SB_PRSNT_IN.  Q1 conducts
+    # only when its gate is high (a powered far end asserts presence, 3.0 V)
+    # AND its source is low (the gateware asserts the enable): an AND with
+    # no inverter and no new part number.  Every failure disables:
+    #   far end absent or unpowered   gate at 0 V (10 k to GND) - Q1 off
+    #   gateware not enabling         source at 3.3 V - Q1 off, and the body
+    #                                 diode (anode at the source) is not
+    #                                 forward biased with the drain at 3.3 V
+    #   Q1 missing or open            the pull-up holds OE* HIGH
+    #   Q1 shorted                    reverts to the enable alone, and the
+    #                                 input pull-ups still hold HIGH
+    # AO3400A Vgs(th) is 1.45 V max and Rds(on) 48 mOhm at 2.5 V, so 3.0 V of
+    # presence turns it fully on against a 10 k load.
+    b.add(Part(ref('Q'), 'NMOS', 'AO3400A',
+               {'1': 'SB_PRSNT_IN', '2': 'AUXIO_EN_N', '3': 'AUXIO_OE_N'},
+               lcsc=LC_NMOS, mfr='AO3400A',
+               desc='AUXIO drive presence interlock: the drive buffer can be '
+                    'enabled only while the gateware enables AND a powered '
+                    'far end asserts presence. N-MOSFET, gate SB_PRSNT_IN, '
+                    'source AUXIO_EN_N, drain AUXIO_OE_N',
+               at=None,
+               note='JLCPCB Basic. With the cable unplugged or the far end '
+                    'unpowered the gate is held at 0 V and the AUXIO drive '
+                    'path is tri-stated whatever the gateware does.'))
 
     # =================================================== JTAG over the cable
     # THE ANSWER TO "SERIES RESISTORS OR A BUFFER": BOTH, and the buffer is
@@ -1578,6 +1637,10 @@ def bridge():
     rs.append(R(ref('R'), '10k', 'AUXIO_EN_N', '+3V3', lcsc=LC['r10k'],
                 desc='AUXIO drive enable, logic side pull-UP. READ-ONLY is '
                      'the power-up state and the failure state'))
+    rs.append(R(ref('R'), '10k', 'AUXIO_OE_N', '+3V3', lcsc=LC['r10k'],
+                desc='AUXIO drive buffer OE*, pull-UP. Pulled low only through '
+                     'the presence interlock Q1, so with no far end the drive '
+                     'path is tri-stated'))
     rs.append(R(ref('R'), '1k', 'HL2_JTAG_EN', 'GND', lcsc=LC['r1k'],
                 dnp=True,
                 desc='JTAG_FORCE: fit to enable JTAG over the cable WITHOUT '
@@ -1640,10 +1703,13 @@ def bridge():
                 desc='JTAG TDI from the cable, pulled low so the buffer input '
                      'is defined'))
     for idx, _, _, _, _ in AUXIO:
-        rs.append(R(ref('R'), '10k', 'SB_AUXIO%d_IN' % idx, 'GND',
+        rs.append(R(ref('R'), '10k', 'SB_AUXIO%d_IN' % idx, '+3V3',
                     lcsc=LC['r10k'],
-                    desc='AUXIO line %d from the cable, pulled low so the '
-                         'DRIVE buffer input is defined with no cable' % idx))
+                    desc='AUXIO line %d from the cable, pulled UP to the '
+                         'not-keyed / bus-idle level. A floating, unplugged, '
+                         'unpowered or tri-stated far end therefore presents '
+                         'HIGH, and HIGH is not keyed on CW/PTT and is idle '
+                         'on I2C. NEVER A PULL-DOWN' % idx))
     rs.append(R(ref('R'), '10k', 'DI_SPARE', 'GND', lcsc=LC['r10k'],
                 desc='Defines the spare driver channel input'))
     # 100 ohm differential terminations on the eight RECEIVED pairs.  There is
@@ -1767,7 +1833,7 @@ def bridge():
            'HL2_TX_D0', 'HL2_TX_D1', 'HL2_TX_D2',
            'RX_REVCLK', 'RX_DUPCLK', 'RX_SPARE', 'X_REVCLK25',
            'HL2_JTAG_EN', 'HL2_AUXIO_EN', 'JTAG_EN_N', 'AUXIO_EN_N',
-           'DRV_EN', 'DI_SPARE',
+           'AUXIO_OE_N', 'DRV_EN', 'DI_SPARE',
            'SB_PRSNT_OUT', 'SB_PRSNT_IN', 'SB_TDO_OUT',
            'SB_TCK_IN', 'SB_TMS_IN', 'SB_TDI_IN', 'SB_NC9', 'SB_NC29',
            'J_TCK', 'J_TMS', 'J_TDI', 'J_TDO', 'CN1_VTREF',
@@ -1845,8 +1911,9 @@ def bridge():
         ('F.SilkS', 57.3, 21.5, 0, 1.0, 'JTAG PASS-THRU'),
         ('F.SilkS', 50.75, 44.75, 0, 1.0, 'DB6 / DB3 ACCESS'),
         ('Dwgs.User', 32.0, 58.0, 0, 1.4,
-         'Board = 64.50 x 64.95 mm. Local (0,0) = Hermes-Lite 2 main board '
-         '(70.00, 73.30) mm. Underside 11.04 mm above the HL2 top surface.'),
+         'Radio end = 64.50 x 64.88 mm (HL2 y 73.37..138.25). Local (0,0) = '
+         'Hermes-Lite 2 main board (70.00, 73.30) mm. Underside 11.04 mm above '
+         'the HL2 top surface.'),
         ('Dwgs.User', 32.0, 60.0, 0, 1.4,
          'SlimSAS locating-hole datum at local x 10.40, y 46.00 = HL2 '
          '(80.40, 119.30). Mating face nominally 0.30 mm behind the board '
@@ -2209,25 +2276,26 @@ def gowin_end():
 #
 #   y  0.00 ..  5.00   top assembly rail                  V-score y = 5.00
 #   y  5.00 .. 30.12   the Gowin end, unrotated           V-score y = 30.12
-#   y 30.12 .. 95.07   the radio end, unrotated           V-score y = 95.07
-#   y 95.07 .. 100.07  bottom assembly rail
-#   100.07 mm is 0.07 mm outside the 100 x 100 mm band.  JLCPCB's live quote
-#   (13 Sep 2026) prices a two-outline panel identically at 99.67 and 101 mm,
-#   so standard 5.00 mm rails cost nothing.
+#   y 30.12 .. 95.00   the radio end, unrotated           V-score y = 95.00
+#   y 95.00 .. 100.00  bottom assembly rail
+#   ONE continuous Edge.Cuts outline round all of it; the scores are the only
+#   break-off.  100.00 mm, inside the 100 x 100 mm promotional band, with
+#   JLCPCB's recommended 5 mm rails: the radio end's outline starts 0.07 mm in
+#   from its local y 0 (RADIO_TRIM), and nothing else moved.
 #   x  0.00 .. 64.50   both ends are exactly 64.50 mm long, so every score is
 #                      straight from edge to edge
 #
 # Both connectors face the panel's left edge, x = 0, which is a routed outer
 # edge, so no score runs under a connector's overhanging housing.  Two scores
 # cross air: y = 5.00 over the Gowin end's HDMI notch (x 59.07..64.50, at the
-# panel's right edge) and y = 95.07 over the radio end's M3 U-notch
+# panel's right edge) and y = 95.00 over the radio end's M3 U-notch
 # (x 1.30..4.70).
 
 PANEL_W = BOARD_W                    # 64.50
 RAIL = 5.0
 GOWIN_Y0 = RAIL
-RADIO_Y0 = RAIL + GOWIN_H            # 30.12
-PANEL_H = RADIO_Y0 + BOARD_H + RAIL  # 100.07
+RADIO_Y0 = RAIL + GOWIN_H - RADIO_TRIM   # 30.05: radio local (0,0)
+PANEL_H = RADIO_Y0 + BOARD_H + RAIL      # 100.00
 VSCORE_Y = (RAIL, RADIO_Y0, RADIO_Y0 + BOARD_H)
 FIDUCIALS = ((4.0, 2.5), (60.0, 2.5), (10.0, PANEL_H - 2.5))
 
@@ -2247,10 +2315,11 @@ def panel():
            (nx, ny), (PANEL_W, ny), (PANEL_W, PANEL_H), (0, PANEL_H)]
     p = Board('bridge',
               'Hermes Lite 2 SlimSAS bridge rev %s - radio end and Gowin end, '
-              'one panel' % REV,
+              'one board, one outline' % REV,
               out, (PANEL_W, PANEL_H),
               origin_note='panel (0,0) = top-left; Gowin end local (0,0) at '
-                          '(0, 5.00); radio end local (0,0) at (0, 30.12)')
+                          '(0, 5.00); radio end local (0,0) at (0, %.2f)'
+                          % RADIO_Y0)
 
     def merge(board, xform):
         for q_ in board.parts:
@@ -2296,7 +2365,7 @@ def panel():
         p.zones_full.append((lay, 'G_GND', 0, g_poly,
                              'Gowin end ground, %s' % lay))
 
-    # The radio end's M3 U-notch opens onto the y = 95.07 score.  As a cut it
+    # The radio end's M3 U-notch opens onto the y = 95.00 score.  As a cut it
     # has to be a closed shape, so it runs 1.00 mm on into the bottom rail.
     n0, n1 = 3.00 - 1.70, 3.00 + 1.70
     yb = RADIO_Y0 + BOARD_H
@@ -2319,8 +2388,9 @@ def panel():
         ('F.SilkS', 32.0, PANEL_H - 2.5, 0, 1.1,
          'RAILS ARE SCRAP - SNAP ALONG THE THREE SCORES'),
         ('Dwgs.User', 32.0, PANEL_H + 2.0, 0, 1.2,
-         'PANEL %.2f x %.2f mm, 4 layer, 1.6 mm. V-SCORES y = 5.00, 30.12, '
-         '95.07, each edge to edge.' % (PANEL_W, PANEL_H)),
+         'BOARD %.2f x %.2f mm, ONE design, 4 layer, 1.6 mm. V-SCORES y = '
+         '%s, each edge to edge.' % (PANEL_W, PANEL_H,
+                                     ', '.join('%.2f' % v for v in VSCORE_Y))),
     ]
     return p
 

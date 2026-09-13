@@ -8,7 +8,7 @@ upright-fin transitions and panel V-scores do not exist any more.
 
 | | |
 |---|---|
-| Board | **64.50 × 64.95 mm**, local (0,0) = HL2 main board (70.00, 73.30) |
+| Board | radio end **64.50 × 64.88 mm** (outline from local y 0.07), local (0,0) = HL2 main board (70.00, 73.30); whole board with the Gowin end and rails 64.50 × 100.00 mm |
 | Stack | **4 layer**, 1.6 mm. F.Cu signal / **In1.Cu solid GND** / In2.Cu power / B.Cu signal |
 | Unrouted nets at handover | 328 items, DRC otherwise **0 violations** |
 | Impedance | target **100 Ω differential**, **not** guaranteed — JLCPCB Economic gives no impedance control and `COST.md` §5.1 explains why buying it would waste $33.88 |
@@ -102,7 +102,7 @@ upright-fin transitions and panel V-scores do not exist any more.
 | **The radio's auxiliary clock input sees the reverse clock too** | HL2 **R17** is fitted. It must not be — it shorts the DB12 pin 5 and pin 6 nets through 100 Ω |
 | **JTAG over the cable does nothing** | Read `TP_JTAG_EN_N`: HIGH means disabled, which is the power-up state and the correct state until the gateware asserts it. If the gateware cannot run, fit `R_JTAG_FORCE` |
 | **A locally plugged USB Blaster misbehaves** | `TP_JTAG_EN_N` should read HIGH while a Blaster is plugged in. If it reads LOW, the remote path is driving CN1 at the same time |
-| **The radio's CW/PTT or I2C behaves oddly** | Read `TP_AUXIO_EN_N`. HIGH is read-only and is the power-up state. If it is LOW, the far end is driving four of the radio's pins |
+| **The radio's CW/PTT or I2C behaves oddly** | Read `TP_AUXIO_OE_N`. HIGH is read-only and is the power-up state; it can only go LOW while `TP_AUXIO_EN_N` is LOW **and** a powered far end holds `TP_SB_PRSNT_IN` high. If it is LOW, the far end is driving four of the radio's pins |
 | **The radio browns out or resets when the board is fitted** | Was the board plugged in with the radio powered? That is a 22 A microsecond event. Otherwise measure the radio's 3.3 V rail: the board should draw about 350 mA |
 
 ## 7. The bring-up sequence, and the safety check comes first

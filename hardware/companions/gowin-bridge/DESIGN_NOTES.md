@@ -1,7 +1,7 @@
 # gowin-bridge design notes, rev D
 
 Why the design is the way it is, with the numbers. `PINMAP.md` is the pin
-contract; this is the reasoning. **One design with two ends on one panel**:
+contract; this is the reasoning. **One design with two ends on one board**:
 the radio end (sections 1-10) and the Gowin end (section 11). One schematic,
 one PCB, one BOM. rev C's three HDMI cables and riser are in git history.
 
@@ -424,8 +424,8 @@ Why not something cheaper or bigger:
 
 | | |
 |---|---|
-| Outline | **local x 0…64.50, y 0…64.95 = HL2 x 70.00…134.50, y 73.30…138.25** |
-| Size | **64.50 × 64.95 mm**, 4 layers, 1.6 mm, HASL |
+| Outline | **local x 0…64.50, y 0.07…64.95 = HL2 x 70.00…134.50, y 73.37…138.25** |
+| Size | **64.50 × 64.88 mm**, 4 layers, 1.6 mm, HASL. The 0.07 mm off the HL2 y 73.30 edge brings the whole board to 100.00 mm (§11.6); local coordinates are unchanged |
 | Local origin | HL2 main-board (70.00, 73.30), so local x = HL2 x − 70.00 |
 | Underside | **11.04 mm** above the HL2's top surface; top surface at 12.64 mm |
 | Window in the board | **local x 44.50…57.00, y 39.50…50.00** (131 mm², 3 % of the board) to keep HL2 config headers DB6 and DB3 reachable. They clear an 11.04 mm underside by 2.5 mm, so this is about access, not collision — without it you would lift the whole board off to move a jumper |
@@ -552,7 +552,7 @@ window, which is clearance-only and which the owner cuts himself — but
 ## 7. Parts sourcing
 
 **Every number was checked against a live LCSC page and against JLCPCB's
-assembly library.** Seventeen part numbers are placed; eleven are Basic and six
+assembly library.** Eighteen part numbers are placed; twelve are Basic and six
 are Extended.
 
 | Function | Part | LCSC | Tier | Qty | $ @10 |
@@ -565,7 +565,7 @@ are Extended.
 | 2.5 V LDO | ME6211C25M5G-N, SOT-23-5 | **C194395** | Extended | 1 | 0.0561 |
 | Ferrite bead | BLM18PG121SN1D, 0603 | **C14709** | **Basic** | 1 + 1 DNP | 0.0159 |
 | 100 nF 0402 | | **C1525** | Basic | 22 | 0.0046 |
-| 10 kΩ 0402 | | **C25744** | Basic | 18 | 0.0031 |
+| 10 kΩ 0402 | | **C25744** | Basic | 19 | 0.0031 |
 | 100 Ω 0402 | | **C25076** | Basic | 9 | 0.0037 |
 | 330 Ω 0402 | | **C25104** | Basic | 8 | 0.0044 |
 | 0 Ω 0402 | | **C17168** | Basic | 7 + 3 DNP | 0.0028 |
@@ -573,6 +573,7 @@ are Extended.
 | 470 Ω 0402 | | **C25117** | Basic | 1 | 0.0027 |
 | 1 kΩ 0402 | | **C11702** | Basic | 1 + 1 DNP | 0.0022 |
 | 1 µF 0402 | | **C52923** | Basic | 1 | 0.0097 |
+| N-MOSFET, the AUXIO drive presence interlock Q1 | AO3400A, SOT-23 | **C20917** | Basic | 1 | 0.0853 at 5+ |
 | 0 Ω 0805 | 0805W8F0000T5E | **C17477** | Basic | 1 | 0.0045 |
 
 **One part number for all seven translators and buffers, and that is a money
@@ -824,14 +825,15 @@ HIGH through 1 k is present, LOW is link reset. The radio end only uses its
 presence input for the optional driver-gating link, so an unconfigured Gowin
 reading as absent is harmless.
 
-### 11.6 One design on one panel
+### 11.6 One design on one board
 
 | | |
 |---|---|
-| Panel | **64.50 × 100.07 mm**, 4 layer, 1.6 mm |
-| Top to bottom | 5.00 mm rail, V-score, Gowin end 25.12 mm, V-score, radio end 64.95 mm, V-score, 5.00 mm rail |
-| Connectors | both on the panel's left edge, which is a routed outer edge, so no score runs under a connector housing |
-| Scores crossing air | y 5.00 over the 3.4 mm HDMI notch at the right edge; y 95.07 over the radio end's 3.4 mm M3 notch |
+| Board | **64.50 × 100.00 mm**, 4 layer, 1.6 mm, **one continuous Edge.Cuts outline** round both ends and both rails; `check_geometry.py` asserts there is exactly one outer loop |
+| Top to bottom | 5.00 mm rail, V-score, Gowin end 25.12 mm, V-score, radio end 64.88 mm, V-score, 5.00 mm rail |
+| Under 100 mm | the radio end's edge facing the Gowin end is 0.07 mm in from its local y 0 (HL2 y 73.37). Nothing else moved; the nearest pad is 1.63 mm from that edge; the rails keep JLCPCB's recommended 5 mm |
+| Connectors | both on the board's left edge, which is a routed outer edge, so no score runs under a connector housing |
+| Scores crossing air | y 5.00 over the 3.4 mm HDMI notch at the right edge; y 95.00 over the radio end's 3.4 mm M3 notch |
 | Electrical separation | every Gowin-end net is prefixed `G_`; `check_netlist.py` asserts that no net touches both ends; ground pours are per end |
 | Designators | radio end as before; Gowin end numbered from 101 (J101, J102, D101–D112, R101–R117, TP101–TP121) |
 

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Cost model for the gowin-bridge panel: the radio end and the Gowin end of
-one design, fabricated together and snapped apart.
+"""Cost model for the gowin-bridge board: the radio end and the Gowin end of
+one design, one outline, fabricated together and snapped apart.
 
-Run:   python tools/cost_model.py [panels]
+Run:   python tools/cost_model.py [boards]
 
 Computes the order total from the GENERATED BOM and the GENERATED PCB, so the
 figures in COST.md cannot drift from the board.  Quantities, solder-joint
 counts and the unique-Extended-part count are counted here; only the prices
 are typed, and every one has its source in COST.md section 6.
 
-The order is N panels (default 5).  Each panel is one radio end plus one
-Gowin end, so 5 panels = five of each = five complete links.
+The order is N boards (default 5).  Each board is one radio end plus one
+Gowin end, so 5 boards = five of each = five complete links.
 """
 
 import csv
@@ -29,18 +29,16 @@ FEES = dict(
     setup=8.18,                 # JLCPCB Economic assembly setup, per order
     stencil=1.53,               # per order
     extended_part=3.07,         # per UNIQUE Extended part, per order
-    panel_assembly=8.21,        # assembly "Panel fee", two outlines on the panel
     smt_joint=0.0016,           # per joint
     tht_joint=0.0164,           # per joint, factory through-hole
     hand_solder=3.58,           # per order, only if any factory TH joints
 )
-# Bare PCB, live quote 13 Sep 2026: 4 layer, 1.6 mm, lead-free HASL, 5 pcs,
-# "Different Design 2", "Panel by Customer", at 64.50 x 99.67 mm and again at
-# 64.50 x 101 mm: engineering fee 25.00 + panel 16.42 + surface finish 5.10 +
-# board 4.00 = 50.52 both times.
-PCB_PANEL_PARTS = dict(engineering=25.00, panel=16.42, finish=5.10,
-                       board=4.00)
-PCB_PANEL_5 = sum(PCB_PANEL_PARTS.values())
+# Bare PCB, live JLCPCB instant quote 13 Sep 2026: FR-4, 4 layer, 64.50 x
+# 100.00 mm, 5 pcs, 1 design, single PCB, 1.6 mm, green, lead-free HASL,
+# 1 oz outer / 0.5 oz inner: special offer (board) 7.00 + surface finish
+# 5.10 = 12.10.  The radio-only order paid the same 12.10.
+PCB_PARTS = dict(board=7.00, finish=5.10)
+PCB_5 = sum(PCB_PARTS.values())
 PCB_RADIO_ONLY_5 = 12.10        # the radio end alone, one design
 SHIP_DHL = 21.55                # one shipment to Germany, COST.md rev D
 CABLE = 15.00                   # 10Gtek CAB-8654/8654-8i-P, 0.5 m
@@ -65,6 +63,7 @@ PRICES = {
     'C25117': 0.0027,      # 470 R 0402
     'C25744': 0.0031,      # 10 k 0402
     'C11702': 0.0022,      # 1 k 0402
+    'C20917': 0.0853,      # AO3400A, Basic, 5+ (LCSC 13 Sep 2026)
 }
 EXTENDED = {'C5432262', 'C206491', 'C87137', 'C81461', 'C138714', 'C194395'}
 
@@ -93,7 +92,7 @@ HAND_GOWIN = {
     ],
 }
 HAND_REFS = {'J2', 'J3', 'J4', 'J5', 'J6', 'J102'}
-SHELL_TAILS = 8                 # four per SlimSAS, two SlimSAS per panel
+SHELL_TAILS = 8                 # four per SlimSAS, two SlimSAS per board
 
 
 def gowin_part(ref):
@@ -150,14 +149,11 @@ def main():
     comp = {e: sum(PRICES[k] * v for k, v in qty[e].items()) for e in qty}
 
     once = [
-        ('bare PCB: engineering fee (two outlines)',
-         PCB_PANEL_PARTS['engineering']),
-        ('bare PCB: panel charge (two outlines)', PCB_PANEL_PARTS['panel']),
-        ('bare PCB: lead-free HASL', PCB_PANEL_PARTS['finish']),
-        ('bare PCB: board, %d panels' % n, PCB_PANEL_PARTS['board']),
+        ('bare PCB: board, %d pcs, 4 layer, 64.50 x 100.00 mm' % n,
+         PCB_PARTS['board']),
+        ('bare PCB: lead-free HASL', PCB_PARTS['finish']),
         ('assembly setup', FEES['setup']),
         ('stencil', FEES['stencil']),
-        ('assembly panel fee (two outlines)', FEES['panel_assembly']),
         ('unique Extended parts, %d x $%.2f' % (len(ext),
                                                 FEES['extended_part']),
          len(ext) * FEES['extended_part']),
@@ -174,13 +170,13 @@ def main():
     t_once = sum(v for _, v in once)
     t_panel = sum(v for _, v in per_panel)
     total = t_once + t_panel * n
-    print('gowin-bridge panel: radio end + Gowin end, %d panels' % n)
+    print('gowin-bridge: radio end + Gowin end on one board, %d boards' % n)
     print('-' * 72)
     print('PAID ONCE PER ORDER')
     for label, v in once:
         print('  %-54s %10.2f' % (label, v))
     print('  %-54s %10.2f' % ('subtotal', t_once))
-    print('PAID PER PANEL (x %d)' % n)
+    print('PAID PER BOARD (x %d)' % n)
     for label, v in per_panel:
         print('  %-38s %8.2f each %11.2f' % (label, v, v * n))
     print('  %-54s %10.2f' % ('subtotal', t_panel * n))
@@ -195,23 +191,22 @@ def main():
     print()
     print('Extended part numbers: %s - the Gowin end adds none'
           % ', '.join(ext))
-    print('Gowin end, per panel: %s' % ', '.join(
+    print('Gowin end, per board: %s' % ', '.join(
         '%d x %s' % (v, k) for k, v in sorted(qty['gowin'].items())))
     print()
     print('Where the difference comes from:')
     parts = [
-        ('bare PCB, a two-outline panel instead of one board',
-         PCB_PANEL_5 - PCB_RADIO_ONLY_5),
-        ('assembly panel fee', FEES['panel_assembly']),
-        ('Gowin-end components, %d panels' % n, comp['gowin'] * n),
-        ('Gowin-end joints, %d panels' % n,
+        ('bare PCB, the larger board against the radio end alone',
+         PCB_5 - PCB_RADIO_ONLY_5),
+        ('Gowin-end components, %d boards' % n, comp['gowin'] * n),
+        ('Gowin-end joints, %d boards' % n,
          joints['gowin'] * FEES['smt_joint'] * n),
     ]
     for label, v in parts:
         print('  %-54s %+8.2f' % (label, v))
     rest = total - RADIO_ONLY_ORDER - sum(v for _, v in parts)
-    print('  %-54s %+8.2f' % ('radio end re-counted at 13 Sep prices and '
-                              'joints', rest))
+    print('  %-54s %+8.2f' % ('radio end re-counted (prices, joints, the '
+                              'AUXIO interlock)', rest))
     print()
     print('Outside the order, per link:')
     print('  %-60s %6.2f' % ('SlimSAS cable', CABLE))
@@ -223,7 +218,7 @@ def main():
             print('    %-58s %6.2f' % (label, v))
     print()
     print('NOT counted, UNVERIFIED: JLCPCB soldering the %d SlimSAS shell '
-          'tails per panel: %d x %d x $%.4f + $%.2f = $%.2f.'
+          'tails per board: %d x %d x $%.4f + $%.2f = $%.2f.'
           % (SHELL_TAILS, SHELL_TAILS, n, FEES['tht_joint'],
              FEES['hand_solder'],
              SHELL_TAILS * n * FEES['tht_joint'] + FEES['hand_solder']))

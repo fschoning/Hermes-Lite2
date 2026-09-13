@@ -1,6 +1,6 @@
 # gowin-bridge pin map, rev D
 
-**One design with two ends, on one panel.** One schematic, one PCB, one BOM.
+**One design with two ends, on one board.** One schematic, one PCB, one BOM.
 The **radio end** (connector J1) plugs onto the Hermes-Lite 2; the **Gowin
 end** (connector J101) plugs onto the Tang Mega 138K dock's J14. They are
 fabricated together and snapped apart. Two radio ends and one cable make a
@@ -246,10 +246,10 @@ Same convention: row A is driven by this board, row B is received.
 |---|---|---|---|
 | 8 | `SB_PRSNT_OUT`, 1 kΩ to +3V3 | `SB_PRSNT_IN`, 10 kΩ to GND | presence and link reset |
 | 9 | **nothing** — ESD clamp and a test pad only | `SB_TCK_IN` → gated buffer → 330 Ω → CN1 pin 1 | JTAG TCK in |
-| 11 | `SB_AUXIO0_OUT` | `SB_AUXIO0_IN` | AUXIO line 0 (FPGA 90) |
-| 12 | `SB_AUXIO1_OUT` | `SB_AUXIO1_IN` | AUXIO line 1 (FPGA 91) |
-| 26 | `SB_AUXIO2_OUT` | `SB_AUXIO2_IN` | AUXIO line 2 (FPGA 103) |
-| 27 | `SB_AUXIO3_OUT` | `SB_AUXIO3_IN` | AUXIO line 3 (FPGA 104) |
+| 11 | `SB_AUXIO0_OUT` | `SB_AUXIO0_IN`, 10 kΩ **to +3V3** | AUXIO line 0 (FPGA 90) |
+| 12 | `SB_AUXIO1_OUT` | `SB_AUXIO1_IN`, 10 kΩ **to +3V3** | AUXIO line 1 (FPGA 91) |
+| 26 | `SB_AUXIO2_OUT` | `SB_AUXIO2_IN`, 10 kΩ **to +3V3** | AUXIO line 2 (FPGA 103) |
+| 27 | `SB_AUXIO3_OUT` | `SB_AUXIO3_IN`, 10 kΩ **to +3V3** | AUXIO line 3 (FPGA 104) |
 | 29 | **nothing** — ESD clamp and a test pad only | `SB_TMS_IN` → gated buffer → 330 Ω → CN1 pin 5 | JTAG TMS in |
 | 30 | `SB_TDO_OUT`, from CN1 pin 3 | `SB_TDI_IN` → gated buffer → 330 Ω → CN1 pin 9 | JTAG TDO out, TDI in |
 
@@ -320,12 +320,18 @@ and a JTAG TAP controller with no TCK edge cannot change state at all.
 **FPGA pins 90, 91, 103 and 104 are not the indicator LED pins.** Read out of
 `hardware/hl/hermeslite.net`:
 
-| FPGA | DB1 | What is actually on it |
-|---|---|---|
-| 90 | 10 | **CW/PTT ring.** R75 2.2 kΩ to +3V3, R77 100 Ω out to the KEY jack CN4 through dual diode D8, and **C71 1 µF to ground** — a 2.2 ms time constant |
-| 91 | 12 | **CW/PTT tip.** R76 2.2 kΩ, R78 100 Ω, **C72 1 µF** |
-| 103 | 16 | **I2C1 SCL.** R43 4.7 kΩ pull-up, and it is a **bus**: U6, the IDT 5P49V5923 VersaClock that generates the radio's master clock, sits on it |
-| 104 | 18 | **I2C1 SDA.** R44 4.7 kΩ, same bus |
+| FPGA | DB1 | What is actually on it | Active level | Safe level |
+|---|---|---|---|---|
+| 90 | 10 | **CW/PTT ring.** R75 2.2 kΩ to +3V3, R77 100 Ω out to the KEY jack CN4 through dual diode D8, and **C71 1 µF to ground** — a 2.2 ms time constant | **LOW = keyed** | HIGH |
+| 91 | 12 | **CW/PTT tip.** R76 2.2 kΩ, R78 100 Ω, **C72 1 µF** | **LOW = keyed** | HIGH |
+| 103 | 16 | **I2C1 SCL.** R43 4.7 kΩ pull-up, and it is a **bus**: U6, the IDT 5P49V5923 VersaClock that generates the radio's master clock, sits on it | idle HIGH | HIGH |
+| 104 | 18 | **I2C1 SDA.** R44 4.7 kΩ, same bus; U6 answers at 0x6A | idle HIGH | HIGH |
+
+The active levels are from the HL2 *Input Output* sheet, whose note on the KEY
+jack reads "Ground to key", and from the gateware, which debounces
+`~io_phone_tip` and `~io_phone_ring` (`gateware/rtl/control.v`). Both lines
+low together at boot also selects the factory image
+(`hermeslite_core.v`, `remote_update .factory`).
 
 **The four indicator LEDs D2–D5 are on FPGA pins 98, 99, 100 and 101** — DB1
 pins 9, 11, 15 and 17 — each through a 1 kΩ resistor (R71–R74) to +3V3. The
@@ -353,7 +359,27 @@ paths**, which is safer than one bidirectional translator:
 | Path | Wiring | State |
 |---|---|---|
 | **READ** (default) | HL2 pin → 330 Ω → **buffer input** (high impedance) → sideband out | **always on, and physically incapable of driving an HL2 pin** |
-| **DRIVE** (optional) | sideband in → **buffer output** → 330 Ω → HL2 pin | gated by `AUXIO_EN_N`, pulled up at both ends and therefore **off** at power-up |
+| **DRIVE** (optional) | sideband in (10 kΩ **pull-up**) → **buffer output** → 330 Ω → HL2 pin | gated by `AUXIO_OE_N`: **off** at power-up, and **off whenever no powered far end is present**, whatever the gateware does |
+
+**The DRIVE path is fail-safe against an absent far end, in hardware.**
+
+1. The four cable-side inputs are **pulled UP** to +3V3. A far end that is
+   unplugged, unpowered, unwired (the Gowin end) or tri-stated leaves them
+   HIGH, and the buffer can only pass HIGH: not keyed, bus idle.
+2. U9's enable `AUXIO_OE_N` is pulled up and pulled down only through **Q1**,
+   an AO3400A: source on the gateware enable `AUXIO_EN_N`, gate on presence
+   `SB_PRSNT_IN`. Q1 conducts only when the gateware enables **and** a powered
+   far end holds presence at 3.0 V. With no far end the gate sits at 0 V on
+   its 10 kΩ and U9 is tri-stated.
+
+So no gateware setting and no operator action can key the radio from an
+absent far end, and a floating line cannot put an edge on the clock chip's
+bus: an I2C write needs a START (SDA falling while SCL is high) and dozens of
+further coordinated edges, and an undriven line here sits at the bus's idle
+HIGH. The single-ended AUXIO sidebands never pass through the DS90LV048A, and
+its own open-input fail-safe (TI SNLS045C §8.3.1, Table 1) is output HIGH, the
+same direction. `check_netlist.py` asserts all of it radio to Gowin, Gowin to
+radio and radio to radio.
 
 There is no direction net and no inverter, so there is no "both halves
 disagree" state to analyse at all. That is the safety property rev C bought
@@ -390,7 +416,7 @@ LOW**:
 | Net at DB1 | FPGA | Feature | 3.3 V net |
 |---|---|---|---|
 | `HL2_JTAG_EN` | 80 (DB1-4) | JTAG over the cable | `JTAG_EN_N` |
-| `HL2_AUXIO_EN` | 72 (DB1-1) | the AUXIO drive path | `AUXIO_EN_N` |
+| `HL2_AUXIO_EN` | 72 (DB1-1) | the AUXIO drive path | `AUXIO_EN_N`, then `AUXIO_OE_N` through the presence interlock Q1 |
 
 Each is pulled **UP at both ends** of the translator that carries it: 10 kΩ to
 +2V5 on the HL2 side and 10 kΩ to +3V3 on the logic side. Pulled up is
@@ -605,10 +631,11 @@ unconfigured, even against its strongest 400 µA pull-up (DS1239 Table 3-8,
 0.4 V), so no TCK edge leaves until gateware makes one. Radio to radio is
 untouched: the radio end still leaves A9 and A29 undriven.
 
-**One caution.** The Gowin end leaves the four AUXIO drive conductors
-undriven, so the radio end's 10 k pull-downs hold its AUXIO drive inputs low.
-Lines 0 and 1 are CW/PTT: **never enable AUXIO drive on a radio linked to a
-Gowin end**, or it will key the transmitter.
+**The unwired AUXIO conductors are safe.** They face the radio end's AUXIO
+inputs, which the radio end itself pulls up to the not-keyed HIGH level, and
+the radio end's drive buffer only passes that level (section 7). They are left
+unwired rather than tied here because the safe level is 3.3 V and J14 offers
+only 5 V and ground.
 
 ### 11.5 The stack onto the dock
 

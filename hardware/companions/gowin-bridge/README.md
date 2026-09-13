@@ -1,6 +1,6 @@
 # gowin-bridge — Hermes Lite 2 SlimSAS bridge, rev D
 
-**One design with two ends, on one panel.** One schematic, one PCB, one BOM,
+**One design with two ends, on one board.** One schematic, one PCB, one BOM,
 one project directory. The **radio end** plugs onto the Hermes-Lite 2; the
 **Gowin end** plugs onto a Tang Mega 138K dock's J14. They are made together
 and snapped apart. Two radio ends and one cable make a radio-to-radio link; a
@@ -14,14 +14,14 @@ pairs and 16 sideband conductors.
 
 | | |
 |---|---|
-| Board | **64.50 × 64.95 mm**, 4 layer, 1.6 mm, HASL. HL2 x 70.00→134.50, y 73.30→138.25 |
+| Board | radio end **64.50 × 64.88 mm**, 4 layer, 1.6 mm, HASL. HL2 x 70.00→134.50, y 73.37→138.25. The whole board, both ends and rails, is **64.50 × 100.00 mm** |
 | Underside | 11.04 mm above the HL2's top surface, on 2.54 mm sockets and one M3 screw |
 | Connector | Amphenol ICC **U10A474240T**, LCSC **C5432262** |
 | Cable | 10Gtek **CAB-8654/8654-8i-P**, 8i to 8i, 0.5 m, **$15** |
 | Lane rate | DDR at 153.6 MHz = **307.2 Mbit/s**, three lanes each way |
 | Payload | **921.6 Mbit/s** each way = the complete raw 12-bit 76.8 MSPS ADC stream, plus a full-duplex auxiliary channel at the same rate |
-| Parts | 165, of which **148 fitted**; 116 nets; **17 placed part numbers**, 11 Basic and 6 Extended |
-| Cost | **$132.43** for five assembled boards delivered, **$26.49 each** |
+| Parts | both ends: 225, of which **195 fitted**; 173 nets; **18 placed part numbers**, 12 Basic and 6 Extended |
+| Cost | **$154.84** for five assembled boards, both ends, delivered: **$30.97 per complete link** |
 | State | schematic and placement generated and validated; **not routed** |
 
 ---
@@ -112,10 +112,11 @@ receives true LVDS at its 3.3 V supply. Placed at the 40 mm case position.
 
 ## To order
 
-JLCPCB, **Economic** assembly, **5 panels**, 4 layer, 1.6 mm, lead-free HASL,
-green, 1 oz, **"Different Design" 2, "Panel by Customer"** - the panel
-carries two different outlines and the fab bills for that.
-Do not buy impedance control — `COST.md` §4 explains why. `COST.md` §1 is the line-by-line.
+JLCPCB, **Economic** assembly, **5 boards**, 4 layer, 1.6 mm, lead-free HASL,
+green, 1 oz, **one design**, delivered as a single PCB. It is one ordinary
+64.50 × 100.00 mm board with one outline; the V-score lines are on the
+Eco1.User layer. Do not buy impedance control — `COST.md` §4 explains why.
+`COST.md` §1 is the line-by-line.
 
 Then hand-solder, per board: the DB1 2×10 socket and the DB12 2×3 socket and
 the CN1 2×5 socket on the **underside**, the JTAG pass-through 2×5 header on

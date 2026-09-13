@@ -52,14 +52,18 @@ HL2_ORIGIN = (70.00, 73.30)
 # Retyped from the generator's panel block, so that a change there has to be
 # made here too.  Panel (0,0) is page (40, 40).  Both ends unrotated, both
 # connectors on the panel's left edge.
-RADIO_W, RADIO_H = 64.50, 64.95
+RADIO_W, RADIO_H = 64.50, 64.95        # local frame: HL2 y 73.30..138.25
+RADIO_TRIM = 0.07                       # outline starts at local y 0.07
 GOWIN_W, GOWIN_H = 64.50, 25.12
 RAIL = 5.00
 PANEL_W = RADIO_W                        # 64.50
-PANEL_H = RAIL + GOWIN_H + RADIO_H + RAIL  # 100.07
+RADIO_Y0 = RAIL + GOWIN_H - RADIO_TRIM   # 30.05, radio local (0,0)
+PANEL_H = RADIO_Y0 + RADIO_H + RAIL      # 100.00
+PANEL_MAX = 100.00                       # JLCPCB promotional size band
 GOWIN_BOX = (0.0, RAIL, GOWIN_W, RAIL + GOWIN_H)
-RADIO_BOX = (0.0, RAIL + GOWIN_H, RADIO_W, RAIL + GOWIN_H + RADIO_H)
-VSCORES_Y = (RAIL, RAIL + GOWIN_H, RAIL + GOWIN_H + RADIO_H)
+RADIO_BOX = (0.0, RADIO_Y0 + RADIO_TRIM, RADIO_W, RADIO_Y0 + RADIO_H)
+RADIO_FRAME = (0.0, RADIO_Y0, RADIO_W, RADIO_Y0 + RADIO_H)
+VSCORES_Y = (RAIL, RAIL + GOWIN_H, RADIO_Y0 + RADIO_H)
 
 
 # The Tang Mega 138K dock, from Sipeed's interactive BOM for dock 31004
@@ -284,6 +288,7 @@ def load(path):
     xs = [p[0] for e in edges for p in e]
     ys = [p[1] for e in edges for p in e]
     box = (min(xs), min(ys), max(xs), max(ys))
+    load.edges = edges
     return fps, box
 
 
@@ -437,10 +442,81 @@ def check_gowin(fps):
     return prob
 
 
+def edge_loops(edges):
+    """Chain Edge.Cuts segments into closed loops.  -> list of point lists,
+    or None if any segment does not close."""
+    key = lambda pt: (round(pt[0], 3), round(pt[1], 3))
+    segs = [(key(a), key(b)) for a, b in edges]
+    loops = []
+    while segs:
+        a, b = segs.pop(0)
+        pts = [a, b]
+        while pts[-1] != pts[0]:
+            nxt = None
+            for i, (c, d) in enumerate(segs):
+                if c == pts[-1]:
+                    nxt = (i, d)
+                    break
+                if d == pts[-1]:
+                    nxt = (i, c)
+                    break
+            if nxt is None:
+                return None
+            segs.pop(nxt[0])
+            pts.append(nxt[1])
+        loops.append(pts[:-1])
+    return loops
+
+
+def check_one_outline():
+    """ONE board: exactly one closed outer Edge.Cuts loop, enclosing both
+    ends, and every other loop an internal cut-out strictly inside it.  Two
+    side-by-side outlines would fail here."""
+    prob = []
+    loops = edge_loops(load.edges)
+    if loops is None:
+        return ['Edge.Cuts does not close into loops']
+    boxes = [(min(p[0] for p in lp), min(p[1] for p in lp),
+              max(p[0] for p in lp), max(p[1] for p in lp)) for lp in loops]
+    full = (PAGE[0], PAGE[1], PAGE[0] + PANEL_W, PAGE[1] + PANEL_H)
+    outer = [i for i, bx in enumerate(boxes)
+             if all(abs(bx[k] - full[k]) < 0.01 for k in range(4))]
+    if len(outer) != 1:
+        prob.append('expected exactly one Edge.Cuts loop spanning the whole '
+                    'board, found %d' % len(outer))
+        return prob
+    for i, bx in enumerate(boxes):
+        if i == outer[0]:
+            continue
+        # a cut-out may touch a rail but must lie inside the outer loop and
+        # must not itself separate an end from the rest
+        if not (bx[0] > full[0] + 0.01 and bx[2] < full[2] - 0.01
+                and bx[1] > full[1] + 0.01 and bx[3] < full[3] - 0.01):
+            prob.append('Edge.Cuts loop %d at %s is not inside the outer '
+                        'outline, so the file holds more than one board'
+                        % (i, bx))
+        if bx[2] - bx[0] > PANEL_W - 1.0:
+            prob.append('internal cut %d spans the full width, so it would '
+                        'split the board into separate outlines' % i)
+    for vy in VSCORES_Y:
+        ay = PAGE[1] + vy
+        for (a, b) in load.edges:
+            if abs(a[1] - ay) < 0.01 and abs(b[1] - ay) < 0.01 and \
+                    abs(a[0] - b[0]) > PANEL_W - 1.0:
+                prob.append('an Edge.Cuts line runs along the y = %.2f score '
+                            'edge to edge, which would split the board in two' % vy)
+    if not prob:
+        print('   ONE board: a single continuous outline %.2f x %.2f mm '
+              'round both ends and both rails, plus %d internal cut-outs; the '
+              'ends are joined only across the V-scores'
+              % (PANEL_W, PANEL_H, len(loops) - 1))
+    return prob
+
+
 def check_panel(fps):
     """Every score runs edge to edge; no copper within the edge margin of
     one."""
-    prob = []
+    prob = check_one_outline()
     for f in fps:
         for (num, px, py, hx, hy, net) in f.pads:
             y = py - PAGE[1]
@@ -451,10 +527,9 @@ def check_panel(fps):
     print('   V-scores at y = %s, each from x 0 to %.2f; panel %.2f x %.2f mm'
           % (', '.join('%.2f' % v for v in VSCORES_Y), PANEL_W, PANEL_W,
              PANEL_H))
-    if PANEL_W > 100.0 or PANEL_H > 100.0:
-        print('   note: %.2f x %.2f mm is outside the 100 x 100 mm band; with '
-              'two outlines on the panel JLCPCB prices it the same'
-              % (PANEL_W, PANEL_H))
+    if PANEL_W > PANEL_MAX + 1e-6 or PANEL_H > PANEL_MAX + 1e-6:
+        prob.append('the board is %.2f x %.2f mm, outside the 100 x 100 mm '
+                    'promotional size band' % (PANEL_W, PANEL_H))
     return prob
 
 
@@ -508,8 +583,10 @@ def boot_arithmetic(fps, box, refs, body_w, label):
 
 def main():
     fps, box, prob = check('bridge')
-    rbox = (PAGE[0] + RADIO_BOX[0], PAGE[1] + RADIO_BOX[1],
-            PAGE[0] + RADIO_BOX[2], PAGE[1] + RADIO_BOX[3])
+    # the radio end's LOCAL frame (HL2 y 73.30 at its top), not its trimmed
+    # outline: the HL2 grids and the notch arithmetic are in that frame
+    rbox = (PAGE[0] + RADIO_FRAME[0], PAGE[1] + RADIO_FRAME[1],
+            PAGE[0] + RADIO_FRAME[2], PAGE[1] + RADIO_FRAME[3])
     print('-- the radio end --')
     prob += check_hl2_grid(fps, rbox)
     prob += check_slimsas(fps, rbox)
