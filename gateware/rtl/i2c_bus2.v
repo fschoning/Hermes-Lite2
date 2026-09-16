@@ -1,3 +1,4 @@
+// Modified 2026 by Franz Schöning
 `timescale 1ns / 1ps
 
 module i2c_bus2
@@ -20,7 +21,12 @@ module i2c_bus2
   scl_t,
   sda_i,
   sda_o,
-  sda_t
+  sda_t,
+
+  xfer_done,
+  xfer_nack,
+  xfer_accept,
+  busy_o
 );
 
 input         clk;
@@ -44,6 +50,14 @@ input         sda_i;
 output        sda_o;
 output        sda_t;
 
+// Pass-through status (raw front-end image): a 0x3C/0x3D request was accepted (same cycle as cmd_rqst),
+// the transfer finished (the I2C master is idle again), whether any byte of it was not acknowledged.
+// Probe (cmd_data[24] and [23] set): address with the read bit, one byte read, stop.
+output logic  xfer_done = 1'b0;
+output logic  xfer_nack = 1'b0;
+output logic  xfer_accept;
+output        busy_o;
+
 logic [6:0]   cmd_address;
 logic         cmd_start;
 logic         cmd_read;
@@ -64,7 +78,7 @@ logic         data_out_ready;
 logic         data_out_last;
 
 logic [3:0]   state, state_next;
-logic         busy, missed_ack;
+logic         busy, missed_ack, bus_control;
 
 logic [6:0]   cmd_reg, cmd_next;
 logic [7:0]   data0_reg, data0_next, data1_reg, data1_next;
@@ -77,6 +91,8 @@ logic         rx_antenna_reg, rx_antenna_next;
 logic         en_i2c2_next;
 
 logic [31:0]  resp_data_next, resp_data=32'h00000000;
+
+logic         xfer_pend = 1'b0;
 
 `ifdef AK4951
 logic         ak4951_spon_reg, ak4951_spon_next;
@@ -132,6 +148,23 @@ always @(posedge clk) begin
   resp_data <= resp_data_next;
 end
 
+always @(posedge clk) begin
+  xfer_done <= 1'b0;
+  if (xfer_accept) begin
+    xfer_pend <= 1'b1;
+    xfer_nack <= 1'b0;
+  end else begin
+    if (xfer_pend & missed_ack) xfer_nack <= 1'b1;
+    // done when the master has released the bus (after the stop condition)
+    if (xfer_pend & (state == STATE_IDLE) & ~busy & ~bus_control & ~missed_ack) begin
+      xfer_pend <= 1'b0;
+      xfer_done <= 1'b1;
+    end
+  end
+end
+
+assign busy_o = xfer_pend | (state != STATE_IDLE);
+
 assign cmd_address = cmd_reg;
 assign cmd_start = 1'b0;
 assign cmd_write_multiple = 1'b0;
@@ -143,6 +176,10 @@ assign data_out_ready = 1'b1;
 assign cmd_ack = cmd_ack_reg;
 
 assign cmd_resp_data = resp_data;
+
+// continuous (was a default-then-override in the state block, which makes iverilog oscillate between
+// this block and i2c.v's; same logic)
+assign ready = (state == STATE_IDLE) & ~busy;
 
 
 always @* begin
@@ -170,14 +207,13 @@ always @* begin
   data_in = data0_reg;
   data_in_valid = 1'b0;
 
-  ready = 1'b0;
+  xfer_accept = 1'b0;
 
   case(state)
 
     STATE_IDLE: begin
       cmd_valid = 1'b0;
       cmd_ack_next = 1'b1;
-      ready = ~busy;
       if (cmd_rqst) begin
         if (((cmd_addr == 6'h3d) | (cmd_addr == 6'h3c)) & (cmd_data[31:25] == 7'h03)) begin
           // Must send
@@ -186,7 +222,14 @@ always @* begin
             data0_next  = cmd_data[15:8];
             data1_next = cmd_data[7:0];
             en_i2c2_next = (cmd_addr == 6'h3d);
-            state_next = cmd_data[24] ? STATE_READ_CMDADDR : STATE_CMDADDR;
+            xfer_accept = 1'b1;
+            if (cmd_data[24] & cmd_data[23]) begin
+              // probe: one byte read at the address, no register pointer write
+              cmd_ack_next = 1'b0;
+              state_next = STATE_READ_DATA4;
+            end else begin
+              state_next = cmd_data[24] ? STATE_READ_CMDADDR : STATE_CMDADDR;
+            end
           end else begin
             cmd_ack_next = 1'b0; // Missed
           end
@@ -375,7 +418,7 @@ i2c_master i2c_master_i (
 
   // Status
   .busy(busy),
-  .bus_control(),
+  .bus_control(bus_control),
   .bus_active(),
   .missed_ack(missed_ack),
 

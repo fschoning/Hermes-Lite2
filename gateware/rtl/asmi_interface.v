@@ -20,17 +20,29 @@
 
 
 // ASMI_interface - copyright 2010, 2011 Phil Harman VK6APH
+// Modified 2026 by Franz Schöning
 
 /*
 	change log:
 
-
+	2026-09 (hl2b5up_cpu): parameter CPU_PORT = 1 adds a second, lower-priority user of the one
+	ASMI block: the soft CPU may erase, program and read the spare flash sector 0x1F0000-0x1FFFFF
+	and nothing else (address checks here, not in firmware). Network flashing always wins: once a
+	network erase or programming data has been seen, CPU commands are refused until the FPGA
+	reconfigures. A network request that arrives during a CPU command waits for that one command
+	(at most one sector erase). Parameter PROTECT_TOP = 1 keeps network flashing out of that sector:
+	the network erase stops after sector 0x1E0000 (stock code also erased 0x1F0000) and pages at
+	0x1F0000 and above are not programmed. With both parameters 0 the behaviour is unchanged.
 */
 
 
 
-module asmi_interface (clock, busy, erase, erase_ACK, IF_Rx_used, rdreq, IF_PHY_data,
-					   erase_done, erase_done_ACK, send_more, send_more_ACK, num_blocks, NCONFIG);
+module asmi_interface #(
+	parameter CPU_PORT    = 0,
+	parameter PROTECT_TOP = 0
+) (clock, busy, erase, erase_ACK, IF_Rx_used, rdreq, IF_PHY_data,
+   erase_done, erase_done_ACK, send_more, send_more_ACK, num_blocks, NCONFIG,
+   cpu_req, cpu_cmd, cpu_addr, cpu_data, cpu_done, cpu_status, cpu_rdata);
 
 input 	wire 	clock;
 input 	wire 	erase;
@@ -41,32 +53,61 @@ input   wire	[7:0] IF_PHY_data;
 input   wire    [13:0] num_blocks;
 
 output 	wire	busy;
-output 	reg 	rdreq;
-output 	reg 	erase_done;
-output  reg		send_more;
-output  reg		erase_ACK;
-output  reg     NCONFIG;
+output 	reg 	rdreq = 1'b0;
+output 	reg 	erase_done = 1'b0;
+output  reg		send_more = 1'b0;
+output  reg		erase_ACK = 1'b0;
+output  reg     NCONFIG = 1'b0;
+
+// CPU port (CPU_PORT = 1). cpu_req and the command fields come from another clock domain:
+// four-phase handshake, fields stable while cpu_req is high.
+input   wire        cpu_req;
+input   wire [2:0]  cpu_cmd;       // 1 erase sector, 2 shift byte, 3 program page, 4 read byte
+input   wire [23:0] cpu_addr;
+input   wire [7:0]  cpu_data;
+output  reg         cpu_done = 1'b0;
+output  reg  [2:0]  cpu_status = 3'd0;  // {illegal, locked, rejected}
+output  reg  [7:0]  cpu_rdata = 8'h00;
 
 
-reg		sector_erase;		// set to clear a sector of memory
-reg 	[23:0]address; 		// address in EPCS16 to write to
-reg 	write_enable;
-reg 	write;
-reg     shift_bytes;
-reg 	[3:0]state;
-reg 	[13:0]page; 		// counts number of 256 byte blocks we are writing
-reg 	[8:0]byte_count;	// holds number of bytes we have send to ASMI
+reg		sector_erase = 1'b0;		// set to clear a sector of memory
+reg 	[23:0]address = 24'h0; 		// address in EPCS16 to write to
+reg 	write_enable = 1'b0;
+reg 	write = 1'b0;
+reg     shift_bytes = 1'b0;
+reg 	[4:0]state = 5'd0;
+reg 	[13:0]page = 14'd0; 		// counts number of 256 byte blocks we are writing
+reg 	[8:0]byte_count = 9'd0;	// holds number of bytes we have send to ASMI
 reg     [21:0]reset_delay = 22'h0;  // delays reset after last frame sent
 
+reg     rden = 1'b0;
+reg     read = 1'b0;
+reg     cpu_shift = 1'b0;           // datain from the CPU byte instead of the network FIFO
+reg     net_lock = 1'b0;            // network flashing seen: CPU locked out
+reg     [1:0] cpu_req_s = 2'b00;
+reg     [3:0] wait_cnt = 4'd0;
+reg     busy_seen = 1'b0;
+wire    [7:0] dataout;
+wire    data_valid;
+wire    illegal_erase, illegal_write;
 
-// reverse bit order into ASMI
+localparam [23:0] ERASE_LAST = (PROTECT_TOP != 0) ? 24'h1E0000 : 24'h1F0000;
+
+// reverse bit order into ASMI (network image); CPU bytes go in unchanged
 wire [7:0]datain;
-assign datain = {IF_PHY_data[0],IF_PHY_data[1],IF_PHY_data[2],IF_PHY_data[3],IF_PHY_data[4],IF_PHY_data[5],IF_PHY_data[6],IF_PHY_data[7]};
+assign datain = cpu_shift ? cpu_data :
+                {IF_PHY_data[0],IF_PHY_data[1],IF_PHY_data[2],IF_PHY_data[3],IF_PHY_data[4],IF_PHY_data[5],IF_PHY_data[6],IF_PHY_data[7]};
+
+wire cpu_in_sector = (cpu_addr[23:16] == 8'h1F);
+wire net_page_ok   = (PROTECT_TOP == 0) || (address < 24'h1F0000);
 
 // state machine to manage ASMI inface
 
 always @ (negedge clock)
 begin
+cpu_req_s <= {cpu_req_s[0], cpu_req & (CPU_PORT != 0)};
+if (!cpu_req_s[1]) cpu_done <= 1'b0;
+
 case (state)
 
 0:	begin
@@ -81,10 +122,25 @@ case (state)
 		page <= 0;
 		send_more <= 0;
 		NCONFIG <= 0;
-		if (erase)
+		rden <= 0;
+		read <= 0;
+		shift_bytes <= 0;
+		cpu_shift <= 0;
+		if (erase) begin
+			 net_lock <= 1'b1;
 			 state <= 1'd1;
-		else if(IF_Rx_used > 254) 		// if we have enough data in the Rx fifo then send to the EPCS16
+		end
+		else if(IF_Rx_used > 254) begin	// if we have enough data in the Rx fifo then send to the EPCS16
+			net_lock <= 1'b1;
 			state <= 5;
+		end
+		else if (cpu_req_s[1] & ~cpu_done) begin
+			if (net_lock) begin
+				cpu_status <= 3'b010;
+				cpu_done   <= 1'b1;
+			end else
+				state <= 11;
+		end
 	end
 
 // do a sector erase
@@ -99,7 +155,7 @@ case (state)
 		write_enable <= 0;
 		sector_erase <= 0;
 		if (busy) state <= 2;
-		else if (address != 24'h1F0000) begin
+		else if (address != ERASE_LAST) begin
 				address <= address + 24'h010000;
 				state <= 1;
 		end
@@ -138,7 +194,7 @@ case (state)
 	end
 // write the 256 bytes into the ASMI fifo and request more data
 7:	begin
-	write <= 1;
+	write <= net_page_ok;
 	state <= state + 1'b1;
 	send_more <= 1'b1;
 	end
@@ -175,6 +231,83 @@ case (state)
 		else reset_delay <= reset_delay + 1'b1;
 	end
 
+// CPU command (CPU_PORT = 1): addresses limited to the sector 0x1F0000-0x1FFFFF
+11:	begin
+		cpu_status <= 3'b000;
+		wait_cnt   <= 4'd0;
+		busy_seen  <= 1'b0;
+		case (cpu_cmd)
+			3'd1: begin									// erase: address fixed, not from the CPU
+				address      <= 24'h1F0000;
+				write_enable <= 1'b1;
+				sector_erase <= 1'b1;
+				state        <= 12;
+			end
+			3'd2: begin									// shift one byte into the page buffer
+				cpu_shift    <= 1'b1;
+				write_enable <= 1'b1;
+				shift_bytes  <= 1'b1;
+				state        <= 13;
+			end
+			3'd3: begin									// program the page buffer
+				if (cpu_in_sector && (cpu_addr[7:0] == 8'h00)) begin
+					address      <= cpu_addr;
+					write_enable <= 1'b1;
+					write        <= 1'b1;
+					state        <= 12;
+				end else begin
+					cpu_status <= 3'b001;
+					state      <= 15;
+				end
+			end
+			3'd4: begin									// read one byte
+				if (cpu_in_sector) begin
+					address <= cpu_addr;
+					rden    <= 1'b1;
+					read    <= 1'b1;
+					state   <= 14;
+				end else begin
+					cpu_status <= 3'b001;
+					state      <= 15;
+				end
+			end
+			default: begin
+				cpu_status <= 3'b001;
+				state      <= 15;
+			end
+		endcase
+	end
+// erase or program: wait for busy to come and go
+12:	begin
+		sector_erase <= 1'b0;
+		write        <= 1'b0;
+		write_enable <= 1'b0;
+		if (illegal_erase | illegal_write) cpu_status[2] <= 1'b1;
+		if (busy) busy_seen <= 1'b1;
+		if (wait_cnt != 4'hf) wait_cnt <= wait_cnt + 4'd1;
+		if (!busy && (busy_seen || wait_cnt == 4'hf)) state <= 15;
+	end
+// shift: one clock
+13:	begin
+		shift_bytes  <= 1'b0;
+		write_enable <= 1'b0;
+		cpu_shift    <= 1'b0;
+		state        <= 15;
+	end
+// read: one byte, then wait for the operation to end
+14:	begin
+		read <= 1'b0;
+		rden <= 1'b0;
+		if (data_valid) cpu_rdata <= dataout;
+		if (busy) busy_seen <= 1'b1;
+		if (wait_cnt != 4'hf) wait_cnt <= wait_cnt + 4'd1;
+		if (!busy && (busy_seen || wait_cnt == 4'hf)) state <= 15;
+	end
+15:	begin
+		cpu_done <= 1'b1;
+		state    <= 0;
+	end
+
 default: state <= 0;
 
 endcase
@@ -197,13 +330,13 @@ asmi_asmi_parallel_0 asmi_inst(
 	.datain(datain),
 	.write(write),
 	.shift_bytes(shift_bytes),
-	.rden(1'b0),
-	.read(1'b0),
+	.rden(rden),
+	.read(read),
 	.reset(1'b0),
-	.data_valid(),
-	.dataout(),
-	.illegal_erase(),
-	.illegal_write()
+	.data_valid(data_valid),
+	.dataout(dataout),
+	.illegal_erase(illegal_erase),
+	.illegal_write(illegal_write)
 );
 
 

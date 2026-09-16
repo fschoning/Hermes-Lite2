@@ -19,6 +19,7 @@
 
 
 //  Metis code copyright 2010, 2011, 2012, 2013, 2014 Phil Harman VK6(A)PH, Alex Shovkoplyas, VE3NEA.
+//  Modified 2026 by Franz Schöning
 
 module udp_recv (
   //input data stream
@@ -42,9 +43,12 @@ module udp_recv (
   output            udp_destination_valid
 );
 
+// LW = width of the UDP length and byte counters, see ip_recv.v. 11 = stock, 16 = jumbo.
+parameter LW = 11;
+
 localparam IDLE = 4'd1, PORT = 4'd2, VERIFY = 4'd3, ST_PAYLOAD = 4'd4, ST_DONE = 4'd5;
 reg[3:0] state;
-reg [10:0] header_len, packet_len, byte_no;
+reg [LW-1:0] packet_len, byte_no;
 reg        dhcp_data  ;
 reg [15:0] remote_port;
 reg        destination_valid = 1'b0;
@@ -71,7 +75,7 @@ always @(posedge clock)
       PORT:
         begin
           remote_port <= {remote_port[15:8], data};
-          byte_no <= 11'd3;
+          byte_no <= 3;
           state <= VERIFY;
         end
 
@@ -90,7 +94,7 @@ always @(posedge clock)
                 if (to_port[15:1] != 16'd512) state <= ST_DONE;
               end
               else if (local_ip != to_ip ) state <= ST_DONE;      // if not for this  ip then exit
-              packet_len[10:8] <= data[2:0];
+              packet_len[LW-1:8] <= data[LW-9:0];
             end
 
             6: begin
@@ -107,14 +111,14 @@ always @(posedge clock)
             //  if (byte_no == header_len) state <= ST_PAYLOAD;
           endcase
 
-          byte_no <= byte_no + 11'd1;
+          byte_no <= byte_no + 1'b1;
         end
 
       ST_PAYLOAD:
         begin
           //end of payload, ignore the ethernet crc that follows
           if (byte_no == packet_len) state <= ST_DONE;
-          byte_no <= byte_no + 11'd1;
+          byte_no <= byte_no + 1'b1;
         end
       endcase
 

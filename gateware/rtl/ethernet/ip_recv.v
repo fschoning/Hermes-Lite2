@@ -19,6 +19,7 @@
 
 
 //  Metis code copyright 2010, 2011, 2012, 2013 Phil Harman VK6APH, Alex Shovkoplyas, VE3NEA.
+//  Modified 2026 by Franz Schöning
 
 
 module ip_recv (
@@ -38,10 +39,15 @@ module ip_recv (
 );
 
 
+// LW = width of the IP packet length and byte counters. 11 (stock) handles packets up to
+// 2,047 bytes; a longer packet is cut short at (length mod 2,048). 16 accepts jumbo packets.
+parameter LW = 11;
+
 localparam ST_IDLE = 4'd1, ST_HEADER = 4'd2, ST_PAYLOAD = 4'd4, ST_DONE = 4'd8;
 
 reg [ 3:0] state         ;
-reg [10:0] header_len, packet_len, byte_no;
+reg [10:0] header_len;
+reg [LW-1:0] packet_len, byte_no;
 reg [31:0] temp_remote_ip;
 reg        temp_remote_ip_valid = 1'b0;
 
@@ -57,7 +63,7 @@ always @(posedge clock)
         begin
           //save header length
           header_len <= {data[3:0], 2'b0};
-          byte_no <= 11'd2;                       // need to skip the next byte
+          byte_no <= 2;                       // need to skip the next byte
           //is protocol = IPv4?
           state <= (data[7:4] == 4'h4)? ST_HEADER : ST_DONE;
         end
@@ -65,7 +71,7 @@ always @(posedge clock)
         begin
           case (byte_no)
             //save packet length
-            3: packet_len[10:8] <= data [2:0];
+            3: packet_len[LW-1:8] <= data[LW-9:0];
             4: packet_len[7:0]  <= data;
 
             //determine the protocol
@@ -118,7 +124,7 @@ always @(posedge clock)
 	      else begin
 		to_ip_is_me <= 1'b1;
 		if (byte_no == header_len) begin
-                  byte_no <= 11'd1;
+                  byte_no <= 1;
                   state <= ST_PAYLOAD;
 		end
               end
@@ -128,7 +134,7 @@ always @(posedge clock)
               if (data != local_ip[7-:8]) 
 		to_ip_is_me <= 1'b0;
               if (byte_no == header_len) begin
-                byte_no <= 11'd1;
+                byte_no <= 1;
                 state <= ST_PAYLOAD;
               end
             end
@@ -137,14 +143,14 @@ always @(posedge clock)
               if (byte_no == header_len) state <= ST_PAYLOAD;
           endcase
 
-          byte_no <= byte_no + 11'd1;
+          byte_no <= byte_no + 1'b1;
         end
 
       ST_PAYLOAD:
         begin
           //end of payload, ignore the ethernet crc that follows
           if (byte_no == packet_len) state <= ST_DONE;
-          byte_no <= byte_no + 11'd1;
+          byte_no <= byte_no + 1'b1;
         end
       endcase
 

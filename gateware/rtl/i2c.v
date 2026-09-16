@@ -1,3 +1,4 @@
+// Modified 2026 by Franz Schöning
 `timescale 1ns / 1ps
 
 module i2c (
@@ -5,6 +6,14 @@ module i2c (
     input  logic         rst,
     input  logic         init_start,
     input  logic         lost_clock,
+    // bias pots / configuration EEPROM (MCP4662 at 0x2C) guard: external transfers that could change
+    // it (writes, and one-byte increment/decrement commands in the read path) are refused while 0
+    input  logic         bias_unlock,
+    output logic         guard_refused,
+    output logic         xfer_done,
+    output logic         xfer_nack,
+    output logic         xfer_missed,
+    output logic         busy,
 
     // Command slave interface
     input  logic [5:0]   cmd_addr,
@@ -106,6 +115,17 @@ localparam [7:0]
 
 logic [ 7:0]  state = STATE_CLINIT0, state_next;
 
+// Guard: a 0x3C/0x3D pass-through to 7-bit address 0x2C that is not a read command (MCP4662 command
+// byte bits 3:2 = 11) or an address-only probe, while not unlocked
+wire ext_pt    = cmd_rqst & ((cmd_addr == 6'h3c) | (cmd_addr == 6'h3d)) & (cmd_data[31:25] == 7'h03);
+wire guard_hit = ~bias_unlock & (state[7:5] == 3'b000) & ext_pt & (cmd_data[22:16] == 7'h2c) &
+                 ~(cmd_data[24] & (cmd_data[23] | (cmd_data[11:10] == 2'b11)));
+logic xfer_accept;
+assign guard_refused = guard_hit;
+// dropped: a pass-through request that was neither refused nor accepted (engine busy, or a clock
+// sequence running)
+assign xfer_missed = ext_pt & ~guard_hit & ~(xfer_accept & (state[7:5] == 3'b000));
+
 logic [ 5:0]  icmd_addr;
 logic [15:0]  icmd_data_upper;
 logic [15:0]  icmd_reg_val;
@@ -155,7 +175,7 @@ always @* begin
   end else begin
     icmd_addr       = cmd_addr;
     icmd_data_upper = cmd_data[31:16];
-    icmd_rqst       = cmd_rqst;
+    icmd_rqst       = cmd_rqst & ~guard_hit;
   end
   icmd_reg_val = cmd_data[15:0];
 
@@ -599,7 +619,12 @@ i2c_bus2 i2c_bus2_i (
   .scl_t(scl_t),
   .sda_i(sda_i),
   .sda_o(sda_o),
-  .sda_t(sda_t)
+  .sda_t(sda_t),
+
+  .xfer_done(xfer_done),
+  .xfer_nack(xfer_nack),
+  .xfer_accept(xfer_accept),
+  .busy_o(busy)
 );
 
 assign scl_i = en_i2c2 ? scl2_i : scl1_i;

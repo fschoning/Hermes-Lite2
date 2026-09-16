@@ -1,3 +1,4 @@
+// Modified 2026 by Franz Schöning
 
 module control (
   // Internal
@@ -95,7 +96,24 @@ module control (
   output              [11:0] fwdpwr             ,
   output              [11:0] revpwr             ,
   output              [11:0] bias               ,
-  output              [ 7:0] control_dsiq_status
+  output              [ 7:0] control_dsiq_status,
+  // Input and transmit-safety state for the raw stream header and the register bridge
+  // [0] key (tip) closed, debounced  [1] PTT (ring) closed, debounced
+  // [2] TX inhibit (CN8) active, debounced  [3] over-temperature: transmit disabled
+  // [4] transmit keyed (PA / T-R outputs driven)
+  output              [ 4:0] safety_status,
+  // Raw front-end image (RAWFRONT = 1, docs/rawfront/PROTOCOL.md). The PA, bias and T/R
+  // outputs of this module are not used there: rtl/hl2io.v tx_interlock drives the pins.
+  input                      ilk_tx_on          ,  // interlock: transmit on (LEDs, HR50 band data)
+  input                      bias_unlock        ,  // allow I2C writes to 0x2C
+  input               [ 7:0] led_ovr            ,  // {on[3:0], override[3:0]} for D2..D5
+  input               [ 3:0] fan_min            ,  // minimum fan duty in 16ths
+  output              [55:0] i2c_status         ,  // {rdata 32, refused 8, done 8, 4'b0, missed, refused, nack, busy}
+  output                     adc_tick           ,  // slow ADC read cycle completed
+  output logic        [15:0] adc_seq = 16'd0    ,
+  output              [ 3:0] fan_status         ,  // {band volts on, fan state}
+  output                     fan_overheat       ,  // fan logic over-temperature state
+  output              [ 2:0] pa_cfg                // {vna, tr_disable, pa_enable} from command 0x09
 );
 
 parameter     VERSION_MAJOR = 8'h0;
@@ -108,6 +126,11 @@ parameter     FAST_LNA = 0;
 parameter     AK4951 = 0;
 parameter     EXTENDED_RESP = 0;
 parameter     BYPASS_VERSA = 0;
+// 1 = sample the slow ADC (temperature, power, bias) every 64 ms also while running. The stock
+// images sample on the openHPSDR response slots, which do not occur in images without IQ frames,
+// so temperature (and the fan and over-temperature logic) would freeze while streaming.
+parameter     SLOW_ADC_FREE = 0;
+parameter     RAWFRONT = 0;
 
 
 logic         vna = 1'b0;                    // Selects vna mode when set.
@@ -132,10 +155,10 @@ logic         cmd_ack;
 logic [ 5:0]  resp_cmd_addr = 6'h00, resp_cmd_addr_next;
 logic [31:0]  resp_cmd_data = 32'h00, resp_cmd_data_next;
 
-logic [8:0]   led_count, led_count_next;
+logic [8:0]   led_count = 9'd0, led_count_next;
 logic         led_saturate;
-logic [9:0]   qmillisec_count, qmillisec_count_next;
-logic [1:0]   millisec_count, millisec_count_next;
+logic [9:0]   qmillisec_count = 10'd0, qmillisec_count_next;
+logic [1:0]   millisec_count = 2'd0, millisec_count_next;
 
 logic         ext_txinhibit, ext_cwkey, ext_ptt;
 
@@ -228,11 +251,19 @@ always @(posedge clk)
 assign eeprom_config[7:5] = use_eeprom_config ? ieeprom_config[7:5] : 3'b000;
 assign eeprom_config[4:0] = ieeprom_config[4:0];
 
+logic i2c_refused, i2c_done, i2c_nack, i2c_missed, i2c_busy;
+
 i2c i2c_i (
   .clk(clk),
   .rst(clk_i2c_rst),
   .init_start(clk_i2c_start),
   .lost_clock(lost_clock),
+  .bias_unlock(bias_unlock | (RAWFRONT == 0)),
+  .guard_refused(i2c_refused),
+  .xfer_done(i2c_done),
+  .xfer_nack(i2c_nack),
+  .xfer_missed(i2c_missed),
+  .busy(i2c_busy),
 
   .cmd_addr(cmd_addr),
   .cmd_data(cmd_data),
@@ -258,11 +289,21 @@ i2c i2c_i (
   .sda2_t(sda2_t)
 );
 
-assign slow_adc_sample = run ? (resp_rqst & resp_cnt) : (~led_count[5] & led_count_next[5]);
+assign slow_adc_sample = (run & (SLOW_ADC_FREE == 0)) ? (resp_rqst & resp_cnt) : (~led_count[5] & led_count_next[5]);
+logic       p3_req = 1'b0, p3_done, p3_nack, p3_missed;
+logic [6:0] p3_addr = 7'd0;
+logic [7:0] p3_data;
+
 slow_adc slow_adc_i (
   .clk(clk),
   .rst(slow_adc_rst),
   .sample(slow_adc_sample),
+  .probe_req(p3_req),
+  .probe_addr(p3_addr),
+  .probe_done(p3_done),
+  .probe_nack(p3_nack),
+  .probe_data(p3_data),
+  .cycle_done(adc_tick),
   .ain0(rev_pwr),
   .ain1(temperature),
   .ain2(bias_current),
@@ -274,6 +315,40 @@ slow_adc slow_adc_i (
   .sda_o(sda3_o),
   .sda_t(sda3_t)
 );
+
+// Bus 3 (slow ADC bus) address-only probe, command 0x3E in the 0x3C/0x3D format with [24] and [23] set.
+// I2C pass-through status for the raw front-end register block.
+logic [ 7:0] i2c_n_done = 8'd0, i2c_n_ref = 8'd0;
+logic        i2c_l_nack = 1'b0, i2c_l_ref = 1'b0, i2c_l_miss = 1'b0;
+logic [31:0] i2c_rdata  = 32'd0;
+assign p3_missed = cmd_rqst & (cmd_addr == 6'h3e) & (cmd_data[31:23] == 9'h00f) & p3_req;
+
+always @(posedge clk) begin
+  if (slow_adc_rst) p3_req <= 1'b0;
+  else if (p3_done) p3_req <= 1'b0;
+  else if ((RAWFRONT != 0) & cmd_rqst & (cmd_addr == 6'h3e) & (cmd_data[31:23] == 9'h00f) & ~p3_req) begin
+    p3_req  <= 1'b1;
+    p3_addr <= cmd_data[22:16];
+  end
+
+  if (adc_tick) adc_seq <= adc_seq + 16'd1;
+
+  if (i2c_done | p3_done) begin
+    i2c_n_done <= i2c_n_done + 8'd1;
+    i2c_l_nack <= i2c_done ? i2c_nack : p3_nack;
+    i2c_rdata  <= i2c_done ? cmd_resp_data_i2c : {p3_data, 24'd0};
+    i2c_l_ref  <= 1'b0;
+    i2c_l_miss <= 1'b0;
+  end else if (i2c_refused | i2c_missed | p3_missed) begin
+    i2c_n_ref  <= i2c_n_ref + 8'd1;
+    i2c_l_ref  <= i2c_refused;
+    i2c_l_miss <= ~i2c_refused;
+  end
+end
+
+assign i2c_status = {i2c_rdata, i2c_n_ref, i2c_n_done, 4'd0, i2c_l_miss, i2c_l_ref, i2c_l_nack, i2c_busy | p3_req};
+assign pa_cfg     = {vna, tr_disable, pa_enable};
+assign fan_overheat = ~temp_enabletx;
 
 // Gererate two slow pulses for timing.  msec_pulse occurs every one millisecond.
 // qmsec_pulse occurs every quarter of a millisecond
@@ -340,21 +415,21 @@ end
 
 // Solid when connected to software
 // Blinking to indicate good ethernet clock
-assign io_led_run = (slave_link_running | run) ? 1'b0 : ~(ethup & (is_ksz9021 ? led_count[7] : led_count[8]));
+assign io_led_run = led_ovr[0] ? ~led_ovr[4] : (slave_link_running | run) ? 1'b0 : ~(ethup & (is_ksz9021 ? led_count[7] : led_count[8]));
 
 // Blinking indicates fixed ip, solid indicates dhcp
-assign io_led_tx = (slave_link_running | run) ? ~int_tx_on : ~((have_fixed_ip & led_count[8]) | have_dhcp_ip);
+assign io_led_tx = led_ovr[1] ? ~led_ovr[5] : (slave_link_running | run) ? ~int_tx_on : ~((have_fixed_ip & led_count[8]) | have_dhcp_ip);
 
 // Blinks if 100 Mbps, solid if 1Gbs, off otherwise
-assign io_led_adc75 = (slave_link_running | run) ? led_d4 : ~(((network_speed == 2'b01) & led_count[8]) | network_speed == 2'b10);
+assign io_led_adc75 = led_ovr[2] ? ~led_ovr[6] : (slave_link_running | run) ? led_d4 : ~(((network_speed == 2'b01) & led_count[8]) | network_speed == 2'b10);
 
 // Lights if ad9866 is up and the  clock is less than 80 MHz
-assign io_led_adc100 = (slave_link_running | run) ? led_d5 : ~(ad9866up & good_fast_clk);
+assign io_led_adc100 = led_ovr[3] ? ~led_ovr[7] : (slave_link_running | run) ? led_d5 : ~(ad9866up & good_fast_clk);
 
 // Clear status
 always @(posedge clk) rxclrstatus <= ~rxclrstatus;
 
-assign int_tx_on = (tx_on | ext_ptt ) & ~ext_txinhibit & run & temp_enabletx;
+assign int_tx_on = (RAWFRONT != 0) ? ilk_tx_on : ((tx_on | ext_ptt ) & ~ext_txinhibit & run & temp_enabletx);
 
 assign pwr_envbias = int_tx_on & ~vna & pa_enable;
 assign pwr_envop = int_tx_on;
@@ -545,6 +620,7 @@ generate case (FAN)
   
     assign fan_pwm = 1'b0;
     assign temp_enabletx = 1'b1;
+    assign fan_status = 4'd0;
 
   end
 
@@ -572,16 +648,20 @@ generate case (FAN)
                FAN_OVERHEAT     = 3'b110;
 					
     logic band_volts_enabled = 1'b0;					
+    logic fan_force;
 
     logic fan_output = 1'b0;
-    logic [15:0] fan_cnt;
+    logic [15:0] fan_cnt = 16'd0;
     logic [2:0] fan_state_next, fan_state = FAN_OFF;
-    logic [1:0] tupvote_next, tupvote;
-    logic [1:0] tdnvote_next, tdnvote;
+    logic [1:0] tupvote_next, tupvote = 2'b00;
+    logic [1:0] tdnvote_next, tdnvote = 2'b00;
 	 
 	 always @(posedge clk)
       if (cmd_rqst & (cmd_addr == 6'h00))
         band_volts_enabled <= cmd_data[11];
+
+    // minimum fan duty from the raw front-end register block (only adds to the HDL fan logic)
+    assign fan_force = (fan_min == 4'hf) | (fan_cnt[15:12] < fan_min);
 
     // Fan state machine
     always @ (posedge clk) begin
@@ -676,7 +756,7 @@ generate case (FAN)
     
     logic band_volts_output = 1'b0;
    				
-    logic [(DAC_BITS-1):0] volt_cnt;
+    logic [(DAC_BITS-1):0] volt_cnt = '0;
     logic [(DAC_BITS-1):0] volt_mark;
     logic [31:0] freq = 32'h00000000;
    
@@ -711,8 +791,10 @@ generate case (FAN)
       if (band_volts_enabled == 1)  
         fan_pwm = band_volts_output;
       else
-        fan_pwm = fan_output;
+        fan_pwm = fan_output | fan_force;
     end
+
+    assign fan_status = {band_volts_enabled, fan_state};
   end
 endcase
 endgenerate
@@ -779,6 +861,8 @@ debounce de_phone_ring(.clean_pb(clean_ring), .pb(~io_phone_ring), .clk(clk), .m
 
 
 assign ext_pttout = ext_ptt;
+
+assign safety_status = {int_tx_on, ~temp_enabletx, ext_txinhibit, clean_ring, ext_cwkey};
 
 generate
   case (CW)

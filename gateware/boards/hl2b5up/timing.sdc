@@ -1,3 +1,4 @@
+# Modified 2026 by Franz Schöning
 
 set_time_format -unit ns -decimal_places 3
 
@@ -80,6 +81,14 @@ set_clock_groups -asynchronous -group { \
 	} -group { \
 		clock_153p6MHz rffe_ad9866_clk76p8 clock_76p8MHz clock_245p76MHz clock_48khz \
 	}
+
+## Soft CPU clock (hl2b5up_cpu, rtl/hl2cpu.v). The PLL's 12.5 MHz output also feeds the Ethernet send
+## clock mux, but every crossing between the CPU logic and other clocks goes through a synchroniser
+## or a request/acknowledge handshake, so it is its own asynchronous group.
+set_clock_groups -asynchronous -group { clock_12p5MHz }
+## hl2b5up_neo can run the CPU system on the 25 MHz output instead (hermeslite_core CPU_CLK_25); in the
+## other images that clock only feeds the Ethernet send clock mux, so the group changes nothing there.
+set_clock_groups -asynchronous -group { clock_25MHz }
 
 
 
@@ -271,6 +280,28 @@ set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|networ
 
 set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|usopenhpsdr1:usopenhpsdr1_i|udp_tx_length[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -setup -start 3
 set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|usopenhpsdr1:usopenhpsdr1_i|udp_tx_length[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -hold -start 2
+
+## Raw ADC stream sender (only present in RAWSTREAM=1 builds). The frame length and the send-path
+## select are stable at least 3 cycles before ip_send loads its header, the same as for the packer.
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|rawstream:RAWSTREAM_ON.rawstream_i|raw_len[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -setup -start 3
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|rawstream:RAWSTREAM_ON.rawstream_i|raw_len[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -hold -start 2
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|rawstream:RAWSTREAM_ON.rawstream_i|own*}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -setup -start 3
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|rawstream:RAWSTREAM_ON.rawstream_i|own*}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -hold -start 2
+
+## Aux channel (AUX=1 builds). The aux packet length is set at the grant, together with the
+## send-path owner, 3 cycles before ip_send loads its header (same hand-over as raw frames).
+## The aux destination address changes only when a PC aux packet arrives, long before a send.
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|auxchan:RAWSTREAM_ON.AUX_ON.auxchan_i|len_r[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -setup -start 3
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|auxchan:RAWSTREAM_ON.AUX_ON.auxchan_i|len_r[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -hold -start 2
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|aux_destination_ip[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -setup -start 2
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|aux_destination_ip[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -hold -start 1
+
+## Register bridge (HL2BUS=1 builds). The reply length and the aux-slot owner (bridge or aux channel)
+## are set at the grant, like the aux packet length above.
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|ebbridge:RAWSTREAM_ON.AUX_ON.HL2BUS_ON.ebbridge_i|rlen[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -setup -start 3
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|ebbridge:RAWSTREAM_ON.AUX_ON.HL2BUS_ON.ebbridge_i|rlen[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -hold -start 2
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|*eb_own*}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -setup -start 3
+set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|*eb_own*}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -hold -start 2
 
 #set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|icmp:icmp_inst|length[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -setup -start 3
 #set_multicycle_path -from [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|icmp:icmp_inst|length[*]}] -to [get_keepers {hermeslite_core:hermeslite_core_i|network:network_inst|ip_send:ip_send_inst|shift_reg[*]}] -hold -start 2

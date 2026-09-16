@@ -23,6 +23,7 @@
 //  January 2017, N2ADR: Added remote_mac_sync to the dhcp module
 //  January 2017, N2ADR: Added ST_DHCP_RENEW states to allow IO to continue during DHCP lease renewal
 //  2018 Steve Haynal KF7O
+//  Modified 2026 by Franz Schöning
 
 
 module network (
@@ -36,6 +37,10 @@ module network (
   input [15:0]  udp_tx_length,
   input [7:0]   udp_tx_data,
   output        udp_tx_enable,
+  output        udp_tx_busy,     // raw stream arbitration: a frame is latched, starting or on the wire
+  output        udp0_tx_enable,  // like udp_tx_enable, but only for a port-1024 (2'b10) UDP request, never DHCP
+  output        udp2_tx_enable,  // aux channel (AUX=1): a 2'b01 request (source port 1027) starts
+  output reg    aux_dest_valid,  // aux channel: a packet to port 1027 has set the aux destination
   input         run,
   input [7:0]   port_id,
 
@@ -69,6 +74,15 @@ module network (
 );
 
 parameter SIM = 0;
+// 1 = accept received IP/UDP packets longer than 2,047 bytes (jumbo), used by the duplex
+// raw stream test image. 0 = stock receive path.
+parameter RX_JUMBO = 0;
+localparam RX_LW = (RX_JUMBO != 0) ? 16 : 11;
+// 1 = aux channel of the raw stream test image (rtl/auxchan.v): udp_tx_request 2'b01 sends
+// from port 1027 to the address and port of the last packet received on port 1027. Packets
+// to port 1027 then no longer change the port-1025 reply address or the stream destination.
+parameter AUX = 0;
+localparam AUX_PORT = 16'd1027;
 
 wire udp_tx_active;
 wire eeprom_ready;
@@ -308,7 +322,7 @@ endgenerate
 //-----------------------------------------------------------------------------
 //                           interconnections
 //-----------------------------------------------------------------------------
-localparam PT_ARP = 3'd0, PT_ICMP = 3'd1, PT_DHCP = 3'd2, PT_UDP0 = 3'd4, PT_UDP1 = 3'd5;
+localparam PT_ARP = 3'd0, PT_ICMP = 3'd1, PT_DHCP = 3'd2, PT_UDP0 = 3'd4, PT_UDP1 = 3'd5, PT_UDP2 = 3'd6;
 localparam false = 1'b0, true = 1'b1;
 
 
@@ -319,7 +333,8 @@ reg [2:0] tx_protocol;
 
 wire tx_is_icmp = tx_protocol == PT_ICMP;
 wire tx_is_arp  = tx_protocol  == PT_ARP;
-wire tx_is_udp  = ((tx_protocol  == PT_UDP0) | (tx_protocol == PT_UDP1));
+wire tx_is_udp2 = (AUX != 0) & (tx_protocol == PT_UDP2);
+wire tx_is_udp  = ((tx_protocol  == PT_UDP0) | (tx_protocol == PT_UDP1) | tx_is_udp2);
 wire tx_is_udp1 = tx_protocol == PT_UDP1;
 wire tx_is_dhcp = tx_protocol == PT_DHCP;
 
@@ -389,7 +404,7 @@ wire [15:0] ip_tx_length = tx_is_icmp? icmp_length : udp_length;
 wire [31:0] destination_ip = tx_is_icmp ? icmp_destination_ip :
   (tx_is_dhcp ? dhcp_destination_ip :
     (tx_is_udp1 ? udp_destination_ip_sync :
-      run_destination_ip));
+      (tx_is_udp2 ? aux_destination_ip : run_destination_ip)));
 
 //ip_send out
 wire [7:0] ip_tx_data;
@@ -404,7 +419,8 @@ wire [ 7:0] mac_tx_data_in  = tx_is_arp? arp_tx_data : ip_tx_data;
 wire [47:0] destination_mac = tx_is_arp  ? arp_destination_mac  :
   tx_is_icmp ? icmp_destination_mac :
     tx_is_dhcp ? dhcp_destination_mac :
-      tx_is_udp1 ? udp_destination_mac_sync : run_destination_mac;
+      tx_is_udp1 ? udp_destination_mac_sync :
+        tx_is_udp2 ? aux_destination_mac : run_destination_mac;
 
 //mac_send out
 wire [7:0] mac_tx_data;
@@ -422,17 +438,23 @@ reg         rgmii_tx_enable_pipe = 1'b0;
 //rgmii_send out
 wire        rgmii_tx_active;
 
+// Extra status for the optional raw ADC stream sender (unused, and removed by synthesis, otherwise)
+assign udp0_tx_enable = tx_start && (tx_protocol == PT_UDP0);
+assign udp2_tx_enable = tx_start && tx_is_udp2;
+assign udp_tx_busy = tx_ready | tx_start | rgmii_tx_active;
+
 //dhcp
 wire [15:0]dhcp_udp_tx_length        = tx_is_dhcp ? dhcp_tx_length        : udp_tx_length;
 wire [7:0] dhcp_udp_tx_data          = tx_is_dhcp ? dhcp_tx_data          : udp_tx_data;
-wire [15:0]local_port                = tx_is_dhcp ? 16'd68                : {15'd512,tx_is_udp1};
+wire [15:0]local_port                = tx_is_dhcp ? 16'd68                :
+                                       tx_is_udp2 ? AUX_PORT              : {15'd512,tx_is_udp1};
 
 
 //reg [15:0] dhcp_udp_destination_port;
 //always @(posedge tx_clock) dhcp_udp_destination_port <= 
 wire [15:0] dhcp_udp_destination_port = tx_is_dhcp ? dhcp_destination_port :
   (tx_is_udp1 ? udp_destination_port_sync :
-    run_destination_port);
+    (tx_is_udp2 ? aux_destination_port : run_destination_port));
 
 wire dhcp_rx_active;
 wire mac_rx_active;
@@ -464,6 +486,10 @@ always @(posedge tx_clock)
     end
     else if (udp_tx_request == 2'b11)  begin
       tx_protocol <= PT_UDP1;
+      tx_ready <= true;
+    end
+    else if ((AUX != 0) && (udp_tx_request == 2'b01))  begin
+      tx_protocol <= PT_UDP2;
       tx_ready <= true;
     end
   end
@@ -514,7 +540,7 @@ mac_recv mac_recv_inst (
   .broadcast       (broadcast       )
 );
 
-ip_recv ip_recv_inst (
+ip_recv #(.LW(RX_LW)) ip_recv_inst (
   // in
   .local_ip       (local_ip       ),
   //out
@@ -530,7 +556,7 @@ ip_recv ip_recv_inst (
   .to_ip_is_me    (to_ip_is_me    )
 );
 
-udp_recv udp_recv_inst (
+udp_recv #(.LW(RX_LW)) udp_recv_inst (
   //in
   .clock                (rx_clock             ),
   .run                  (run                  ),
@@ -671,6 +697,10 @@ wire        remote_mac_valid_sync     ;
 reg  [31:0] remote_ip_sync            ;
 wire        remote_ip_valid_sync      ;
 reg  [15:0] udp_destination_port_sync ;
+reg  [15:0] aux_destination_port      ;
+reg  [47:0] aux_destination_mac       ;
+reg  [31:0] aux_destination_ip        ;
+initial aux_dest_valid = 1'b0;
 reg  [47:0] udp_destination_mac_sync  ;
 reg  [31:0] udp_destination_ip_sync   ;
 wire        udp_destination_valid_sync;
@@ -684,8 +714,14 @@ sync_pulse udp_destination_sync (.clock(tx_clock), .sig_in(udp_destination_valid
 
 always @(posedge tx_clock) begin
   if (udp_destination_valid_sync) begin
+    if ((AUX != 0) && (to_port == AUX_PORT)) begin
+      aux_destination_ip   <= udp_destination_ip;
+      aux_destination_mac  <= udp_destination_mac;
+      aux_destination_port <= udp_destination_port;
+      aux_dest_valid       <= 1'b1;
+    end
     // Alternate port 1025 info
-    if (to_port[0]) begin
+    else if (to_port[0]) begin
       udp_destination_ip_sync   <= udp_destination_ip;
       udp_destination_mac_sync  <= udp_destination_mac;
       udp_destination_port_sync <= udp_destination_port;

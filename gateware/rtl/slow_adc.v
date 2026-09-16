@@ -1,9 +1,18 @@
+// Modified 2026 by Franz Schöning
 
 module slow_adc(
   input  logic         clk,
   input  logic         rst,
 
   input  logic         sample,
+
+  // address-only probe of another device on this bus (raw front-end image): held until probe_done
+  input  logic         probe_req,
+  input  logic [6:0]   probe_addr,
+  output logic         probe_done,
+  output logic         probe_nack = 1'b0,
+  output logic [7:0]   probe_data = 8'h00,
+  output logic         cycle_done,        // one read cycle of the four channels completed
 
   output logic [11:0]  ain0,
   output logic [11:0]  ain1,
@@ -38,6 +47,7 @@ logic        data_out_ready;
 logic        data_out_last;
 
 logic [3:0]  state, next_state;
+logic        missed_ack;
 logic [3:0]  msbnibble;
 
 i2c_master i2c_master_i (
@@ -81,7 +91,7 @@ i2c_master i2c_master_i (
   .busy(),
   .bus_control(),
   .bus_active(),
-  .missed_ack(),
+  .missed_ack(missed_ack),
 
   /*
    * Configuration
@@ -104,7 +114,8 @@ localparam [3:0]
   READ7  = 4'h7,
   WRITE0 = 4'h8,
   WRITE1 = 4'h9,
-  WAIT   = 4'ha;
+  WAIT   = 4'ha,
+  PROBE  = 4'hb;
 
 always @(posedge clk) begin
   if (rst) begin
@@ -114,7 +125,7 @@ always @(posedge clk) begin
   end
 end
 
-assign cmd_address = 7'h34;
+assign cmd_address = (state == PROBE) ? probe_addr : 7'h34;
 assign cmd_write_multiple = 1'b0;
 assign cmd_start = 1'b0;
 assign data_in = 8'h07;
@@ -161,15 +172,32 @@ always @* begin
     WAIT: begin
       cmd_valid = 1'b0;
       cmd_read = 1'b0;
-      if (sample) next_state = WRITE0;
+      if (probe_req) next_state = PROBE;
+      else if (sample) next_state = WRITE0;
     end
+
+    PROBE: begin
+      cmd_stop = 1'b1;
+      if (data_out_valid) next_state = WAIT;
+    end
+
+    default: next_state = WAIT;
 
   endcase
 end
 
 
+assign probe_done = (state == PROBE) & data_out_valid;
+assign cycle_done = (state == READ7) & data_out_valid;
+
 always @(posedge clk) begin
-  if (data_out_valid) begin
+  if ((state == WAIT) & probe_req) probe_nack <= 1'b0;
+  else if ((state == PROBE) & missed_ack) probe_nack <= 1'b1;
+  if (probe_done) probe_data <= data_out;
+end
+
+always @(posedge clk) begin
+  if (data_out_valid & (state != PROBE)) begin
     if (~state[0]) msbnibble <= data_out[3:0];
 
     case(state)

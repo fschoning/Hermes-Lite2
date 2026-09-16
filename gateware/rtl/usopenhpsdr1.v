@@ -1,3 +1,4 @@
+// Modified 2026 by Franz Schöning
 
 // OpenHPSDR upstream (Card->PC) protocol packer
 
@@ -59,6 +60,7 @@ parameter           BOARD = 5;
 parameter           BANDSCOPE_BITS = 2'b01; // See wiki protocol page
 parameter           AK4951 = 0;
 parameter           EXTENDED_DEBUG_RESP = 1;
+parameter           DIAG_ID = 8'h00;       // diagnostic image marker in discovery byte 0x0C, 0 = stock
 
 localparam          TUSERWIDTH = (AK4951 == 1) ? 16 : 2;
 
@@ -274,7 +276,7 @@ always @* begin
         6'h31: discover_data_next = idhermeslite ? 8'h06 : 8'h01;
         // FIXME: Really needed for CW skimmer? Why so much?
         6'h30: discover_data_next = {eeprom_config[7:5],5'b0000};
-        6'h2f: discover_data_next = 8'h00;
+        6'h2f: discover_data_next = DIAG_ID;
         6'h2e: discover_data_next = static_ip[31:24];
         6'h2d: discover_data_next = static_ip[23:16];
         6'h2c: discover_data_next = static_ip[15:8];
