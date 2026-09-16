@@ -165,6 +165,11 @@ median (1-30 MHz) moved by 0.02 dB in the same runs, which is why the test judge
 - Memory blocks are almost used up (64 of 66): the raw FIFO is 8,192 samples, the TX FIFO 16,384, the aux echo
   FIFO 1,024 bytes, the CPU has 16 kB RAM.
 - The Ethernet send path has little timing margin and moves with placement: check timing after any change.
+- **gdb with the message-layer firmware**: a breakpoint hit while that firmware owns the receive ring leaves
+  the gdb stub unable to wake. Recover with `hl2fw.py rom` or `run`. Not fixed in this release; the health
+  example shows the pattern that avoids it ([RISCV.md](RISCV.md#limits)).
+- **Stock images not rebuilt**: some shared RTL files were changed for this image. The stock variants
+  (for example `hl2b5up_main`) were not rebuilt or retested from this branch; use the stock releases for them.
 - A stopped CPU (gdb breakpoint, `hl2fw.py halt` or `rom`, a crash) fires the CPU watchdog once armed, which cuts
   transmit.
 - Temperature, forward/reverse power and bias are raw ADC codes; only temperature and bias have conversion
