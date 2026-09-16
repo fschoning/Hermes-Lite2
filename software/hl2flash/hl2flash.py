@@ -170,7 +170,13 @@ def wait_for_restart(ifaddr, ip, before):
             continue
         rip, rinfo = radios[0]
         show(rip, rinfo)
-        if (rinfo["gateware"], rinfo["receivers"], rinfo["diag_id"]) == (before["gateware"], before["receivers"], before["diag_id"]):
+        same = (rinfo["gateware"], rinfo["receivers"], rinfo["diag_id"]) == (before["gateware"], before["receivers"], before["diag_id"])
+        if same and rinfo["diag_id"]:
+            # stock and factory images report marker 0: a nonzero marker after the restart is not the factory image
+            print("SUCCESS: radio restarted with the same image as before (marker 0x%02X), not the factory image."
+                  % rinfo["diag_id"])
+            return
+        if same:
             print("WARNING: the radio restarted but reports the same version and receiver count as before.\n"
                   "  If the new image should differ, it failed to start and the radio fell back to its\n"
                   "  factory image. The factory image then ignores new flashes until a full power cycle.")
