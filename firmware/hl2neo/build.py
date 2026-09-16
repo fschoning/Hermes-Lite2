@@ -34,6 +34,7 @@ PREFIX = os.environ.get("RISCV_PREFIX", r"C:\tools\xpack-riscv-none-elf-gcc-15.2
 
 CFLAGS = ["-march=rv32imc_zicsr", "-mabi=ilp32", "-Os", "-g", "-Wall", "-Wextra", "-ffreestanding", "-nostdlib",
           "-ffunction-sections", "-fdata-sections", "-msmall-data-limit=0", "-fno-delete-null-pointer-checks",
+          "-ffile-prefix-map=%s=." % REPO,     # debug info names files relative to the repository root
           "-I" + os.path.join(HERE, "common")]
 
 
