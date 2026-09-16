@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Franz Schöning, https://www.schoning.com
+[package]
+name = "rawcap"
+version = "0.1.0"
+edition = "2021"
+description = "Windows PC receiver/emulator for the Hermes-Lite 2 raw ADC Ethernet stream"
+license = "Apache-2.0"
+
+[[bin]]
+name = "rawcap"
+path = "src/main.rs"
+
+[dependencies]
+# Only dependency: needed for SO_RCVBUF / SO_SNDBUF sizes beyond what std::net exposes,
+# and for building a socket with a specific local bind before connect-less send/recv.
+socket2 = "0.5"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "unwind"

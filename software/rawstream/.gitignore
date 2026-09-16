@@ -1,0 +1,14 @@
+# Build output
+rawcap/target/
+
+# nic_setup.ps1 -Apply run artifacts: machine-specific, and the backup file is what -Restore
+# needs, so it must stay on disk -- just not committed.
+nic_setup_backup.json
+nic_setup_apply*.log
+*.log
+
+# Captures (rawcap --save output) and analysis plots: never commit these, they're local test
+# data, not part of the tool.
+*.bin
+*.bin.json
+*.png
