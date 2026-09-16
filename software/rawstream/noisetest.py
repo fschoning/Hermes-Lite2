@@ -7,7 +7,7 @@ rate over the radio's own Ethernet port raise the noise floor or add spurs?
 For each RX gain it:
   1. sets the gain (openHPSDR command 0x0A on UDP port 1025),
   2. captures real ADC samples three times with rawcap:
-       quiet   quiet-capture mode: the radio records 16,384 contiguous samples while its Ethernet sender is
+       quiet   quiet-capture mode: the radio records 8,192 contiguous samples (its FIFO depth) while its Ethernet sender is
                idle, then sends them (so the samples were taken with no send traffic)
        loaded  the normal full-rate stream (about 930 Mbit/s on the wire while the samples are taken)
        repeat  quiet-capture again: shows how much the result moves between two identical captures
