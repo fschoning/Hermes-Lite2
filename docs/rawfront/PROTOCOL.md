@@ -265,7 +265,7 @@ Values are at most one frame period old. Counters stop at their maximum.
 The radio's ADC clock and the client's clock differ by a few ppm, and the radio plays at its own clock. The
 client must send at the radio's rate: read the TX FIFO fill (bytes 32-33) from every raw frame and trim the
 send rate to hold it near a target. `rawcap` uses a PI controller around 76.8 MSPS with a target of 12,000
-samples. The FIFO depth gives about ±53 ms of slack at the half-way point. Send in an even flow: a PC card
+samples. Half the FIFO is 8,192 samples, only about 0.1 ms of play time, so the pacing must be tight. Send in an even flow: a PC card
 that sends in bursts causes overflows and underflows even when the average rate is right (see
 [RESULTS.md](RESULTS.md)).
 
@@ -277,9 +277,9 @@ that sends in bursts causes overflows and underflows even when the average rate 
 | 46 | [0] offset valid [1] echo on [2] real DAC mode [3] DAC driven [4] trip latched [5] lease valid [6] transmit on |
 | 47 | Latched trip reasons (ILK_STATUS [13:8], section 9.3) |
 
-**Echo mode.** Sample k of a frame with first index I is TX sample (I + k + offset), where the TX index is the
-index the client put in the TX frame header plus the sample's position in that frame, or 0 while nothing plays (FIFO refilling after an
-underflow). The offset in a header is taken from the newest sample written, so a frame built just after a
+**Echo mode.** Sample k of a frame with first index I carries the TX sample whose TX index is I + k + offset. A TX
+sample's index is the index in its TX frame header plus its position in that frame. While nothing plays (the
+FIFO refilling after an underflow) the echoed samples are 0. The offset in a header is taken from the newest sample written, so a frame built just after a
 change can carry the new offset for older samples: check against the previous frame's offset too. Echo is
 a full-rate bandwidth and latency test of both directions that needs no RF.
 
